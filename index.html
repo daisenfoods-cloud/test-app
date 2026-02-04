@@ -1304,4 +1304,55 @@
                 padding: '12px',
                 border: 'none',
                 backgroundColor: page === 'principle' ? '#3498db' : '#ecf0f1',
-                color: 
+                color: page === 'principle' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              原理を理解
+            </button>
+            <button
+              onClick={() => setPage('table')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'table' ? '#3498db' : '#ecf0f1',
+                color: page === 'table' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              表で暗記
+            </button>
+            <button
+              onClick={() => setPage('quiz')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'quiz' ? '#27ae60' : '#ecf0f1',
+                color: page === 'quiz' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              🎯 クイズ
+            </button>
+          </div>
+
+          {page === 'about' && renderAbout()}
+          {page === 'principle' && renderPrinciple()}
+          {page === 'table' && renderTable()}
+          {page === 'quiz' && renderQuiz()}
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<QuizApp />);
+  </script>
+</body>
+</html>
