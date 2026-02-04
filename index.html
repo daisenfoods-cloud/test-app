@@ -543,6 +543,27 @@
                   例：Aは土地をCから取り戻せない
                 </span>
               </div>
+
+              <div style={{ 
+                marginTop: '16px', 
+                padding: '10px', 
+                backgroundColor: '#fff3e0', 
+                borderRadius: '6px',
+                borderLeft: '4px solid #ff9800'
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#e65100', marginBottom: '6px' }}>
+                  💡 応用編の用語
+                </div>
+                <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}>
+                  <strong style={{ color: '#d84315' }}>背信的悪意者</strong> = 知っててわざと邪魔した人<br/>
+                  <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                    例：Aが先に買ってると知ってて、わざと先に登記して横取りしようとした
+                  </span><br/>
+                  <span style={{ fontSize: '11px', color: '#d84315', marginLeft: '8px', fontWeight: 'bold' }}>
+                    → こういう人は登記があっても保護されない（悪質すぎるから）
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1142,7 +1163,7 @@
               </div>
             )}
 
-            <div style={{ display: 'flex', gap: '8px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
               <button
                 onClick={prevQuiz}
                 disabled={currentQuiz === 0}
@@ -1180,6 +1201,23 @@
                 </button>
               )}
             </div>
+            
+            <button
+              onClick={resetQuiz}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                border: '2px solid #95a5a6',
+                borderRadius: '12px',
+                backgroundColor: 'white',
+                color: '#95a5a6',
+                cursor: 'pointer'
+              }}
+            >
+              クイズを終了してレベル選択に戻る
+            </button>
           </div>
         );
       };
