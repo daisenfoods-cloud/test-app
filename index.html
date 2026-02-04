@@ -585,8 +585,49 @@
               原理① 落ち度が大きい方が負ける
             </div>
             
-            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '16px' }}>
-              Aさん（売主）とCさん（転売先）、どちらを守るべき？
+            <div style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>取引の流れ：</strong>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginBottom: '8px'
+              }}>
+                <PersonCircle label="A" role="売主" color="#e74c3c" />
+                <div style={{ fontSize: '12px', color: '#666' }}>売却→</div>
+                <div style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  backgroundColor: '#95a5a6',
+                  color: 'white',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  opacity: 0.6
+                }}>B</div>
+                <div style={{ fontSize: '12px', color: '#666' }}>→転売</div>
+                <PersonCircle label="C" role="転売先" color="#27ae60" />
+              </div>
+              <div style={{ fontSize: '12px', color: '#666', textAlign: 'center' }}>
+                Bが勝手に転売してしまった！
+              </div>
+            </div>
+
+            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '12px', textAlign: 'center', fontWeight: 'bold' }}>
+              問題が起きた時、どちらを守るべき？
             </div>
 
             <div style={{
@@ -1263,55 +1304,4 @@
                 padding: '12px',
                 border: 'none',
                 backgroundColor: page === 'principle' ? '#3498db' : '#ecf0f1',
-                color: page === 'principle' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              原理を理解
-            </button>
-            <button
-              onClick={() => setPage('table')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'table' ? '#3498db' : '#ecf0f1',
-                color: page === 'table' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              表で暗記
-            </button>
-            <button
-              onClick={() => setPage('quiz')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'quiz' ? '#27ae60' : '#ecf0f1',
-                color: page === 'quiz' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              🎯 クイズ
-            </button>
-          </div>
-
-          {page === 'about' && renderAbout()}
-          {page === 'principle' && renderPrinciple()}
-          {page === 'table' && renderTable()}
-          {page === 'quiz' && renderQuiz()}
-        </div>
-      );
-    };
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<QuizApp />);
-  </script>
-</body>
-</html>
+                color: 
