@@ -28,7 +28,7 @@
   <div id="root"></div>
   
   <script type="text/babel">
-    const { useState } = React;
+    const { useState, useEffect } = React;
 
     const QuizApp = () => {
       const [page, setPage] = useState('principle');
@@ -40,6 +40,17 @@
       const [quizFinished, setQuizFinished] = useState(false);
       const [shuffledQuizzes, setShuffledQuizzes] = useState([]);
       const [level, setLevel] = useState(null);
+      const [answeredQuestions, setAnsweredQuestions] = useState([]);
+      const [masteredQuestions, setMasteredQuestions] = useState(new Set());
+      const [reviewMode, setReviewMode] = useState('all');
+
+      // localStorageから習熟度データを読み込み
+      useEffect(() => {
+        const saved = localStorage.getItem('takken_mastered');
+        if (saved) {
+          setMasteredQuestions(new Set(JSON.parse(saved)));
+        }
+      }, []);
 
       const quizzesLevel1 = [
         {
@@ -236,25 +247,54 @@
         return shuffled;
       };
 
-      const startQuiz = (selectedLevel) => {
+      const startQuiz = (selectedLevel, mode = 'all') => {
         setLevel(selectedLevel);
+        setReviewMode(mode);
         const quizzes = selectedLevel === 1 ? quizzesLevel1 : quizzesLevel2;
-        setShuffledQuizzes(shuffleArray(quizzes));
+        
+        let filteredQuizzes = quizzes;
+        if (mode === 'unmastered') {
+          filteredQuizzes = quizzes.filter((_, idx) => !masteredQuestions.has(`${selectedLevel}-${idx}`));
+        }
+        
+        if (filteredQuizzes.length === 0) {
+          alert('未習得の問題がありません！全問題モードで開始します。');
+          filteredQuizzes = quizzes;
+        }
+        
+        setShuffledQuizzes(shuffleArray(filteredQuizzes));
         setQuizStarted(true);
         setQuizFinished(false);
         setCurrentQuiz(0);
         setScore(0);
         setAnswered(false);
         setSelectedAnswer(null);
+        setAnsweredQuestions([]);
       };
 
       const handleAnswer = (answer) => {
         if (answered) return;
         setSelectedAnswer(answer);
         setAnswered(true);
-        if (answer === shuffledQuizzes[currentQuiz].answer) {
+        const isCorrect = answer === shuffledQuizzes[currentQuiz].answer;
+        if (isCorrect) {
           setScore(score + 1);
         }
+        setAnsweredQuestions([...answeredQuestions, { index: currentQuiz, correct: isCorrect }]);
+      };
+
+      const markAsMastered = () => {
+        const quizzes = level === 1 ? quizzesLevel1 : quizzesLevel2;
+        const currentQuizData = shuffledQuizzes[currentQuiz];
+        const originalIndex = quizzes.indexOf(currentQuizData);
+        const key = `${level}-${originalIndex}`;
+        
+        const newMastered = new Set(masteredQuestions);
+        newMastered.add(key);
+        setMasteredQuestions(newMastered);
+        localStorage.setItem('takken_mastered', JSON.stringify([...newMastered]));
+        
+        nextQuiz();
       };
 
       const nextQuiz = () => {
@@ -264,6 +304,20 @@
           setCurrentQuiz(currentQuiz + 1);
           setAnswered(false);
           setSelectedAnswer(null);
+        }
+      };
+
+      const prevQuiz = () => {
+        if (currentQuiz > 0) {
+          setCurrentQuiz(currentQuiz - 1);
+          const prevAnswered = answeredQuestions.find(a => a.index === currentQuiz - 1);
+          if (prevAnswered) {
+            setAnswered(true);
+            setSelectedAnswer(prevAnswered.correct ? shuffledQuizzes[currentQuiz - 1].answer : !shuffledQuizzes[currentQuiz - 1].answer);
+          } else {
+            setAnswered(false);
+            setSelectedAnswer(null);
+          }
         }
       };
 
@@ -301,8 +355,197 @@
         </div>
       );
 
+      const renderAbout = () => (
+        <div style={{ padding: '16px' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '16px',
+              paddingBottom: '8px',
+              borderBottom: '2px solid #3498db'
+            }}>
+              🎯 このアプリの目的
+            </div>
+            
+            <div style={{
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#e74c3c',
+              marginBottom: '16px',
+              textAlign: 'center',
+              padding: '12px',
+              backgroundColor: '#ffebee',
+              borderRadius: '8px'
+            }}>
+              過去問が解けるようになること
+            </div>
+
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '12px',
+              marginTop: '24px'
+            }}>
+              📚 合格までの流れ
+            </div>
+
+            <div style={{
+              backgroundColor: '#e3f2fd',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '4px' }}>
+                【今ここ】このアプリで基礎固め
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                原理とパターンを理解する<br/>
+                過去問を解く準備ができる
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#fff3e0',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8,
+              border: '2px solid #ff9800'
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#e65100', marginBottom: '4px' }}>
+                【次にやること】過去問を回す ★重要★
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                12年分を何周も繰り返す<br/>
+                間違えた問題を潰していく<br/>
+                <strong>→ ここが合格のカギ！</strong>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f3e5f5',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#7b1fa2', marginBottom: '4px' }}>
+                【仕上げ】細かい知識を補充
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                教科書で確認<br/>
+                → 合格！
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#fff9c4',
+              border: '2px solid #fbc02d',
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8,
+              color: '#f57f17'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                💡 宅建は「過去問を回せば合格できる試験」
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                このアプリはそのための準備です
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
       const renderPrinciple = () => (
         <div style={{ padding: '16px' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '12px',
+              borderBottom: '2px solid #9c27b0',
+              paddingBottom: '8px'
+            }}>
+              📖 よく出る法律用語
+            </div>
+            
+            <div style={{ fontSize: '13px', lineHeight: 1.8 }}>
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>善意</strong> = 知らなかった<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：Bが詐欺師だと知らなかった
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>悪意</strong> = 知っていた<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：Bが詐欺師だと知っていた
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>無過失</strong> = 調べても気づけなかった<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：登記を確認したけど分からなかった
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>過失</strong> = 調べればわかったのに調べなかった<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：登記を見れば分かったのに見なかった
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#d32f2f' }}>取消し</strong> = 騙されたり脅されたりした時<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：Bに騙されて売った→取り消せる
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#d32f2f' }}>解除</strong> = 代金を払ってくれない時<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：Bが代金を払わない→契約を解除できる
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#388e3c' }}>対抗できない</strong> = 返してもらえない<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：Aは土地をCから取り戻せない
+                </span>
+              </div>
+            </div>
+          </div>
+
           <div style={{
             backgroundColor: 'white',
             borderRadius: '12px',
@@ -562,6 +805,9 @@
 
       const renderQuiz = () => {
         if (!quizStarted) {
+          const level1Unmastered = quizzesLevel1.filter((_, idx) => !masteredQuestions.has(`1-${idx}`)).length;
+          const level2Unmastered = quizzesLevel2.filter((_, idx) => !masteredQuestions.has(`2-${idx}`)).length;
+          
           return (
             <div style={{ padding: '16px', textAlign: 'center' }}>
               <div style={{
@@ -578,46 +824,90 @@
                   レベルを選んでください
                 </div>
 
-                <button
-                  onClick={() => startQuiz(1)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#3498db',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    marginBottom: '12px'
-                  }}
-                >
-                  <div>レベル1：基礎</div>
-                  <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
-                    分かりやすい文章で原理を確認（{quizzesLevel1.length}問）
-                  </div>
-                </button>
+                <div style={{ marginBottom: '24px' }}>
+                  <button
+                    onClick={() => startQuiz(1, 'all')}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#3498db',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div>レベル1：基礎（全問題）</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
+                      分かりやすい文章で原理を確認（{quizzesLevel1.length}問）
+                    </div>
+                  </button>
+                  
+                  {level1Unmastered > 0 && (
+                    <button
+                      onClick={() => startQuiz(1, 'unmastered')}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#9b59b6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        marginBottom: '12px'
+                      }}
+                    >
+                      レベル1：未習得のみ（{level1Unmastered}問）
+                    </button>
+                  )}
+                </div>
 
-                <button
-                  onClick={() => startQuiz(2)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#e74c3c',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  <div>レベル2：実戦</div>
-                  <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
-                    本試験レベルのややこしい文章（{quizzesLevel2.length}問）
-                  </div>
-                </button>
+                <div>
+                  <button
+                    onClick={() => startQuiz(2, 'all')}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div>レベル2：実戦（全問題）</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
+                      本試験レベルのややこしい文章（{quizzesLevel2.length}問）
+                    </div>
+                  </button>
+                  
+                  {level2Unmastered > 0 && (
+                    <button
+                      onClick={() => startQuiz(2, 'unmastered')}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#9b59b6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      レベル2：未習得のみ（{level2Unmastered}問）
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
           );
@@ -656,6 +946,7 @@
                   marginBottom: '8px'
                 }}>
                   レベル{level}：{level === 1 ? '基礎' : '実戦'}
+                  {reviewMode === 'unmastered' && '（未習得のみ）'}
                 </div>
                 <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
                   {score} / {shuffledQuizzes.length} 正解
@@ -667,7 +958,7 @@
                   {message}
                 </div>
                 <button
-                  onClick={() => startQuiz(level)}
+                  onClick={() => startQuiz(level, reviewMode)}
                   style={{
                     width: '100%',
                     backgroundColor: '#3498db',
@@ -681,7 +972,7 @@
                     marginBottom: '12px'
                   }}
                 >
-                  同じレベルで再挑戦
+                  同じ設定で再挑戦
                 </button>
                 <button
                   onClick={resetQuiz}
@@ -829,23 +1120,66 @@
             )}
 
             {answered && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                {isCorrect && (
+                  <button
+                    onClick={markAsMastered}
+                    style={{
+                      flex: 1,
+                      padding: '14px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      border: '2px solid #9b59b6',
+                      borderRadius: '12px',
+                      backgroundColor: 'white',
+                      color: '#9b59b6',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    ✅ 完璧！次回から出さない
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px' }}>
               <button
-                onClick={nextQuiz}
+                onClick={prevQuiz}
+                disabled={currentQuiz === 0}
                 style={{
-                  width: '100%',
-                  padding: '16px',
-                  fontSize: '16px',
+                  flex: 1,
+                  padding: '14px',
+                  fontSize: '14px',
                   fontWeight: 'bold',
                   border: 'none',
                   borderRadius: '12px',
-                  backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                  backgroundColor: currentQuiz === 0 ? '#ecf0f1' : '#95a5a6',
                   color: 'white',
-                  cursor: 'pointer'
+                  cursor: currentQuiz === 0 ? 'default' : 'pointer'
                 }}
               >
-                {currentQuiz + 1 >= shuffledQuizzes.length ? '結果を見る' : '次の問題へ'}
+                ← 前の問題
               </button>
-            )}
+              
+              {answered && (
+                <button
+                  onClick={nextQuiz}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    borderRadius: '12px',
+                    backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                    color: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {currentQuiz + 1 >= shuffledQuizzes.length ? '結果を見る' : '次の問題 →'}
+                </button>
+              )}
+            </div>
           </div>
         );
       };
@@ -863,11 +1197,27 @@
             padding: '16px',
             textAlign: 'center'
           }}>
-            <div style={{ fontSize: '11px', opacity: 0.8 }}>転売型 A（売主）→ B → C（転売先）</div>
-            <div style={{ fontSize: '18px', fontWeight: 'bold', marginTop: '4px' }}>第三者Cは保護されるか？</div>
+            <div style={{ fontSize: '11px', opacity: 0.8 }}>宅建学習アプリ</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px' }}>権利関係（民法）＞ 物権変動 ＞ 第三者保護</div>
+            <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.9 }}>転売型 A（売主）→ B → C（転売先）</div>
           </div>
 
           <div style={{ display: 'flex', backgroundColor: '#ecf0f1' }}>
+            <button
+              onClick={() => setPage('about')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'about' ? '#9b59b6' : '#ecf0f1',
+                color: page === 'about' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              ℹ️ 説明
+            </button>
             <button
               onClick={() => setPage('principle')}
               style={{
@@ -915,6 +1265,7 @@
             </button>
           </div>
 
+          {page === 'about' && renderAbout()}
           {page === 'principle' && renderPrinciple()}
           {page === 'table' && renderTable()}
           {page === 'quiz' && renderQuiz()}
