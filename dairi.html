@@ -1,0 +1,1499 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 代理クイズ</title>
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background-color: #f8f9fa;
+    }
+    #root {
+      max-width: 400px;
+      margin: 0 auto;
+      min-height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const QuizApp = () => {
+      const [page, setPage] = useState('principle');
+      const [currentQuiz, setCurrentQuiz] = useState(0);
+      const [score, setScore] = useState(0);
+      const [answered, setAnswered] = useState(false);
+      const [selectedAnswer, setSelectedAnswer] = useState(null);
+      const [quizStarted, setQuizStarted] = useState(false);
+      const [quizFinished, setQuizFinished] = useState(false);
+      const [shuffledQuizzes, setShuffledQuizzes] = useState([]);
+      const [level, setLevel] = useState(null);
+      const [answeredQuestions, setAnsweredQuestions] = useState([]);
+      const [masteredQuestions, setMasteredQuestions] = useState(new Set());
+      const [reviewMode, setReviewMode] = useState('all');
+
+      // localStorageから習熟度データを読み込み
+      useEffect(() => {
+        const saved = localStorage.getItem('takken_dairi_mastered');
+        if (saved) {
+          setMasteredQuestions(new Set(JSON.parse(saved)));
+        }
+      }, []);
+
+      const quizzesLevel1 = [
+        {
+          question: "代理人Bが、本人Aのためにすることを示さずにCと契約した。Cが、BがAの代理人であることを知っていた場合、契約の効果はAに帰属する？",
+          answer: true,
+          explanation: "顕名なしでも、相手方Cが代理であることを知っていた（悪意）なら本人Aに効果帰属（100条ただし書）。",
+          category: "顕名"
+        },
+        {
+          question: "代理人Bが、本人Aのためにすることを示さずにCと契約した。Cが、BがAの代理人であることを知らなかった場合、契約の効果はBに帰属する？",
+          answer: true,
+          explanation: "顕名がなく、相手方Cが善意なら、契約の効果はB自身に帰属する（100条本文）。",
+          category: "顕名"
+        },
+        {
+          question: "未成年者は、代理人になることができない。",
+          answer: false,
+          explanation: "制限行為能力者でも代理人になれる（102条）。代理の効果は本人に帰属するので、代理人自身の行為能力は不要。",
+          category: "代理人の資格"
+        },
+        {
+          question: "成年被後見人を代理人に選んだ場合、本人は代理人が制限行為能力者であることを理由に、代理行為を取り消すことができる。",
+          answer: false,
+          explanation: "制限行為能力者が代理人でも、代理行為は取り消せない（102条）。選んだ本人の自己責任。",
+          category: "代理人の資格"
+        },
+        {
+          question: "任意代理人Bは、本人Aの許諾がなくても、自由に復代理人を選任できる。",
+          answer: false,
+          explanation: "任意代理人が復代理人を選任するには、①本人の許諾、または②やむを得ない事由が必要（104条）。",
+          category: "復代理"
+        },
+        {
+          question: "法定代理人は、自己の責任で復代理人を選任することができる。",
+          answer: true,
+          explanation: "法定代理人は、いつでも自己の責任で復代理人を選任できる（106条）。任意代理と違い制限なし。",
+          category: "復代理"
+        },
+        {
+          question: "BがAの代理人として、Bが自分自身と契約する「自己契約」は、原則として禁止されている。",
+          answer: true,
+          explanation: "自己契約・双方代理は原則禁止（108条1項）。代理人が自分に有利な契約をする恐れがあるため。",
+          category: "双方代理"
+        },
+        {
+          question: "双方代理は禁止されているが、本人があらかじめ許諾していた場合は有効である。",
+          answer: true,
+          explanation: "双方代理の例外は、①本人の事前許諾、②債務の履行（108条1項ただし書）。",
+          category: "双方代理"
+        },
+        {
+          question: "代理人Bが代理権の範囲内で行動したが、自己の利益のために契約した。相手方CがBの意図を知っていた場合、この契約は無権代理となる。",
+          answer: true,
+          explanation: "代理権の濫用。相手方が悪意または有過失なら無権代理とみなされる（107条）。",
+          category: "代理権の濫用"
+        },
+        {
+          question: "代理人が後見開始の審判を受けた場合、代理権は消滅する。",
+          answer: true,
+          explanation: "代理権の消滅事由：①本人の死亡、②代理人の死亡・破産・後見開始の審判（111条）。",
+          category: "消滅事由"
+        },
+        {
+          question: "代理人が保佐開始の審判を受けた場合、代理権は消滅する。",
+          answer: false,
+          explanation: "消滅するのは「後見開始の審判」のみ。保佐・補助では消滅しない（111条）。ここはひっかけ頻出！",
+          category: "消滅事由"
+        },
+        {
+          question: "本人Aが死亡した場合、任意代理の代理権は消滅する。",
+          answer: true,
+          explanation: "本人の死亡は代理権の消滅事由（111条1項1号）。ただし委任契約で別段の定めがある場合は例外あり。",
+          category: "消滅事由"
+        },
+        {
+          question: "無権代理人Bが本人Aの名前でCと契約した場合、Aが追認すれば、契約時にさかのぼって有効になる。",
+          answer: true,
+          explanation: "追認の効果は、別段の意思表示がない限り、契約時に遡及する（116条本文）。",
+          category: "無権代理"
+        },
+        {
+          question: "無権代理行為について、本人が追認を拒絶した後でも、後から追認することができる。",
+          answer: false,
+          explanation: "追認拒絶すると、無権代理行為は確定的に無効。後から追認はできない。",
+          category: "無権代理"
+        },
+        {
+          question: "代理行為に瑕疵（だまされた等）があったかどうかは、本人を基準に判断する。",
+          answer: false,
+          explanation: "代理行為の瑕疵は「代理人」を基準に判断する（101条1項）。実際に行為したのは代理人だから。",
+          category: "代理行為の瑕疵"
+        }
+      ];
+
+      const quizzesLevel2 = [
+        {
+          question: "Aの代理人Bが、Aのためにすることを示さないでCとの間で契約を締結した場合、Cが、BがAの代理人であることを知らず、かつ知らなかったことに過失がなかったときは、当該契約はBが自己のためにしたものとみなされる。",
+          answer: true,
+          explanation: "顕名のない代理行為で、相手方が善意無過失の場合、代理人B自身の契約となる（100条本文）。",
+          category: "顕名"
+        },
+        {
+          question: "Aが、Bに代理権を授与してCとの間で売買契約を締結させた場合、Bが未成年者であるときは、Aは、Bの行為能力の制限を理由に当該売買契約を取り消すことができる。",
+          answer: false,
+          explanation: "制限行為能力者でも代理人になれる（102条）。代理行為は行為能力の制限を理由に取り消すことができない。",
+          category: "代理人の資格"
+        },
+        {
+          question: "Aが、所有する甲土地の売却に関する代理権をBに授与し、BがCとの間で売買契約を締結した場合、BがCの詐欺により当該売買契約を締結したときは、Aは、この売買契約を取り消すことができる。",
+          answer: true,
+          explanation: "代理行為の瑕疵は代理人を基準に判断する（101条1項）。Bが詐欺を受けたなら、本人Aが取消し可能。",
+          category: "代理行為の瑕疵"
+        },
+        {
+          question: "委任による代理人は、本人の許諾を得たときのほか、やむを得ない事由があるときでなければ、復代理人を選任することができない。",
+          answer: true,
+          explanation: "任意代理人の復代理人選任要件：①本人の許諾、②やむを得ない事由（104条）。法定代理より厳しい。",
+          category: "復代理"
+        },
+        {
+          question: "復代理人が委任事務を処理するに当たり金銭を受領し、これを代理人に引き渡したときは、復代理人の本人に対する受領物引渡義務は消滅する。",
+          answer: true,
+          explanation: "復代理人は本人と代理人双方に義務を負うが、一方への履行で両方の義務が消滅する（判例）。",
+          category: "復代理"
+        },
+        {
+          question: "代理人が、本人のためにすることを示して、自己と売買契約を締結する自己契約の場合は、本人があらかじめ許諾した場合のほか、債務の履行であっても、代理権を有しない者がした行為とみなされる。",
+          answer: false,
+          explanation: "自己契約は原則禁止だが、①本人の事前許諾、②債務の履行は例外として有効（108条1項ただし書）。",
+          category: "双方代理"
+        },
+        {
+          question: "Aの代理人Bが、Aのためにすることを示して、Bの利益を図る目的でCとの間で売買契約を締結した場合、CがBの目的を知り、又は知ることができたときは、Aは当該売買契約の効果の帰属を拒むことができる。",
+          answer: true,
+          explanation: "代理権の濫用（107条）。相手方Cが悪意・有過失なら無権代理とみなされ、Aは効果帰属を拒否できる。",
+          category: "代理権の濫用"
+        },
+        {
+          question: "代理権は、代理人が破産手続開始の決定を受けたことにより消滅するが、本人が破産手続開始の決定を受けた場合には消滅しない。",
+          answer: false,
+          explanation: "代理人の破産は消滅事由（111条1項2号）。ただし、本人の破産は委任の終了事由であり、結果的に代理権も消滅する場合がある。委任による代理では本人の破産も終了事由。",
+          category: "消滅事由"
+        },
+        {
+          question: "法定代理人が後見開始の審判を受けた場合、法定代理人の代理権は消滅する。",
+          answer: true,
+          explanation: "後見開始の審判は、任意代理・法定代理を問わず代理権の消滅事由（111条）。",
+          category: "消滅事由"
+        },
+        {
+          question: "Bが、Aの代理人として、Aに無断でCとの間で売買契約を締結した場合において、Aが当該売買契約について追認も追認拒絶もしないときは、Cは、Aに対して相当の期間を定めて追認するかどうかの催告をすることができ、Aがその期間内に確答しないときは、追認したものとみなされる。",
+          answer: false,
+          explanation: "催告に対して本人が期間内に確答しないときは「追認を拒絶したものとみなす」（114条）。追認ではない！",
+          category: "無権代理"
+        },
+        {
+          question: "無権代理人Bが本人Aの名前でCと契約を締結した。Aが追認した場合、その効果は、別段の意思表示がない限り、契約の時にさかのぼって効力を生ずるが、第三者の権利を害することはできない。",
+          answer: true,
+          explanation: "追認の遡及効（116条本文）。ただし第三者の権利は害せない（116条ただし書）。",
+          category: "無権代理"
+        },
+        {
+          question: "無権代理人Bが本人Aの名前でCと契約した。Aが追認を拒絶した後にAが死亡し、BがAを単独相続した場合、Bは追認を拒絶することはできず、当該契約は有効となる。",
+          answer: false,
+          explanation: "追認拒絶後に無権代理人が本人を相続しても、すでに無効が確定しているため、有効にはならない（判例）。",
+          category: "無権代理と相続"
+        },
+        {
+          question: "無権代理人Bが本人Aの名前でCと契約した。Aが追認も追認拒絶もしないうちにAが死亡し、BがAを単独相続した場合、当該契約は当然に有効となる。",
+          answer: true,
+          explanation: "追認拒絶前に無権代理人が本人を相続した場合、信義則上、追認を拒絶できず当然に有効（判例）。",
+          category: "無権代理と相続"
+        },
+        {
+          question: "AがBに甲土地の売却の代理権を授与した場合において、Bの配偶者CがBから適法に当該代理権を与えられていないにもかかわらず、Aの代理人と称してDに甲土地を売却したときは、Aは表見代理による責任を負うことはない。",
+          answer: false,
+          explanation: "代理人の配偶者等が代理権限外の行為をした場合でも、正当な理由があれば表見代理（110条）の類推適用の可能性がある。一律に「責任を負わない」とは言えない。",
+          category: "表見代理"
+        },
+        {
+          question: "夫婦の一方が日常の家事に関する法律行為について第三者と取引をした場合、他方は、その取引について連帯して責任を負うことがある。",
+          answer: true,
+          explanation: "夫婦は互いに日常家事について代理権があり、連帯責任を負う（民法761条）。",
+          category: "日常家事代理権"
+        }
+      ];
+
+      const shuffleArray = (array) => {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+      };
+
+      const startQuiz = (selectedLevel, mode = 'all') => {
+        setLevel(selectedLevel);
+        setReviewMode(mode);
+        const quizzes = selectedLevel === 1 ? quizzesLevel1 : quizzesLevel2;
+        
+        let filteredQuizzes = quizzes;
+        if (mode === 'unmastered') {
+          filteredQuizzes = quizzes.filter((_, idx) => !masteredQuestions.has(`${selectedLevel}-${idx}`));
+        }
+        
+        if (filteredQuizzes.length === 0) {
+          alert('未習得の問題がありません！全問題モードで開始します。');
+          filteredQuizzes = quizzes;
+        }
+        
+        setShuffledQuizzes(shuffleArray(filteredQuizzes));
+        setQuizStarted(true);
+        setQuizFinished(false);
+        setCurrentQuiz(0);
+        setScore(0);
+        setAnswered(false);
+        setSelectedAnswer(null);
+        setAnsweredQuestions([]);
+      };
+
+      const handleAnswer = (answer) => {
+        if (answered) return;
+        setSelectedAnswer(answer);
+        setAnswered(true);
+        const isCorrect = answer === shuffledQuizzes[currentQuiz].answer;
+        if (isCorrect) {
+          setScore(score + 1);
+        }
+        setAnsweredQuestions([...answeredQuestions, { index: currentQuiz, correct: isCorrect }]);
+      };
+
+      const markAsMastered = () => {
+        const quizzes = level === 1 ? quizzesLevel1 : quizzesLevel2;
+        const currentQuizData = shuffledQuizzes[currentQuiz];
+        const originalIndex = quizzes.indexOf(currentQuizData);
+        const key = `${level}-${originalIndex}`;
+        
+        const newMastered = new Set(masteredQuestions);
+        newMastered.add(key);
+        setMasteredQuestions(newMastered);
+        localStorage.setItem('takken_dairi_mastered', JSON.stringify([...newMastered]));
+        
+        nextQuiz();
+      };
+
+      const nextQuiz = () => {
+        if (currentQuiz + 1 >= shuffledQuizzes.length) {
+          setQuizFinished(true);
+        } else {
+          setCurrentQuiz(currentQuiz + 1);
+          setAnswered(false);
+          setSelectedAnswer(null);
+        }
+      };
+
+      const prevQuiz = () => {
+        if (currentQuiz > 0) {
+          setCurrentQuiz(currentQuiz - 1);
+          const prevAnswered = answeredQuestions.find(a => a.index === currentQuiz - 1);
+          if (prevAnswered) {
+            setAnswered(true);
+            setSelectedAnswer(prevAnswered.correct ? shuffledQuizzes[currentQuiz - 1].answer : !shuffledQuizzes[currentQuiz - 1].answer);
+          } else {
+            setAnswered(false);
+            setSelectedAnswer(null);
+          }
+        }
+      };
+
+      const resetQuiz = () => {
+        setQuizStarted(false);
+        setLevel(null);
+      };
+
+      const PersonCircle = ({ label, role, color }) => (
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ 
+            fontSize: '10px', 
+            color: '#2c3e50', 
+            fontWeight: 'bold',
+            marginBottom: '2px',
+            backgroundColor: '#ecf0f1',
+            padding: '2px 6px',
+            borderRadius: '4px'
+          }}>
+            {role}
+          </div>
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: color,
+            color: 'white',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '20px',
+            fontWeight: 'bold',
+            margin: '0 auto'
+          }}>{label}</div>
+        </div>
+      );
+
+      const renderAbout = () => (
+        <div style={{ padding: '16px' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '16px',
+              paddingBottom: '8px',
+              borderBottom: '2px solid #3498db'
+            }}>
+              🎯 このアプリの目的
+            </div>
+            
+            <div style={{
+              fontSize: '18px',
+              fontWeight: 'bold',
+              color: '#e74c3c',
+              marginBottom: '16px',
+              textAlign: 'center',
+              padding: '12px',
+              backgroundColor: '#ffebee',
+              borderRadius: '8px'
+            }}>
+              過去問が解けるようになること
+            </div>
+
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '12px',
+              marginTop: '24px'
+            }}>
+              📚 合格までの流れ
+            </div>
+
+            <div style={{
+              backgroundColor: '#e3f2fd',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '4px' }}>
+                【今ここ】このアプリで基礎固め
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                原理とパターンを理解する<br/>
+                過去問を解く準備ができる
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#fff3e0',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8,
+              border: '2px solid #ff9800'
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#e65100', marginBottom: '4px' }}>
+                【次にやること】過去問を回す ☆重要☆
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                12年分を何周も繰り返す<br/>
+                間違えた問題を潰していく<br/>
+                <strong>→ ここが合格のカギ！</strong>
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#f3e5f5',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '16px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#7b1fa2', marginBottom: '4px' }}>
+                【仕上げ】細かい知識を補充
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                ↓<br/>
+                教科書で確認<br/>
+                → 合格！
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#fff9c4',
+              border: '2px solid #fbc02d',
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8,
+              color: '#f57f17'
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
+                💡 宅建は「過去問を回せば合格できる試験」
+              </div>
+              <div style={{ marginLeft: '8px' }}>
+                このアプリはそのための準備です
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderPrinciple = () => (
+        <div style={{ padding: '16px' }}>
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#2c3e50',
+              marginBottom: '12px',
+              borderBottom: '2px solid #9c27b0',
+              paddingBottom: '8px'
+            }}>
+              📖 よく出る法律用語
+            </div>
+            
+            <div style={{ fontSize: '13px', lineHeight: 1.8 }}>
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>顕名（けんめい）</strong> = 「Aの代理人です」と示すこと<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  原則として必要。ないと代理人自身の契約になる
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>任意代理</strong> = 本人が自分で選んだ代理人<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：不動産売却を友人に頼む
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>法定代理</strong> = 法律で決まった代理人<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  例：未成年者の親権者
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#1976d2' }}>復代理人</strong> = 代理人がさらに選んだ代理人<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  代理人の代理人。本人の代理人として活動する
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#d32f2f' }}>無権代理</strong> = 代理権がないのに代理した<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  本人が追認すれば有効、拒絶すれば無効
+                </span>
+              </div>
+
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong style={{ color: '#d32f2f' }}>表見代理</strong> = 代理権があるように見えた<br/>
+                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                  相手方を保護するため、本人に責任を負わせる
+                </span>
+              </div>
+
+              <div style={{ 
+                marginTop: '16px', 
+                padding: '10px', 
+                backgroundColor: '#fff3e0', 
+                borderRadius: '6px',
+                borderLeft: '4px solid #ff9800'
+              }}>
+                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#e65100', marginBottom: '6px' }}>
+                  💡 応用編の用語
+                </div>
+                <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}>
+                  <strong style={{ color: '#d84315' }}>代理権の濫用</strong> = 代理権の範囲内だけど、自分の利益のために使った<br/>
+                  <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
+                    例：土地の売却代理権をもらったが、自分の借金返済のために安く売った
+                  </span><br/>
+                  <span style={{ fontSize: '11px', color: '#d84315', marginLeft: '8px', fontWeight: 'bold' }}>
+                    → 相手方が悪意・有過失なら無権代理扱い（107条）
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#e74c3c',
+              marginBottom: '12px',
+              borderBottom: '2px solid #e74c3c',
+              paddingBottom: '8px'
+            }}>
+              原理① 代理の三面関係
+            </div>
+            
+            <div style={{ 
+              backgroundColor: '#f5f5f5', 
+              padding: '12px', 
+              borderRadius: '8px', 
+              marginBottom: '16px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong>代理の基本構造：</strong>
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                marginBottom: '8px'
+              }}>
+                <PersonCircle label="A" role="本人" color="#e74c3c" />
+                <div style={{ fontSize: '12px', color: '#666' }}>←代理権</div>
+                <PersonCircle label="B" role="代理人" color="#3498db" />
+                <div style={{ fontSize: '12px', color: '#666' }}>→契約</div>
+                <PersonCircle label="C" role="相手方" color="#27ae60" />
+              </div>
+              <div style={{ fontSize: '12px', color: '#666', textAlign: 'center' }}>
+                BがAのためにCと契約 → 効果はAに帰属！
+              </div>
+            </div>
+
+            <div style={{ backgroundColor: '#f8f9fa', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8 }}>
+              <div style={{ marginBottom: '8px' }}>
+                <strong style={{ color: '#9b59b6' }}>ポイント①</strong> 代理の効果は<strong>本人</strong>に帰属<br/>
+                → 代理人Bではなく、本人Aが権利・義務を取得
+              </div>
+              <div style={{ marginBottom: '8px' }}>
+                <strong style={{ color: '#e67e22' }}>ポイント②</strong> 代理人は<strong>行為能力不要</strong><br/>
+                → 未成年者でも代理人になれる（102条）
+              </div>
+              <div>
+                <strong style={{ color: '#3498db' }}>ポイント③</strong> 瑕疵の判断は<strong>代理人</strong>基準<br/>
+                → だまされたか等は代理人Bで判断（101条）
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+          }}>
+            <div style={{
+              fontSize: '16px',
+              fontWeight: 'bold',
+              color: '#3498db',
+              marginBottom: '12px',
+              borderBottom: '2px solid #3498db',
+              paddingBottom: '8px'
+            }}>
+              原理② 任意代理 vs 法定代理
+            </div>
+            
+            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '12px' }}>
+              <strong>復代理人の選任</strong>で大きく違う！
+            </div>
+
+            <div style={{ backgroundColor: '#e3f2fd', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8, marginBottom: '12px' }}>
+              <strong>任意代理</strong>（自分で選んだ代理人）<br/>
+              → 復代理人の選任は<strong>厳しい</strong><br/>
+              → ①本人の許諾 or ②やむを得ない事由が必要
+            </div>
+
+            <div style={{ backgroundColor: '#fff3e0', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8 }}>
+              <strong>法定代理</strong>（法律で決まった代理人）<br/>
+              → 復代理人の選任は<strong>自由</strong><br/>
+              → いつでも自己の責任で選任できる
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: '#fff3cd',
+            border: '2px solid #ffc107',
+            borderRadius: '12px',
+            padding: '16px',
+            marginBottom: '16px'
+          }}>
+            <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#856404' }}>
+              💡 つまり
+            </div>
+            <div style={{ fontSize: '14px', lineHeight: 1.8, color: '#856404' }}>
+              ・代理の効果 → 本人に帰属<br/>
+              ・瑕疵の判断 → 代理人が基準<br/>
+              ・復代理の選任 → 任意と法定で違う<br/>
+              ・消滅事由 → 後見開始は消滅、保佐・補助は消滅しない
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            padding: '16px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            border: '2px solid #e3f2fd'
+          }}>
+            <div style={{
+              fontSize: '15px',
+              fontWeight: 'bold',
+              color: '#1976d2',
+              marginBottom: '12px',
+              paddingBottom: '8px',
+              borderBottom: '2px solid #e3f2fd'
+            }}>
+              💡 この分野の他の論点
+            </div>
+            
+            <div style={{ fontSize: '13px', lineHeight: 1.8, marginBottom: '12px' }}>
+              このアプリでカバーしているのは、<br/>
+              代理の<strong>頻出8テーマ</strong>です。
+            </div>
+
+            <div style={{
+              backgroundColor: '#f5f5f5',
+              padding: '12px',
+              borderRadius: '8px',
+              marginBottom: '12px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#666' }}>
+                カバー範囲：
+              </div>
+              <div style={{ marginLeft: '8px', color: '#666' }}>
+                ・顕名主義（99条・100条）<br/>
+                ・制限行為能力者と代理（102条）<br/>
+                ・復代理人の選任（104条・106条）<br/>
+                ・双方代理の禁止（108条）<br/>
+                ・代理権の濫用（107条）<br/>
+                ・代理権の消滅事由（111条）<br/>
+                ・無権代理と追認（113条・116条）<br/>
+                ・代理行為の瑕疵（101条）
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: '#e8f5e9',
+              padding: '12px',
+              borderRadius: '8px',
+              fontSize: '13px',
+              lineHeight: 1.8
+            }}>
+              <div style={{ fontWeight: 'bold', color: '#2e7d32', marginBottom: '4px' }}>
+                💡 でも大丈夫！
+              </div>
+              <div style={{ color: '#2e7d32' }}>
+                このアプリの内容で、この分野の過去問<strong>約70%</strong>はカバーできます。<br/>
+                残りは教科書や過去問で確認してください。
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+
+      const renderTable = () => (
+        <div style={{ padding: '16px' }}>
+          <div style={{
+            backgroundColor: '#e8f5e9',
+            padding: '12px',
+            borderRadius: '8px',
+            marginBottom: '16px',
+            fontSize: '12px'
+          }}>
+            <strong>見方：</strong> 代理の重要ポイントを表で整理
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              backgroundColor: '#2c3e50',
+              color: 'white',
+              padding: '12px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              復代理人の選任要件
+            </div>
+            <div style={{
+              backgroundColor: '#34495e',
+              color: 'white',
+              padding: '8px',
+              textAlign: 'center',
+              fontSize: '12px'
+            }}>
+              → 任意代理と法定代理で大きく違う！
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              backgroundColor: '#ecf0f1',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}>
+              <div style={{ padding: '8px', borderRight: '1px solid #bdc3c7' }}>種類</div>
+              <div style={{ padding: '8px', textAlign: 'center', borderRight: '1px solid #bdc3c7' }}>選任要件</div>
+              <div style={{ padding: '8px', textAlign: 'center' }}>責任</div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              borderBottom: '1px solid #ecf0f1',
+              fontSize: '12px'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1', backgroundColor: '#e3f2fd' }}>
+                <strong>任意代理</strong><br/>
+                <span style={{ fontSize: '10px', color: '#1565c0' }}>自分で選んだ</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1' }}>
+                <strong style={{ color: '#c0392b' }}>制限あり</strong><br/>
+                <span style={{ fontSize: '10px' }}>許諾 or やむを得ない事由</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
+                <span style={{ fontSize: '10px' }}>選任・監督の責任</span>
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              fontSize: '12px'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1', backgroundColor: '#fff8e1' }}>
+                <strong>法定代理</strong><br/>
+                <span style={{ fontSize: '10px', color: '#e65100' }}>法律で決まった</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1' }}>
+                <strong style={{ color: '#27ae60' }}>自由</strong><br/>
+                <span style={{ fontSize: '10px' }}>いつでも選任可</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
+                <span style={{ fontSize: '10px' }}>自己の責任</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              backgroundColor: '#7b1fa2',
+              color: 'white',
+              padding: '12px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              代理権の消滅事由
+            </div>
+            <div style={{
+              backgroundColor: '#9c27b0',
+              color: 'white',
+              padding: '8px',
+              textAlign: 'center',
+              fontSize: '12px'
+            }}>
+              → 後見・保佐・補助の区別がひっかけ頻出！
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              backgroundColor: '#ecf0f1',
+              fontSize: '11px',
+              fontWeight: 'bold'
+            }}>
+              <div style={{ padding: '8px', borderRight: '1px solid #bdc3c7' }}>事由</div>
+              <div style={{ padding: '8px', textAlign: 'center', borderRight: '1px solid #bdc3c7' }}>任意代理</div>
+              <div style={{ padding: '8px', textAlign: 'center' }}>法定代理</div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              borderBottom: '1px solid #ecf0f1',
+              fontSize: '12px'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
+                <strong>本人の死亡</strong>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              borderBottom: '1px solid #ecf0f1',
+              fontSize: '12px'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
+                <strong>代理人の死亡</strong>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              borderBottom: '1px solid #ecf0f1',
+              fontSize: '12px'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
+                <strong>代理人の破産</strong>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', color: '#27ae60', fontWeight: 'bold' }}>
+                消滅しない
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              borderBottom: '1px solid #ecf0f1',
+              fontSize: '12px',
+              backgroundColor: '#ffebee'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
+                <strong>後見開始の審判</strong><br/>
+                <span style={{ fontSize: '10px', color: '#c0392b' }}>★ひっかけ頻出</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', color: '#c0392b', fontWeight: 'bold' }}>
+                消滅
+              </div>
+            </div>
+
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1.2fr 1fr 1fr',
+              fontSize: '12px',
+              backgroundColor: '#e8f5e9'
+            }}>
+              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
+                <strong>保佐・補助開始</strong><br/>
+                <span style={{ fontSize: '10px', color: '#27ae60' }}>★後見と区別！</span>
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1', color: '#27ae60', fontWeight: 'bold' }}>
+                消滅しない
+              </div>
+              <div style={{ padding: '10px 8px', textAlign: 'center', color: '#27ae60', fontWeight: 'bold' }}>
+                消滅しない
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            borderRadius: '12px',
+            overflow: 'hidden',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              backgroundColor: '#1565c0',
+              color: 'white',
+              padding: '12px',
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}>
+              無権代理のまとめ
+            </div>
+
+            <div style={{ padding: '16px', fontSize: '13px', lineHeight: 1.8 }}>
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#e3f2fd', borderRadius: '6px' }}>
+                <strong>追認</strong> → 契約時に遡って有効（116条）<br/>
+                <span style={{ fontSize: '11px', color: '#666' }}>
+                  ※ 第三者の権利は害せない
+                </span>
+              </div>
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#ffebee', borderRadius: '6px' }}>
+                <strong>追認拒絶</strong> → 確定的に無効<br/>
+                <span style={{ fontSize: '11px', color: '#666' }}>
+                  ※ 後から追認はできない
+                </span>
+              </div>
+              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#fff3e0', borderRadius: '6px' }}>
+                <strong>催告への無回答</strong> → 追認<strong>拒絶</strong>とみなす（114条）<br/>
+                <span style={{ fontSize: '11px', color: '#c0392b', fontWeight: 'bold' }}>
+                  ※ 「追認した」ではない！ひっかけ注意
+                </span>
+              </div>
+              <div style={{ padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
+                <strong>相続との関係（判例）</strong><br/>
+                <span style={{ fontSize: '11px' }}>
+                  ・追認拒絶<strong>前</strong>に相続 → 当然有効<br/>
+                  ・追認拒絶<strong>後</strong>に相続 → 無効のまま
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_99" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', backgroundColor: '#34495e', color: 'white', padding: '12px', borderRadius: '8px', textAlign: 'center', textDecoration: 'none', fontSize: '13px' }}>
+              📖 99条〜102条（代理の基本）
+            </a>
+            <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_104" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', backgroundColor: '#34495e', color: 'white', padding: '12px', borderRadius: '8px', textAlign: 'center', textDecoration: 'none', fontSize: '13px' }}>
+              📖 104条〜108条（復代理・双方代理）
+            </a>
+            <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_111" target="_blank" rel="noopener noreferrer"
+              style={{ display: 'block', backgroundColor: '#34495e', color: 'white', padding: '12px', borderRadius: '8px', textAlign: 'center', textDecoration: 'none', fontSize: '13px' }}>
+              📖 111条〜118条（消滅・無権代理・表見代理）
+            </a>
+          </div>
+        </div>
+      );
+
+      const renderQuiz = () => {
+        if (!quizStarted) {
+          const level1Unmastered = quizzesLevel1.filter((_, idx) => !masteredQuestions.has(`1-${idx}`)).length;
+          const level2Unmastered = quizzesLevel2.filter((_, idx) => !masteredQuestions.has(`2-${idx}`)).length;
+          
+          return (
+            <div style={{ padding: '16px', textAlign: 'center' }}>
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                marginBottom: '16px'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>千本ノック！</div>
+                
+                <div style={{ fontSize: '14px', color: '#7f8c8d', marginBottom: '24px' }}>
+                  レベルを選んでください
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <button
+                    onClick={() => startQuiz(1, 'all')}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#3498db',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div>レベル1：基礎（全問題）</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
+                      分かりやすい文章で原理を確認（{quizzesLevel1.length}問）
+                    </div>
+                  </button>
+                  
+                  {level1Unmastered > 0 && (
+                    <button
+                      onClick={() => startQuiz(1, 'unmastered')}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#9b59b6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        marginBottom: '12px'
+                      }}
+                    >
+                      レベル1：未習得のみ（{level1Unmastered}問）
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <button
+                    onClick={() => startQuiz(2, 'all')}
+                    style={{
+                      width: '100%',
+                      backgroundColor: '#e74c3c',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      cursor: 'pointer',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    <div>レベル2：実戦（全問題）</div>
+                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
+                      本試験レベルのやや難しい文章（{quizzesLevel2.length}問）
+                    </div>
+                  </button>
+                  
+                  {level2Unmastered > 0 && (
+                    <button
+                      onClick={() => startQuiz(2, 'unmastered')}
+                      style={{
+                        width: '100%',
+                        backgroundColor: '#9b59b6',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '12px',
+                        fontSize: '13px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      レベル2：未習得のみ（{level2Unmastered}問）
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        if (quizFinished) {
+          const percentage = Math.round((score / shuffledQuizzes.length) * 100);
+          let message = '';
+          let emoji = '';
+          if (percentage === 100) {
+            message = '完璧！素晴らしい！';
+            emoji = '🎉';
+          } else if (percentage >= 80) {
+            message = 'よくできました！';
+            emoji = '😊';
+          } else if (percentage >= 60) {
+            message = 'もう少し！復習しよう';
+            emoji = '💪';
+          } else {
+            message = '原理を確認してもう一度！';
+            emoji = '📚';
+          }
+
+          return (
+            <div style={{ padding: '16px', textAlign: 'center' }}>
+              <div style={{
+                backgroundColor: 'white',
+                borderRadius: '12px',
+                padding: '24px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>{emoji}</div>
+                <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '8px' }}>{message}</div>
+                <div style={{ fontSize: '32px', fontWeight: 'bold', color: percentage >= 80 ? '#27ae60' : '#e74c3c', marginBottom: '8px' }}>
+                  {score} / {shuffledQuizzes.length}
+                </div>
+                <div style={{ fontSize: '14px', color: '#7f8c8d', marginBottom: '24px' }}>
+                  正答率 {percentage}%
+                </div>
+                
+                <button
+                  onClick={() => startQuiz(level, reviewMode)}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    borderRadius: '12px',
+                    backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                    color: 'white',
+                    cursor: 'pointer',
+                    marginBottom: '8px'
+                  }}
+                >
+                  もう一度チャレンジ
+                </button>
+                <button
+                  onClick={resetQuiz}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: '2px solid #95a5a6',
+                    borderRadius: '12px',
+                    backgroundColor: 'white',
+                    color: '#95a5a6',
+                    cursor: 'pointer'
+                  }}
+                >
+                  レベル選択に戻る
+                </button>
+              </div>
+            </div>
+          );
+        }
+
+        const quiz = shuffledQuizzes[currentQuiz];
+        const isCorrect = selectedAnswer === quiz.answer;
+
+        return (
+          <div style={{ padding: '16px' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: '12px'
+            }}>
+              <span style={{
+                backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                color: 'white',
+                padding: '4px 12px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: 'bold'
+              }}>
+                {level === 1 ? 'レベル1' : 'レベル2'}
+              </span>
+              <span style={{ fontSize: '14px', color: '#7f8c8d' }}>
+                {currentQuiz + 1} / {shuffledQuizzes.length}
+              </span>
+            </div>
+
+            <div style={{
+              backgroundColor: 'white',
+              borderRadius: '12px',
+              padding: '16px',
+              marginBottom: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}>
+              <div style={{
+                fontSize: '10px',
+                color: '#9b59b6',
+                fontWeight: 'bold',
+                marginBottom: '8px'
+              }}>
+                {quiz.category}
+              </div>
+              <div style={{ fontSize: '14px', lineHeight: 1.6 }}>
+                {quiz.question}
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <button
+                onClick={() => handleAnswer(true)}
+                disabled={answered}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  border: answered && quiz.answer === true ? '3px solid #27ae60' : '2px solid #3498db',
+                  borderRadius: '12px',
+                  backgroundColor: !answered ? 'white' : (selectedAnswer === true ? (isCorrect ? '#d5f5e3' : '#fadbd8') : 'white'),
+                  color: '#2c3e50',
+                  cursor: answered ? 'default' : 'pointer'
+                }}
+              >
+                ⭕ 正しい
+              </button>
+              <button
+                onClick={() => handleAnswer(false)}
+                disabled={answered}
+                style={{
+                  flex: 1,
+                  padding: '16px',
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  border: answered && quiz.answer === false ? '3px solid #27ae60' : '2px solid #e74c3c',
+                  borderRadius: '12px',
+                  backgroundColor: !answered ? 'white' : (selectedAnswer === false ? (isCorrect ? '#d5f5e3' : '#fadbd8') : 'white'),
+                  color: '#2c3e50',
+                  cursor: answered ? 'default' : 'pointer'
+                }}
+              >
+                ✖ 誤り
+              </button>
+            </div>
+
+            {answered && (
+              <div style={{
+                backgroundColor: isCorrect ? '#d5f5e3' : '#fadbd8',
+                borderRadius: '12px',
+                padding: '16px',
+                marginBottom: '12px'
+              }}>
+                <div style={{
+                  fontSize: '16px',
+                  fontWeight: 'bold',
+                  marginBottom: '8px',
+                  color: isCorrect ? '#27ae60' : '#e74c3c'
+                }}>
+                  {isCorrect ? '⭕ 正解！' : '✖ 不正解'}
+                </div>
+                <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#2c3e50' }}>
+                  {quiz.explanation}
+                </div>
+              </div>
+            )}
+
+            {answered && isCorrect && (
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                <button
+                  onClick={nextQuiz}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    borderRadius: '12px',
+                    backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                    color: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {currentQuiz + 1 >= shuffledQuizzes.length ? '結果を見る' : '次の問題 →'}
+                </button>
+                <button
+                  onClick={markAsMastered}
+                  style={{
+                    flex: 1,
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: '2px solid #9b59b6',
+                    borderRadius: '12px',
+                    backgroundColor: 'white',
+                    color: '#9b59b6',
+                    cursor: 'pointer'
+                  }}
+                >
+                  ✅ 完璧！次回から出さない
+                </button>
+              </div>
+            )}
+
+            {answered && !isCorrect && (
+              <div style={{ marginBottom: '8px' }}>
+                <button
+                  onClick={nextQuiz}
+                  style={{
+                    width: '100%',
+                    padding: '14px',
+                    fontSize: '14px',
+                    fontWeight: 'bold',
+                    border: 'none',
+                    borderRadius: '12px',
+                    backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
+                    color: 'white',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {currentQuiz + 1 >= shuffledQuizzes.length ? '結果を見る' : '次の問題 →'}
+                </button>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+              <button
+                onClick={prevQuiz}
+                disabled={currentQuiz === 0}
+                style={{
+                  flex: 1,
+                  padding: '14px',
+                  fontSize: '14px',
+                  fontWeight: 'bold',
+                  border: 'none',
+                  borderRadius: '12px',
+                  backgroundColor: currentQuiz === 0 ? '#ecf0f1' : '#95a5a6',
+                  color: 'white',
+                  cursor: currentQuiz === 0 ? 'default' : 'pointer'
+                }}
+              >
+                ← 前の問題
+              </button>
+            </div>
+            
+            <button
+              onClick={resetQuiz}
+              style={{
+                width: '100%',
+                padding: '12px',
+                fontSize: '13px',
+                fontWeight: 'bold',
+                border: '2px solid #95a5a6',
+                borderRadius: '12px',
+                backgroundColor: 'white',
+                color: '#95a5a6',
+                cursor: 'pointer'
+              }}
+            >
+              クイズを終了してレベル選択に戻る
+            </button>
+          </div>
+        );
+      };
+
+      return (
+        <div style={{
+          maxWidth: '400px',
+          margin: '0 auto',
+          backgroundColor: '#f8f9fa',
+          minHeight: '100vh'
+        }}>
+          <div style={{
+            backgroundColor: '#2c3e50',
+            color: 'white',
+            padding: '16px',
+            textAlign: 'center'
+          }}>
+            <div style={{ fontSize: '11px', opacity: 0.8 }}>宅建学習アプリ</div>
+            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px' }}>権利関係（民法）＞ 代理</div>
+            <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.9 }}>本人 A ← 代理人 B → 相手方 C</div>
+          </div>
+
+          <div style={{ display: 'flex', backgroundColor: '#ecf0f1' }}>
+            <button
+              onClick={() => setPage('about')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'about' ? '#9b59b6' : '#ecf0f1',
+                color: page === 'about' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              ℹ️ 説明
+            </button>
+            <button
+              onClick={() => setPage('principle')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'principle' ? '#3498db' : '#ecf0f1',
+                color: page === 'principle' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              原理を理解
+            </button>
+            <button
+              onClick={() => setPage('table')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'table' ? '#3498db' : '#ecf0f1',
+                color: page === 'table' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              表で暗記
+            </button>
+            <button
+              onClick={() => setPage('quiz')}
+              style={{
+                flex: 1,
+                padding: '12px',
+                border: 'none',
+                backgroundColor: page === 'quiz' ? '#27ae60' : '#ecf0f1',
+                color: page === 'quiz' ? 'white' : '#2c3e50',
+                fontWeight: 'bold',
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              🎯 クイズ
+            </button>
+          </div>
+
+          {page === 'about' && renderAbout()}
+          {page === 'principle' && renderPrinciple()}
+          {page === 'table' && renderTable()}
+          {page === 'quiz' && renderQuiz()}
+        </div>
+      );
+    };
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<QuizApp />);
+  </script>
+</body>
+</html>
