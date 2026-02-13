@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 抵当権クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 担保物権 ＞ 抵当権</div>
+    <div class="header-desc">法定地上権・物上代位・順位変更・根抵当権</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_teitouken_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 15問 ==========
+const quizzesL1 = [
+  { q: "抵当権とは、債務者が占有を移転せずに、不動産を債務の担保に供し、債権者が他の債権者に優先して弁済を受けることができる権利である。", a: true, ex: "正しい。抵当権は、目的物の占有を設定者のもとに留めたまま、担保に供する権利です（民法369条1項）。これが質権との大きな違いで、設定者は不動産を使い続けることができます。", cat: "基本" },
+  { q: "抵当権は、不動産のほか、地上権と永小作権にも設定することができる。", a: true, ex: "正しい。抵当権の目的物は不動産に限られず、地上権および永小作権にも設定することができます（民法369条2項）。ただし、動産には設定できません。", cat: "基本" },
+  { q: "抵当権の設定は、当事者間の合意のみで効力が生じ、登記がなくても第三者に対抗できる。", a: false, ex: "誤り。抵当権の設定契約は当事者間の合意で効力が生じますが（諾成契約）、第三者に対抗するためには登記が必要です（民法177条）。", cat: "基本" },
+  { q: "抵当権の効力は、抵当不動産の付加一体物に及ぶ。", a: true, ex: "正しい。抵当権は、その目的である不動産に付加して一体となっている物（付加一体物）に及びます（民法370条）。例えば、建物に取り付けられたエアコンや庭の石垣などです。", cat: "効力" },
+  { q: "土地に抵当権を設定した場合、その抵当権の効力は当然にその土地上の建物にも及ぶ。", a: false, ex: "誤り。土地と建物は別個独立の不動産です。土地の抵当権は建物には及びません（逆も同じ）。これは抵当権の頻出論点で、多くの問題の基礎になる重要な原則です。", cat: "効力" },
+  { q: "抵当権者は、債務者が抵当不動産の代金請求権を有するとき、その代金請求権に対して物上代位することができる。", a: true, ex: "正しい。抵当権者は、目的物の売却代金、賃料、損害賠償金などに対して物上代位することができます（民法372条、304条1項）。", cat: "物上代位" },
+  { q: "抵当権者が物上代位するためには、債務者が金銭を受け取った後であっても差押えをすればよい。", a: false, ex: "誤り。物上代位をするには、債務者が金銭その他の物の払渡し又は引渡しを受ける前に差押えをしなければなりません（民法304条1項ただし書）。受領後では遅いのです。", cat: "物上代位" },
+  { q: "法定地上権が成立するためには、抵当権設定時に土地の上に建物が存在していなければならない。", a: true, ex: "正しい。法定地上権の成立要件の一つは「抵当権設定時に建物が存在すること」です（民法388条）。更地に抵当権を設定した後に建物を建てても、法定地上権は成立しません。", cat: "法定地上権" },
+  { q: "法定地上権が成立するためには、抵当権設定時に土地と建物が同一の所有者に属していなければならない。", a: true, ex: "正しい。法定地上権のもう一つの重要な要件は「設定時に土地と建物が同一所有者に属すること」です（民法388条）。別々の所有者の場合、既に何らかの土地利用権があるはずだからです。", cat: "法定地上権" },
+  { q: "法定地上権の成否は、抵当権設定後の事情変更（建物の譲渡など）によって影響を受ける。", a: false, ex: "誤り。法定地上権の成否は「抵当権設定時」の状態で判断します。設定後に建物が譲渡されたり、登記が移転したりしても、設定時の要件を満たしていれば法定地上権は成立します。", cat: "法定地上権" },
+  { q: "抵当権消滅請求は、抵当不動産の第三取得者が、抵当権者に対して行うことができる。", a: true, ex: "正しい。抵当権消滅請求は、抵当不動産の所有権を取得した第三者（第三取得者）が行うことができます（民法379条）。", cat: "消滅請求" },
+  { q: "主たる債務者は、抵当権消滅請求をすることができる。", a: false, ex: "誤り。主たる債務者および保証人は、抵当権消滅請求をすることができません（民法380条）。全額弁済すべき立場にある者が、一部の金額で消滅を請求するのは筋が通らないからです。", cat: "消滅請求" },
+  { q: "抵当権の順位の変更は、各抵当権者の合意と利害関係者の承諾があれば、登記なしに効力が生じる。", a: false, ex: "誤り。抵当権の順位の変更は、各抵当権者の合意に加え、利害関係者の承諾を得た上で、さらに登記をしなければ効力が生じません（民法374条2項）。登記が効力要件です。", cat: "順位" },
+  { q: "根抵当権では、極度額の範囲内であれば、最後の2年分という利息の制限を受けない。", a: true, ex: "正しい。普通抵当権では利息は最後の2年分に限られますが（民法375条）、根抵当権では極度額の範囲内で全額が担保されます（民法398条の3第1項）。極度額が天井なのです。", cat: "根抵当権" },
+  { q: "根抵当権は、設定行為で定めた被担保債権の範囲に属する不特定の債権を極度額の限度で担保する。", a: true, ex: "正しい。根抵当権は、一定の範囲に属する不特定の債権を、極度額の限度において担保するものです（民法398条の2第1項）。継続的な取引関係から生じる複数の債権をまとめて担保できます。", cat: "根抵当権" }
+];
+
+// ========== Level 2: 応用 15問 ==========
+const quizzesL2 = [
+  { q: "土地に抵当権が設定された場合、抵当権者は、その土地上の建物の火災保険金請求権に対して物上代位することができる。", a: false, ex: "誤り。土地と建物は別個独立の不動産です。土地の抵当権者が建物の火災保険金に物上代位することはできません。物上代位の対象は、抵当目的物そのものの代替物に限られます。", cat: "物上代位" },
+  { q: "抵当権者は、抵当不動産の賃料債権に対しても物上代位することができるが、賃料が賃借人から賃貸人に支払われた後は差押えができない。", a: true, ex: "正しい。抵当権者は賃料にも物上代位できますが、払渡し前に差押えが必要です（民法304条1項ただし書）。賃借人が賃貸人に支払った後では差し押さえることができません。", cat: "物上代位" },
+  { q: "更地に1番抵当権を設定した後に建物が築造された場合でも、法定地上権は成立する。", a: false, ex: "誤り。法定地上権の成立には「抵当権設定時に建物が存在すること」が必要です。更地に抵当権が設定された場合、後から建物を建てても法定地上権は成立しません（民法388条）。", cat: "法定地上権" },
+  { q: "抵当権設定時に土地と建物が同一所有者に属していた場合、その後に建物が第三者に譲渡されても、競売により土地と建物の所有者が異なることになったときは法定地上権が成立する。", a: true, ex: "正しい。法定地上権の成否は「設定時」の状態で判断します。設定時に同一所有者であれば、その後の事情変更は法定地上権の成否に影響しません（判例）。", cat: "法定地上権" },
+  { q: "土地と建物を共同抵当に入れた後、建物が取り壊されて新たな建物が再築された場合、原則として再築建物のために法定地上権が成立する。", a: false, ex: "誤り。土地と建物の共同抵当の場合、建物が取り壊されて再築されたときは、原則として法定地上権は成立しません（最判平9.2.14）。新建物のために法定地上権を認めると、土地の担保価値が下がり、抵当権者を害するからです。", cat: "法定地上権" },
+  { q: "代価弁済とは、抵当不動産の第三取得者が、抵当権者の請求に応じて代価を弁済することにより、抵当権を消滅させる制度である。", a: true, ex: "正しい。代価弁済は、抵当権者が第三取得者に対して代価の弁済を請求し、第三取得者がこれに応じて弁済する制度です（民法378条）。抵当権者が主導する点で、第三取得者が主導する抵当権消滅請求と異なります。", cat: "代価弁済" },
+  { q: "抵当建物の賃借人で、競売手続の開始前から使用収益している者は、買受人の買受けの時から6か月を経過するまで、建物の引渡しを猶予される。", a: true, ex: "正しい。抵当建物の使用者の引渡し猶予制度により、競売手続の開始前から使用または収益をしている賃借人は、買受人の買受けの時から6か月間は引渡しを猶予されます（民法395条1項1号）。", cat: "引渡猶予" },
+  { q: "引渡し猶予の制度は、建物だけでなく土地の賃借人にも適用される。", a: false, ex: "誤り。引渡し猶予の規定（民法395条）は「抵当建物」の使用者に限定されています。土地の賃借人には適用されません。土地と建物は別個の不動産であることを思い出しましょう。", cat: "引渡猶予" },
+  { q: "抵当権の順位の変更は、抵当権の登記後であっても行うことができる。", a: true, ex: "正しい。抵当権の順位の変更は、各抵当権者の合意によりいつでも行うことができます（民法374条1項）。登記後であっても変更可能です。ただし、効力発生には登記が必要です（同条2項）。", cat: "順位" },
+  { q: "抵当権の順位の変更には、抵当権設定者（所有者）の同意が必要である。", a: false, ex: "誤り。抵当権の順位の変更に必要なのは「各抵当権者の合意」と「利害関係を有する者の承諾」です（民法374条1項）。抵当権設定者（所有者）は当然には利害関係者に含まれず、その同意は不要です。", cat: "順位" },
+  { q: "1番抵当権者Aが3番抵当権者Cに順位を譲渡した場合、2番抵当権者Bの配当額には影響しない。", a: true, ex: "正しい。順位の譲渡は、処分の当事者（AとC）の間でのみ効力を有し、当事者以外の抵当権者（B）の配当には影響を与えません。Bは従前どおりの配当を受けます。", cat: "順位" },
+  { q: "抵当権者は、抵当不動産の不法占有者に対して、妨害排除請求権を行使できる場合がある。", a: true, ex: "正しい。抵当不動産の不法占有により抵当不動産の交換価値の実現が妨げられ、抵当権者の優先弁済権の行使が困難になるような状態があるときは、抵当権者は妨害排除請求をすることができます（最大判平11.11.24）。", cat: "妨害排除" },
+  { q: "土地の抵当権者は、その土地上に築造された建物を土地とともに一括して競売することができるが、建物の競売代金からは優先弁済を受けることができない。", a: true, ex: "正しい。一括競売（民法389条1項）により、土地の抵当権者は建物も一緒に競売できますが、優先弁済を受けられるのは土地の代金からのみであり、建物の代金からは優先弁済を受けることができません（同条2項）。", cat: "一括競売" },
+  { q: "元本確定前の根抵当権について、根抵当権者は、その順位を他の抵当権者に譲渡することができる。", a: false, ex: "誤り。元本確定前の根抵当権については、順位の譲渡や順位の放棄をすることができません（民法398条の11第1項）。根抵当権は被担保債権が随時変動するため、処分の効果が定まらないからです。", cat: "根抵当権" },
+  { q: "根抵当権の極度額の変更は、利害関係を有する者の承諾を得れば行うことができる。", a: true, ex: "正しい。根抵当権の極度額の変更は、利害関係を有する者の承諾を得て行うことができます（民法398条の5）。極度額は根抵当権の核心であるため、利害関係者の承諾が必要とされています。", cat: "根抵当権" }
+];
+
+// ========== タブ切替 ==========
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-'+t).classList.add('hidden');
+    document.getElementById('tab-'+t).className = 'tab-btn';
+  });
+  document.getElementById('page-'+tab).classList.remove('hidden');
+  document.getElementById('tab-'+tab).className = 'tab-btn active-'+tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #9b59b6;color:#9b59b6">📌 このアプリの位置づけ</div>
+    <div class="info-box" style="background:#f5f0ff">このアプリは、<strong>抵当権の過去問に取り組むための基礎力</strong>をつける準備アプリです。ここで基本を押さえれば、過去問がスムーズに解けるようになります。</div>
+    <div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">⚠️ <strong>このアプリだけでは合格できません。</strong><br>合格の鍵は<strong>過去問を何周も回すこと</strong>です。このアプリは過去問学習への橋渡しです。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #2c3e50;color:#2c3e50">🔍 抵当権の基本構造</div>
+    <div class="info-box" style="background:#ecf0f1;font-family:monospace;white-space:pre-line;font-size:12px;line-height:2">債権者B（抵当権者）
+    │
+    │ 被担保債権（貸金など）
+    ↓
+債務者A ──所有──→ 不動産（甲土地）
+                        │
+                        ↓ 抵当権設定
+                     競売 → 売却代金から優先弁済</div>
+    <div class="info-box" style="background:#e8f5e9;font-family:monospace;white-space:pre-line;font-size:12px;line-height:2">【法定地上権の構造】
+設定時：A所有の土地 ＋ A所有の建物（同一所有者）
+    ↓ 競売で土地が第三者へ
+競売後：土地＝買受人 ／ 建物＝元の所有者
+    → 建物のために法定地上権が自動発生</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⚡ 重要ポイント</div>
+    <div class="info-box" style="background:#fce4ec">
+      <strong style="color:#c62828">【1】「土地と建物は別個の不動産」— これが全ての基本</strong><br>
+      土地の抵当権は建物には及ばない（逆も同じ）。だから土地の抵当権で建物の火災保険金には物上代位できない。引渡し猶予も「建物」のみで「土地」は対象外。
+    </div>
+    <div class="info-box" style="background:#e3f2fd">
+      <strong style="color:#1565c0">【2】共同抵当の場合の法定地上権に注意</strong><br>
+      土地と建物を共同抵当に入れた後、建物を取り壊して再築した場合、原則として再築建物のために法定地上権は成立しない。新建物に法定地上権を認めると土地の担保価値が下がるから。法定地上権の基本要件は原則タブを参照。
+    </div>
+    <div class="info-box" style="background:#e8f5e9">
+      <strong style="color:#2e7d32">【3】抵当権の効力が及ぶ範囲を横断整理</strong><br>
+      付加一体物（エアコン・庭石等）→ 及ぶ。従物 → 設定時の従物には及ぶ（判例）。果実 → 債務不履行後の天然果実・法定果実に及ぶ（民法371条）。分離物 → 搬出前なら及ぶが、第三者が即時取得すれば及ばない。
+    </div>
+    <div class="info-box" style="background:#fff3e0">
+      <strong style="color:#e65100">【4】配当計算 — 処分の当事者以外に影響を与えない</strong><br>
+      順位の譲渡：受益者が優先配当。順位の放棄：同順位として按分。まず当事者以外の配当を確定→残りを当事者間で分配。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #16a085;color:#16a085">📊 表で暗記</div>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">普通抵当権 vs 根抵当権</div>
+    <table>
+      <tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">項目</th><th style="border:1px solid #9fa8da">普通抵当権</th><th style="border:1px solid #9fa8da">根抵当権</th></tr>
+      <tr><td>被担保債権</td><td style="text-align:center">特定の債権</td><td style="text-align:center">不特定の債権</td></tr>
+      <tr style="background:#fafafa"><td>利息の制限</td><td style="text-align:center;color:#d32f2f;font-weight:bold">最後の2年分</td><td style="text-align:center;color:#2e7d32;font-weight:bold">制限なし（極度額が天井）</td></tr>
+      <tr><td>随伴性</td><td style="text-align:center;color:#2e7d32;font-weight:bold">あり</td><td style="text-align:center;color:#d32f2f;font-weight:bold">確定前はなし</td></tr>
+      <tr style="background:#fafafa"><td>順位の譲渡・放棄</td><td style="text-align:center;color:#2e7d32;font-weight:bold">可能</td><td style="text-align:center;color:#d32f2f;font-weight:bold">確定前は不可</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">抵当権消滅請求 vs 代価弁済</div>
+    <table>
+      <tr style="background:#fce4ec"><th style="border:1px solid #ef9a9a;text-align:left">項目</th><th style="border:1px solid #ef9a9a">消滅請求（379条）</th><th style="border:1px solid #ef9a9a">代価弁済（378条）</th></tr>
+      <tr><td>主導者</td><td style="text-align:center;font-weight:bold">第三取得者</td><td style="text-align:center;font-weight:bold">抵当権者</td></tr>
+      <tr style="background:#fafafa"><td>手続</td><td style="text-align:center">書面を送付</td><td style="text-align:center">代価の弁済を請求</td></tr>
+      <tr><td>債務者・保証人</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ 請求不可</td><td style="text-align:center">─</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">抵当権 vs 質権</div>
+    <table>
+      <tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;text-align:left">項目</th><th style="border:1px solid #80cbc4">抵当権</th><th style="border:1px solid #80cbc4">質権</th></tr>
+      <tr><td>占有</td><td style="text-align:center">設定者が占有継続</td><td style="text-align:center">質権者が占有</td></tr>
+      <tr style="background:#fafafa"><td>対象</td><td style="text-align:center">不動産・地上権等</td><td style="text-align:center">動産・不動産・権利</td></tr>
+      <tr><td>使用収益</td><td style="text-align:center;color:#2e7d32;font-weight:bold">設定者が可能</td><td style="text-align:center;color:#d32f2f;font-weight:bold">原則不可</td></tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #7f8c8d;color:#7f8c8d">📝 カバーできていない論点</div>
+    <div class="info-box" style="background:#f5f5f5">
+      以下の論点はこのアプリでは扱っていません。<strong>過去問学習で補ってください。</strong><br><br>
+      ・根抵当権の確定事由の全パターン<br>
+      ・共同抵当の細かい配当計算<br>
+      ・転抵当の詳細<br>
+      ・抵当権の処分（譲渡・放棄）の詳細な計算方法
+    </div>
+  </div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 抵当権とは？</div>
+    <div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「お金を貸したとき、返してもらえなかったら、担保にした不動産を売って回収できる権利」です（民法369条）。<br>ポイントは<strong>占有を移さない</strong>こと。設定者は不動産をそのまま使い続けられます。</div>
+    <div class="info-box" style="background:#f5f5f5">銀行が住宅ローンを貸す場面をイメージしてください。家を担保にしますが、住み続けることができます。返済が滞ったときに初めて競売にかけられます。</div>
+    <div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>質権との違い</strong>をイメージすると理解が深まります。質屋さんは「モノを預かる」（占有移転）が、抵当権は「モノを預けない」（占有は設定者のまま）。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🏗️ 法定地上権（388条）</div>
+    <div class="info-box" style="background:#fce4ec"><strong>なぜ法定地上権が必要か？</strong><br>土地と建物は別個の不動産です。競売で土地だけ他人の手に渡ると、建物は「土地を使う権利がない」状態になります。それでは建物を取り壊すしかない。<strong>建物を守るために法律が自動的に地上権を与える</strong>のが法定地上権です。</div>
+    <div class="info-box" style="background:#f5f5f5">
+      <strong>成立の3要件（これを丸暗記！）：</strong><br>
+      <span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 抵当権設定時に<strong>建物が存在</strong><br>
+      <span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 抵当権設定時に土地と建物が<strong>同一所有者</strong><br>
+      <span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> 競売の結果、土地と建物が<strong>別の所有者に</strong>
+    </div>
+    <div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">
+      <strong style="color:#e65100">最頻出！「設定時」で判断する</strong><br>
+      設定後に建物が譲渡されようが、登記が変わろうが関係ありません。<br>
+      <strong>更地に抵当権設定→後から建物を建てても法定地上権は不成立</strong>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">💰 物上代位（304条・372条）</div>
+    <div class="info-box" style="background:#e8f5e9"><strong>物上代位とは：</strong><br>抵当不動産が売却されたり、賃料が支払われたりした場合、その<strong>代金や賃料にも抵当権を行使できる</strong>仕組みです。「モノが形を変えても追いかける」イメージです。</div>
+    <div class="info-box" style="background:#f5f5f5">
+      <strong>絶対条件：払渡し前の差押え</strong><br>
+      債務者がお金を受け取る<strong>前に</strong>差し押さえなければなりません。受け取った後では手遅れです。お金が他の財産に混ざってしまうからです。
+    </div>
+    <div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f">
+      <strong style="color:#d32f2f">⚠️ 頻出ひっかけ</strong><br>
+      土地の抵当権で、<strong>建物の火災保険金</strong>に物上代位できるか？→ <strong>できない！</strong><br>
+      理由：土地と建物は別個の不動産。建物の保険金は「土地」の代替物ではありません。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">🔄 抵当権消滅請求と代価弁済</div>
+    <div class="info-box" style="background:#f3e5f5"><strong>覚え方：「誰が声をかけるか」で区別！</strong><br><br>
+      <strong>消滅請求</strong>＝第三取得者が「この金額で消してください」と声をかける<br>
+      <strong>代価弁済</strong>＝抵当権者が「代金を払ってくれたら消します」と声をかける<br><br>
+      <span style="color:#d32f2f;font-weight:bold">債務者・保証人は消滅請求できない</span>（全額返すべき立場だから）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 抵当権の順位</div>
+    <div class="info-box" style="background:#fff3e0"><strong>順位変更の要件：</strong><br>
+      <span style="display:inline-block;background:#ffcc80;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 各抵当権者の<strong>合意</strong><br>
+      <span style="display:inline-block;background:#ffcc80;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 利害関係者の<strong>承諾</strong><br>
+      <span style="display:inline-block;background:#ffcc80;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> <strong>登記</strong>（効力要件！）<br><br>
+      <span style="color:#d32f2f;font-weight:bold">⚠️ 設定者（所有者）の同意は不要！</span>ここが狙われます。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🔗 根抵当権（398条の2〜）</div>
+    <div class="info-box" style="background:#e0f7fa"><strong>根抵当権とは：</strong><br>継続的な取引関係から生じる<strong>不特定の債権</strong>を、<strong>極度額の限度</strong>で担保する権利です。銀行と企業の継続取引をイメージしてください。</div>
+    <div class="info-box" style="background:#f5f5f5">
+      <strong>普通抵当権との最大の違い：</strong><br>
+      ・普通抵当権：利息は<strong>最後の2年分</strong>まで<br>
+      ・根抵当権：<strong>極度額が天井</strong>。2年分の制限なし<br>
+      ・確定前の根抵当権は<strong>随伴性がない</strong>（債権が移転しても根抵当権はついていかない）
+    </div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_369" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法369条〜（抵当権）</a>
+    <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_398_2" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法398条の2〜（根抵当権）</a>
+  </div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c,v]) => `<tr><td>${c}</td><td style="text-align:center">${v.d}/${v.t}</td><td style="text-align:center">${Math.round(v.d/v.t*100)}%</td></tr>`).join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #16a085;color:#16a085">📊 全体の習得状況</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px;font-weight:bold">完璧にした問題</span><span style="font-size:13px">${mast} / ${tot}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+    <div style="text-align:right;font-size:12px;color:#7f8c8d;margin-top:4px">${pAll}%</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #3498db;color:#3498db">Level 1: 基礎</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px">完璧</span><span style="font-size:13px">${l1m} / ${l1t}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${p1}%;background:#3498db"></div></div>
+    <div style="text-align:right;font-size:12px;color:#7f8c8d;margin-top:4px;margin-bottom:12px">${p1}%</div>
+    <table>
+      <tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">カテゴリ</th><th style="border:1px solid #90caf9">完璧</th><th style="border:1px solid #90caf9">達成率</th></tr>
+      ${catStats(quizzesL1, '1')}
+    </table>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">Level 2: 応用</div>
+    <div style="display:flex;justify-content:space-between;margin-bottom:8px"><span style="font-size:13px">完璧</span><span style="font-size:13px">${l2m} / ${l2t}</span></div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${p2}%;background:#e74c3c"></div></div>
+    <div style="text-align:right;font-size:12px;color:#7f8c8d;margin-top:4px;margin-bottom:12px">${p2}%</div>
+    <table>
+      <tr style="background:#fce4ec"><th style="border:1px solid #ef9a9a;text-align:left">カテゴリ</th><th style="border:1px solid #ef9a9a">完璧</th><th style="border:1px solid #ef9a9a">達成率</th></tr>
+      ${catStats(quizzesL2, '2')}
+    </table>
+  </div>
+
+  <div class="card">
+    <button class="btn" style="background:#e74c3c" onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet.clear();saveMastered();renderStats();}">🗑 学習データをリセット</button>
+  </div>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1m = quizzesL1.filter((_,i) => masteredSet.has('1-'+i)).length;
+  const l2m = quizzesL2.filter((_,i) => masteredSet.has('2-'+i)).length;
+  const l1u = quizzesL1.length - l1m;
+  const l2u = quizzesL2.length - l2m;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #3498db;color:#3498db">Level 1: 基礎（${quizzesL1.length}問）</div>
+    <div style="font-size:12px;color:#7f8c8d;margin-bottom:12px">完璧: ${l1m}問 ／ 未習得: ${l1u}問</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">全${quizzesL1.length}問に挑戦</button>
+    ${l1u > 0 ? `<button class="btn btn-sm" style="background:#2980b9" onclick="startQuiz(1,'unmastered')">未習得の${l1u}問だけ</button>` : '<div style="text-align:center;color:#27ae60;font-weight:bold;padding:8px">🎉 全問完璧！</div>'}
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">Level 2: 応用（${quizzesL2.length}問）</div>
+    <div style="font-size:12px;color:#7f8c8d;margin-bottom:12px">完璧: ${l2m}問 ／ 未習得: ${l2u}問</div>
+    <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">全${quizzesL2.length}問に挑戦</button>
+    ${l2u > 0 ? `<button class="btn btn-sm" style="background:#c0392b" onclick="startQuiz(2,'unmastered')">未習得の${l2u}問だけ</button>` : '<div style="text-align:center;color:#27ae60;font-weight:bold;padding:8px">🎉 全問完璧！</div>'}
+  </div>`;
+}
+
+function startQuiz(level, mode) {
+  currentLevel = level;
+  currentMode = mode;
+  const qs = level === 1 ? quizzesL1 : quizzesL2;
+  let pool = qs.map((q, i) => ({...q, oi: i}));
+  if (mode === 'unmastered') {
+    pool = pool.filter(q => !masteredSet.has(level+'-'+q.oi));
+  }
+  if (pool.length === 0) { renderQuizMenu(); return; }
+  shuffled = pool.sort(() => Math.random() - 0.5);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const prog = Math.round((currentIdx) / shuffled.length * 100);
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>`;
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 賃貸借クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 債権 ＞ 賃貸借</div>
+    <div class="header-desc">修繕・敷金・転貸借・原状回復</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_chintaishaku_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 15問 ==========
+const quizzesL1 = [
+  { q: "賃貸人は、賃貸物の使用及び収益に必要な修繕をする義務を負う。", a: true, ex: "正しい。賃貸人は、賃貸物の使用及び収益に必要な修繕をする義務を負います（民法606条1項）。これが賃貸借における大原則です。", cat: "修繕義務・修繕権" },
+  { q: "賃借人に帰責事由（故意・過失）がある場合でも、賃貸人は修繕義務を負う。", a: false, ex: "誤り。賃借人の責めに帰すべき事由によってその修繕が必要となったときは、賃貸人は修繕義務を負いません（民法606条1項ただし書）。壊した本人の責任ということです。", cat: "修繕義務・修繕権" },
+  { q: "賃借人が賃貸人に修繕が必要である旨を通知し、賃貸人が相当の期間内に必要な修繕をしないときは、賃借人はその修繕をすることができる。", a: true, ex: "正しい。賃借人が通知した後、賃貸人が「相当の期間内に」修繕しなければ、賃借人自らが修繕できます（民法607条の2第1号）。2020年改正で新設された重要な条文です。", cat: "修繕義務・修繕権" },
+  { q: "賃貸物の修繕が必要な場合において、急迫の事情があるときでも、賃借人は賃貸人に通知して相当の期間が経過しなければ修繕できない。", a: false, ex: "誤り。急迫の事情があるときは、通知や期間経過を待たずに、賃借人はただちに修繕することができます（民法607条の2第2号）。水漏れなど緊急の場合に、いちいち待っていられないからです。", cat: "修繕義務・修繕権" },
+  { q: "賃借人は、賃貸借が終了したとき、賃借物に生じた損傷について、通常の使用による損耗や経年変化も含めて原状回復義務を負う。", a: false, ex: "誤り。通常の使用収益によって生じた賃借物の損耗（通常損耗）や経年変化については、原状回復義務を負いません（民法621条）。壁紙の日焼けや床の自然な傷みなどは賃借人の責任ではありません。", cat: "原状回復義務" },
+  { q: "賃借人の故意や過失によって生じた損傷については、賃借人は原状回復義務を負う。", a: true, ex: "正しい。通常損耗・経年変化以外の損傷で、賃借人に帰責事由がある場合は、賃借人が原状回復義務を負います（民法621条）。例えば、壁に大きな穴を開けた場合などです。", cat: "原状回復義務" },
+  { q: "賃借物に生じた損傷であっても、賃借人に帰責事由がなければ原状回復義務を負わない。", a: true, ex: "正しい。賃借人に帰責事由（故意・過失や注意義務違反）がなければ、原状回復義務を負いません（民法621条ただし書）。地震で壁にひびが入った場合などが該当します。", cat: "原状回復義務" },
+  { q: "敷金とは、賃料債務その他の賃貸借に基づいて生ずる賃借人の債務を担保する目的で、賃借人が賃貸人に交付する金銭をいう。", a: true, ex: "正しい。民法622条の2第1項で、敷金の定義が明文化されました。名目を問わず、担保目的で交付される金銭は敷金にあたります。", cat: "敷金" },
+  { q: "賃貸借が終了した場合、賃貸人は賃貸物の返還を受ける前であっても、敷金を返還しなければならない。", a: false, ex: "誤り。敷金の返還時期は、賃貸借が終了し、かつ、賃貸物の返還を受けたときです（民法622条の2第1項第1号）。賃貸物の返還が先（先履行関係）であり、返還前に敷金を返す必要はありません。", cat: "敷金" },
+  { q: "賃貸人は、賃借人が賃料を支払わないときに、敷金をその債務の弁済に充てることができる。", a: true, ex: "正しい。賃貸人は、賃借人の債務不履行がある場合、敷金をその債務の弁済に充当することができます（民法622条の2第2項前段）。", cat: "敷金" },
+  { q: "賃借人は、未払賃料がある場合、賃貸人に対して敷金をその弁済に充てるよう請求することができる。", a: false, ex: "誤り。敷金の充当は「賃貸人からのみ」可能であり、賃借人から「敷金で払って」と請求することはできません（民法622条の2第2項後段）。敷金充当は一方通行のルールです。", cat: "敷金" },
+  { q: "賃借権は債権であるため、賃借人が賃借権を第三者に譲渡するには、賃貸人の承諾が必要である。", a: true, ex: "正しい。賃借権は債権であり、賃借人は賃貸人の承諾なしに賃借権を譲渡することはできません（民法612条1項）。", cat: "賃借権の性質" },
+  { q: "賃借人は、賃貸人の承諾を得なくても、賃借物を第三者に転貸することができる。", a: false, ex: "誤り。賃借人が賃借物を第三者に転貸するには、賃貸人の承諾が必要です（民法612条1項）。無断転貸は契約解除の原因となりえます。", cat: "賃借権の性質" },
+  { q: "地上権は物権であるため、地上権者は自由に地上権を譲渡することができるが、賃借権は債権であるため、譲渡には賃貸人の承諾が必要である。", a: true, ex: "正しい。地上権（物権）は自由に譲渡できますが、賃借権（債権）の譲渡には賃貸人の承諾が必要です（民法612条）。物権と債権の強さの違いを表しています。", cat: "賃借権の性質" },
+  { q: "地上権設定者は、土地の修繕義務を負うが、賃貸人は賃貸物の修繕義務を負わない。", a: false, ex: "誤り。逆です。地上権設定者には修繕義務はありませんが、賃貸人は賃貸物の修繕義務を負います（民法606条1項）。地上権は物権なので設定者の関与は薄く、賃貸借は債権なので賃貸人の義務が厚いのです。", cat: "賃借権の性質" }
+];
+
+// ========== Level 2: 応用 15問 ==========
+const quizzesL2 = [
+  { q: "賃借人が適法に賃借物を転貸した場合、転借人は賃貸人に対して直接に義務を負う。", a: true, ex: "正しい。賃借人が適法に賃借物を転貸したときは、転借人は賃貸人に対して転貸借に基づく債務を直接履行する義務を負います（民法613条1項）。", cat: "転貸借" },
+  { q: "適法な転貸借がある場合、転借人が賃貸人に対して直接履行する義務の範囲は、転貸借契約に基づく債務全額である。", a: false, ex: "誤り。転借人が直接義務を負う範囲は、賃貸人と賃借人との間の賃貸借に基づく賃借人の債務の範囲が限度です（民法613条1項）。転貸料が元の賃料より高くても、元の賃料額が上限となります。", cat: "転貸借" },
+  { q: "賃貸人と賃借人が賃貸借契約を合意解除した場合、賃貸人はその合意解除をもって転借人に対抗することができる。", a: false, ex: "誤り。賃借人が適法に転貸した場合、賃貸人は賃借人との賃貸借を合意解除したことをもって転借人に対抗することはできません（民法613条3項本文）。転借人の利益を保護するためです。", cat: "転貸借" },
+  { q: "賃貸人が賃借人との賃貸借契約を合意解除した場合であっても、合意解除の当時、賃貸人が賃借人の債務不履行による解除権を有していたときは、転借人に対抗することができる。", a: true, ex: "正しい。合意解除は原則として転借人に対抗できませんが、解除の当時、賃貸人が賃借人の債務不履行による解除権を有していた場合は例外的に対抗できます（民法613条3項ただし書）。賃借人に落ち度がある場合は転借人も保護されないということです。", cat: "転貸借" },
+  { q: "適法な転貸借がある場合、転借人が賃借人に賃料を前払いしていたとしても、転借人はその前払いをもって賃貸人に対抗することができない。", a: true, ex: "正しい。転借人が賃借人に対して賃料を前払いしていても、その前払いをもって賃貸人に対抗することはできません（民法613条1項後段）。賃貸人が転借人に直接賃料を請求してきた場合、「もう払いました」とは言えないのです。", cat: "転貸借" },
+  { q: "不動産の賃借人が賃貸借の対抗要件を備えた場合において、その不動産が譲渡されたときは、賃貸人の地位は原則として譲受人に移転する。", a: true, ex: "正しい。不動産の賃借人が対抗要件を備えている場合、その不動産が譲渡されると、賃貸人の地位は当然に譲受人に移転します（民法605条の2第1項）。2020年改正で明文化されました。", cat: "賃貸人の地位の移転" },
+  { q: "不動産が譲渡された場合、譲渡人と譲受人が合意すれば、賃貸人の地位を譲渡人に留保することができるが、この場合、譲受人が譲渡人に不動産を賃貸する旨の合意も必要である。", a: true, ex: "正しい。譲渡人と譲受人は、①賃貸人の地位を譲渡人に留保する旨、②譲受人が譲渡人に不動産を賃貸する旨、の2つの合意をすることで、地位の留保が認められます（民法605条の2第2項前段）。", cat: "賃貸人の地位の移転" },
+  { q: "賃貸人の地位が譲受人に移転した場合、賃貸人が受け取っていた敷金に関する権利義務は譲受人には承継されない。", a: false, ex: "誤り。賃貸人の地位が移転した場合、敷金に関する権利義務は新たな賃貸人（譲受人）に承継されます（民法605条の2第4項）。借主は新しいオーナーに対して敷金返還を請求できます。", cat: "賃貸人の地位の移転" },
+  { q: "不動産の賃借人は、対抗要件を備えていれば、その不動産を不法に占有する第三者に対して、妨害の排除を請求することができる。", a: true, ex: "正しい。対抗要件を備えた不動産の賃借人は、その不動産の占有を妨害する第三者に対して妨害の停止を請求でき、また不法占有者に対しては返還を請求できます（民法605条の4）。2020年改正で明文化されました。", cat: "妨害排除請求" },
+  { q: "不動産の賃借人は、対抗要件を備えていなくても、不法占有者に対して妨害排除請求をすることができる。", a: false, ex: "誤り。妨害排除請求ができるのは、対抗要件を備えた賃借人に限られます（民法605条の4）。対抗要件がなければ、この請求はできません。", cat: "妨害排除請求" },
+  { q: "賃借人が賃貸人に修繕が必要である旨を通知した場合、賃貸人が修繕を直ちにしないときは、賃借人はただちにその修繕をすることができる。", a: false, ex: "誤り。「直ちに」ではなく「相当の期間内に」修繕をしないときに、賃借人は修繕できます（民法607条の2第1号）。「直ちに」と「相当の期間内に」のすり替えは頻出のひっかけパターンです。", cat: "修繕義務・修繕権" },
+  { q: "賃貸人が修繕の必要性を知った場合において、相当の期間内に修繕をしないときは、賃借人はその修繕をすることができる。", a: true, ex: "正しい。賃貸人が修繕の必要性を知った場合も、相当の期間内に修繕をしなければ、賃借人が修繕できます（民法607条の2第1号後段）。通知がなくても「知っていた」ことで足ります。", cat: "修繕義務・修繕権" },
+  { q: "賃借人が適法に賃借権を譲渡した場合、敷金に関する権利義務は賃借権の譲受人に当然には承継されない。", a: true, ex: "正しい。賃借権が適法に譲渡された場合、旧賃借人の敷金返還請求権は新賃借人に当然には承継されません。敷金は旧賃借人と賃貸人との間で清算されます（民法622条の2第1項第2号参照）。賃貸人の地位の移転の場合とは異なる点に注意が必要です。", cat: "敷金" },
+  { q: "地上権は物権であるため、地上権者は地上権に抵当権を設定することができるが、賃借権は債権であるため、賃借人は賃借権に抵当権を設定することができない。", a: true, ex: "正しい。抵当権は不動産と地上権・永小作権に設定できます（民法369条）。地上権は物権なので抵当権設定が可能ですが、賃借権は債権なので抵当権を設定することはできません。", cat: "賃借権の性質" },
+  { q: "賃貸借契約の期間中に賃貸人が賃貸物を第三者に譲渡した場合、賃借人が対抗要件を備えていなければ、賃借人は新所有者に賃借権を主張できない。", a: true, ex: "正しい。賃借人が対抗要件（建物賃貸借の場合は建物の引渡し、土地賃貸借の場合は登記など）を備えていなければ、新所有者に賃借権を対抗できず、明渡しを求められる可能性があります（民法605条参照）。", cat: "賃貸人の地位の移転" }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div>
+    <div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで賃貸借の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div>
+    <div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div>
+    <div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・借地借家法の詳細（別アプリで扱います）<br>・地上権の細かい規定<br>・使用貸借との比較<br>・賃貸借の存続期間（最長50年）の詳細<br>・特約による修正（原状回復特約など）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 賃貸借の基本構造</div>
+    <div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2">
+      <div style="font-weight:bold;margin-bottom:4px">【通常の賃貸借】</div>
+      <span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">賃貸人（大家）</span><br>
+      ↕ 賃貸借契約（賃料を払って使う）<br>
+      <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">賃借人（借主）</span>
+      <div style="margin-top:16px;font-weight:bold;margin-bottom:4px">【転貸借がある場合】</div>
+      <span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">賃貸人（大家）</span><br>
+      ↕ 賃貸借契約<br>
+      <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">賃借人（借主）</span><br>
+      ↕ 転貸借契約（また貸し）<br>
+      <span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">転借人</span><br><br>
+      <span style="color:#d32f2f;font-weight:bold">※ 転借人は賃貸人に「直接」義務を負う（613条）</span>
+    </div>
+    <div class="info-box" style="background:#f3e5f5;font-family:monospace;text-align:center;line-height:2.2">
+      <div style="font-weight:bold;margin-bottom:4px">【賃貸人の地位の移転】</div>
+      <span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">旧オーナー</span>
+      → 不動産売却 →
+      <span style="background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold">新オーナー</span><br><br>
+      賃貸人の地位は<strong style="color:#d32f2f">自動的に</strong>新オーナーに移転<br>
+      <span style="font-size:12px">（敷金も新オーナーに引き継がれる）</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div>
+    <div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000">
+      <strong style="color:#e65100">【ひっかけ注意】「直ちに」vs「相当の期間内に」</strong><br>
+      賃借人が修繕できるのは、賃貸人が「<strong>相当の期間内に</strong>」修繕しないとき。過去問では「直ちに」にすり替えてきます。ただし「急迫の事情」があれば即修繕OK。この2パターンを区別するのがカギです。
+    </div>
+    <div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5">
+      <strong style="color:#283593">【例外に注意】合意解除 ≠ 絶対に対抗できない</strong><br>
+      合意解除は原則として転借人に対抗できません。しかし「解除の当時、賃貸人が債務不履行による解除権を有していた」場合は対抗できます。覚え方：「<strong>円満解約は転借人に言えない。でも借主が悪いなら話は別</strong>」。
+    </div>
+    <div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b">
+      <strong style="color:#00695c">【一方通行ルール】敷金の充当</strong><br>
+      敷金を弁済に充てられるのは<strong>賃貸人からだけ</strong>。賃借人から「敷金で払って」とは言えません。返還は「賃貸物の返還が先」。覚え方：「<strong>敷金は大家の切り札。借主からは使えない</strong>」。
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div>
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">賃借人が修繕できる3つの場面（607条の2）</div>
+    <table>
+      <tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">場面</th><th style="border:1px solid #90caf9">通知</th><th style="border:1px solid #90caf9">期間</th></tr>
+      <tr><td>①通知後、修繕しない</td><td style="text-align:center">必要</td><td style="text-align:center;color:#d32f2f;font-weight:bold">相当の期間</td></tr>
+      <tr style="background:#fafafa"><td>②賃貸人が知って修繕しない</td><td style="text-align:center">不要</td><td style="text-align:center;color:#d32f2f;font-weight:bold">相当の期間</td></tr>
+      <tr><td>③急迫の事情</td><td style="text-align:center">不要</td><td style="text-align:center;color:#2e7d32;font-weight:bold">不要（即可能）</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">敷金の充当ルール（622条の2）</div>
+    <table>
+      <tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">項目</th><th style="border:1px solid #f48fb1">賃貸人から</th><th style="border:1px solid #f48fb1">賃借人から</th></tr>
+      <tr><td>敷金を弁済に充当</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ できない</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">地上権と賃借権の比較</div>
+    <table>
+      <tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">項目</th><th style="border:1px solid #9fa8da">地上権（物権）</th><th style="border:1px solid #9fa8da">賃借権（債権）</th></tr>
+      <tr><td>譲渡</td><td style="text-align:center;color:#2e7d32;font-weight:bold">自由</td><td style="text-align:center;color:#d32f2f;font-weight:bold">承諾必要</td></tr>
+      <tr style="background:#fafafa"><td>抵当権の設定</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ できない</td></tr>
+      <tr><td>設定者の修繕義務</td><td style="text-align:center;color:#d32f2f;font-weight:bold">なし</td><td style="text-align:center;color:#2e7d32;font-weight:bold">あり（606条）</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">合意解除と転借人への対抗（613条3項）</div>
+    <table>
+      <tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">場面</th><th style="border:1px solid #ffcc80">転借人に対抗</th></tr>
+      <tr><td>合意解除（原則）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ できない</td></tr>
+      <tr style="background:#fafafa"><td>合意解除（例外：解除時に債務不履行解除権あり）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td></tr>
+      <tr><td>債務不履行解除</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td></tr>
+    </table>
+
+    <div style="font-size:13px;font-weight:bold;margin-bottom:8px">原状回復義務の範囲（621条）</div>
+    <table>
+      <tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">損傷の種類</th><th style="border:1px solid #a5d6a7">原状回復義務</th></tr>
+      <tr><td>通常損耗・経年変化</td><td style="text-align:center;color:#2e7d32;font-weight:bold">なし</td></tr>
+      <tr style="background:#fafafa"><td>賃借人の帰責事由による損傷</td><td style="text-align:center;color:#d32f2f;font-weight:bold">あり</td></tr>
+      <tr><td>賃借人に帰責事由なし</td><td style="text-align:center;color:#2e7d32;font-weight:bold">なし</td></tr>
+    </table>
+  </div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 賃貸借とは？</div>
+    <div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「お金を払って、人のモノを借りて使う契約」です（民法601条）。<br>アパートを借りる、車を借りる──日常にあふれている契約です。</div>
+    <div class="info-box" style="background:#f5f5f5">賃貸借は<strong>「債権」</strong>です。賃借人が持っているのは「使わせてもらう権利」であり、モノそのものに対する権利（物権）ではありません。だから、賃借権の譲渡や転貸には<strong>賃貸人の承諾が必要</strong>です。</div>
+    <div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>地上権（物権）との違い</strong>をイメージすると理解が深まります。地上権者は「自分の権利」として自由に譲渡できますが、賃借人は「借りている立場」なので大家の許可がいるのです。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔧 修繕義務と修繕権</div>
+    <div class="info-box" style="background:#fce4ec"><strong>原則：修繕は大家の仕事</strong>（606条1項）<br>借りているモノが壊れたら、大家が直す義務があります。<br>ただし、<strong>借主が壊した場合は大家の責任ではありません</strong>（606条1項ただし書）。</div>
+    <div class="info-box" style="background:#e8f5e9"><strong>例外：借主が自分で直せる場合</strong>（607条の2）<br>大家が直してくれないとき、借主も困ります。そこで2020年改正で「借主が自分で修繕できる場合」が明文化されました。</div>
+    <div class="info-box" style="background:#f5f5f5">
+      <strong>借主が修繕できる3つの場面：</strong><br>
+      <span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 通知後、<span style="color:#d32f2f;font-weight:bold">相当の期間内に</span>修繕しない<br>
+      <span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 賃貸人が知っていて<span style="color:#d32f2f;font-weight:bold">相当の期間内に</span>修繕しない<br>
+      <span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> <span style="color:#2e7d32;font-weight:bold">急迫の事情がある</span>（即修繕OK）<br>
+      <span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 「直ちに」ではなく「相当の期間内に」── ここが試験で狙われます！</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 原状回復義務（621条）</div>
+    <div class="info-box" style="background:#e8f5e9"><strong>原状回復 ＝ 借りた状態に戻すこと</strong><br>ただし、普通に使っていて自然に傷んだ部分（通常損耗・経年変化）まで元に戻す必要はありません。</div>
+    <div class="info-box" style="background:#f5f5f5"><strong>具体例で理解：</strong><br>✅ <span style="color:#2e7d32">回復不要</span>：壁紙の日焼け、フローリングの自然な色あせ<br>❌ <span style="color:#d32f2f">回復必要</span>：壁に開けた大きな穴、ペットによる傷<br><br>💡 2020年改正で明文化された重要条文です。</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">💰 敷金（622条の2）</div>
+    <div class="info-box" style="background:#f3e5f5"><strong>敷金 ＝ 借主のための「保証金」</strong><br>家賃未払いや損傷があった場合の担保として、入居時に大家に預けるお金です。名目にかかわらず、担保目的なら「敷金」です。</div>
+    <div class="info-box" style="background:#f5f5f5"><strong>返還時期：「モノを返してから」（先履行関係）</strong><br>敷金は、①賃貸借終了＋賃貸物の返還を受けたとき、または②賃借権が適法に譲渡されたときに返還します。物件を返すのが先で、敷金返還は後です。</div>
+    <div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">最重要ルール：充当は「大家からだけ」</strong><br><strong>大家 → ○</strong>：家賃未払いがあれば、大家は敷金から差し引ける<br><strong>借主 → ×</strong>：「今月は敷金から払って」は絶対にNG<br>覚え方：「<strong>敷金は大家の切り札。借主からは使えない</strong>」</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">🔄 転貸借の法律関係（613条）</div>
+    <div class="info-box" style="background:#fff3e0"><strong>転貸借 ＝ また貸し</strong><br>賃借人がさらに別の人に貸すこと。<strong>賃貸人の承諾が必要</strong>（612条）。</div>
+    <div class="info-box" style="background:#f5f5f5"><strong>転借人は賃貸人に「直接」義務を負う</strong><br>適法な転貸の場合、転借人は賃貸人に対し、賃借人の債務の範囲を限度として直接に義務を負います。賃料の前払いは賃貸人に対抗できません。</div>
+    <div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#d32f2f">合意解除と転借人の保護（613条3項）</strong><br><strong>原則</strong>：合意解除は転借人に対抗できない（転借人を守る）<br><strong>例外</strong>：解除時に賃貸人が「債務不履行解除権」を持っていた場合は対抗可能<br>覚え方：「<strong>円満解約は転借人に言えない。でも借主が悪いなら話は別</strong>」</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🏢 賃貸人の地位の移転（605条の2）</div>
+    <div class="info-box" style="background:#e0f7fa"><strong>オーナーチェンジ ＝ 賃貸人の地位も自動で移る</strong><br>賃借人が対抗要件を備えている場合、不動産が譲渡されると賃貸人の地位は自動的に新オーナーに移転します。</div>
+    <div class="info-box" style="background:#f5f5f5"><strong>ポイント：</strong><br>・敷金に関する権利義務も新オーナーに引き継がれる<br>・留保の合意があれば地位を旧オーナーに残すことも可能（ただし、譲受人→譲渡人の賃貸借合意も必要）</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">🛡️ 妨害排除請求（605条の4）</div>
+    <div class="info-box" style="background:#eceff1">対抗要件を備えた賃借人は、不法占有者に対して<strong>妨害の排除</strong>や<strong>返還</strong>を請求できます。2020年改正で明文化されました。<br><br>💡 賃借権は「債権」なのに妨害排除ができるのは、対抗力を備えることで「物権的な保護」が与えられるからです。ただし、対抗要件を備えていない賃借人はこの請求ができません。</div>
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:8px">
+    <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_601" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法601条〜（賃貸借）</a>
+  </div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">賃貸借クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>`;
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  let html = document.getElementById('page-quiz').innerHTML;
+  // 回答ボタンを消す
+  const btnArea = document.getElementById('page-quiz');
+  // 結果と解説を追加
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  // 回答ボタン部分を置き換え
+  const quizDiv = document.getElementById('page-quiz');
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
