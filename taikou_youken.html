@@ -3,1585 +3,482 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>宅建 権利関係クイズ - 対抗要件</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>宅建 対抗要件クイズ</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background-color: #f8f9fa;
-    }
-    #root {
-      max-width: 400px;
-      margin: 0 auto;
-      min-height: 100vh;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  
-  <script type="text/babel">
-    const { useState, useEffect } = React;
-
-    const QuizApp = () => {
-      const [page, setPage] = useState('about');
-      const [currentQuiz, setCurrentQuiz] = useState(0);
-      const [score, setScore] = useState(0);
-      const [answered, setAnswered] = useState(false);
-      const [selectedAnswer, setSelectedAnswer] = useState(null);
-      const [quizStarted, setQuizStarted] = useState(false);
-      const [quizFinished, setQuizFinished] = useState(false);
-      const [shuffledQuizzes, setShuffledQuizzes] = useState([]);
-      const [level, setLevel] = useState(null);
-      const [answeredQuestions, setAnsweredQuestions] = useState([]);
-      const [masteredQuestions, setMasteredQuestions] = useState(new Set());
-      const [reviewMode, setReviewMode] = useState('all');
-
-      useEffect(() => {
-        const saved = localStorage.getItem('takken_taikou_mastered');
-        if (saved) {
-          setMasteredQuestions(new Set(JSON.parse(saved)));
-        }
-      }, []);
-
-      const quizzesLevel1 = [
-        {
-          question: "AさんがBさんに土地を売った。その後、AさんがCさんにも同じ土地を売った(二重譲渡)。BさんもCさんも登記していない場合、BさんはCさんに対して所有権を主張できる。",
-          answer: false,
-          explanation: "登記がない場合、BもCも互いに対抗できない。この状態では権利関係が確定しない。先に登記した方が勝つ。",
-          category: "二重譲渡"
-        },
-        {
-          question: "AさんがBさんに土地を売った。その後、AさんがCさんにも同じ土地を売った。Bさんが先に登記した。Cさんは土地を取得できる。",
-          answer: false,
-          explanation: "Bさんが先に登記したので、Bさんの勝ち。登記の早い者勝ち(177条)。",
-          category: "二重譲渡"
-        },
-        {
-          question: "AさんがBさんに土地を売った。その後、AさんがCさんにも同じ土地を売った。Cさんが先に登記した。Cさんが悪意(Bへの売却を知っていた)でも、Cさんは土地を取得できる。",
-          answer: true,
-          explanation: "177条の対抗問題では、善意悪意は関係ない。登記の早い者勝ち。悪意でも登記があれば勝つ。",
-          category: "二重譲渡"
-        },
-        {
-          question: "Aさんが20年間、他人の土地を占有して取得時効が完成した。時効完成前に、元の所有者BさんがCさんに土地を売却し、Cさんが登記した。Aさんは登記なしでCさんに対抗できる。",
-          answer: true,
-          explanation: "時効完成「前」の第三者Cは、時効完成時の所有者であり「当事者」扱い。したがって、Aは登記なしでCに対抗できる(最判昭和41年11月22日)。",
-          category: "時効・前"
-        },
-        {
-          question: "Aさんが20年間、他人の土地を占有して取得時効が完成した。時効完成後に、元の所有者BさんがCさんに土地を売却し、Cさんが登記した。Aさんは登記なしでCさんに対抗できる。",
-          answer: false,
-          explanation: "時効完成「後」の第三者には、登記がないと対抗できない(177条)。時効完成前でも後でも、完成「後」の第三者には登記が必要。",
-          category: "時効・後"
-        },
-        {
-          question: "AさんがBさんに土地を売った。Bさんは登記していない。その後、Aさんの債権者がこの土地を差し押さえた。Bさんは登記なしで債権者に対抗できる。",
-          answer: false,
-          explanation: "差し押さえ債権者も「第三者」に含まれる。登記がないと対抗できない。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "AさんがBさんに土地を売った。Bさんは登記していない。その後、Aさんが亡くなり、Cさんが相続した。Bさんは登記なしでCさん(相続人)に対抗できる。",
-          answer: true,
-          explanation: "相続人は「第三者」ではない。Aの地位を引き継ぐだけなので、Bは登記なしで対抗できる。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "AさんがBさんに土地を売った。Bさんは登記していない。その後、Cさんが不法にこの土地を占拠した。Bさんは登記なしでCさん(不法占拠者)に対抗できる。",
-          answer: true,
-          explanation: "不法占拠者は「第三者」ではない(正当な権利がない)。Bは登記なしで対抗できる。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "AさんがBさんに土地を売った。Bさんが登記する前に、AさんがDさんに同じ土地を売り、Dさんが登記した。その後、DさんがEさんに転売。Bさんは登記なしでEさんに対抗できる。",
-          answer: false,
-          explanation: "Eさんは「第三者」。たとえDから買ったとしても、Bは登記がないと対抗できない。",
-          category: "転得者"
-        },
-        {
-          question: "二重譲渡で、先に買ったBさんは登記せず、後から買ったCさんが登記した。Cさんが背信的悪意者(Bの存在を知っていて、あえと横取りした)の場合、Cさんは保護される。",
-          answer: false,
-          explanation: "背信的悪意者は、登記があっても保護されない。あまりに悪質だから。",
-          category: "背信的悪意者"
-        },
-        {
-          question: "登記には「対抗力」があるが、「権利を創設する力」はない。",
-          answer: true,
-          explanation: "正しい。登記は「私が権利者だ」と主張するためのもの(対抗力)。登記しても権利は生まれない。",
-          category: "登記の効力"
-        },
-        {
-          question: "AがBに土地を売却し、BがCに転売した。BもCも登記していない状態で、Aが「この土地はまだ自分のものだ」とCに主張した場合、Cは登記がなくてもAの主張を退けることができる。",
-          answer: true,
-          explanation: "転々譲渡(A→B→C)の場合、前主Aと後主Cは当事者関係にある。したがって、Cは登記なしでAに対抗できる。Aは「第三者」ではないため、Cに登記は不要。",
-          category: "転得者"
-        },
-        {
-          question: "177条の「第三者」には、不法行為者や不法占拠者は含まれない。",
-          answer: true,
-          explanation: "正しい。正当な権利関係のない者は「第三者」ではない。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "二重譲渡において、後から買ったCさんが先に登記すれば、Cさんが悪意であっても土地を取得できる。",
-          answer: true,
-          explanation: "正しい。177条の対抗問題では善意悪意は問わない。登記の早い者勝ち(ただし背信的悪意者を除く)。",
-          category: "二重譲渡"
-        },
-        {
-          question: "取得時効完成前の第三者に対しては、時効取得者は登記なしで対抗できる。",
-          answer: true,
-          explanation: "時効完成「前」の第三者Cは、時効完成時の所有者であり「当事者」扱い。したがって、時効取得者Aは登記なしでCに対抗できる(最判昭和41年11月22日)。",
-          category: "時効・前"
-        }
-      ];
-
-      const quizzesLevel2 = [
-        {
-          question: "Aを所有者とする甲土地につき、AとBとの間で売買契約が締結された。Aが甲土地をBに売却した後、Aが Cに対しても甲土地を売却し、Cが移転登記を備えた場合、Bが Aとの売買契約に基づく所有権移転登記を備えていなかったとしても、Bがその売買契約に基づいてすでに甲土地の引渡しを受けていたときは、Bは所有権をCに対抗することができる。",
-          answer: false,
-          explanation: "二重譲渡では、引渡しだけでは対抗できない。不動産は登記が対抗要件(177条)。先に登記したCが勝つ。",
-          category: "二重譲渡"
-        },
-        {
-          question: "Aを所有者とする甲土地につき、AとBとの間で売買契約が締結された。AがBに甲土地を売却した後、Aの債権者Cが甲土地を差し押さえた場合、Bが所有権移転登記を備えていなくても、売買契約の日がCによる差押えの日より前であれば、BはCに対して所有権を対抗することができる。",
-          answer: false,
-          explanation: "差押債権者も177条の「第三者」に含まれる。登記がなければ対抗できない。契約の先後は関係ない。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "Aを所有者とする甲土地につき、AとBとの間で売買契約が締結された。AがBに甲土地を売却した後、Aが死亡し、Cが単独で相続した場合、Bが所有権移転登記を備えていなくても、BはCに対して所有権の取得を対抗することができる。",
-          answer: true,
-          explanation: "相続人は177条の「第三者」ではない。被相続人の地位を承継するだけなので、Bは登記なしで対抗できる。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "Aを所有者とする甲土地につき、AとBとの間で売買契約が締結された。AがBに甲土地を売却した後、Dが甲土地を不法占拠した場合、Bが所有権移転登記を備えていなくても、BはDに対して所有権に基づく明渡しを請求することができる。",
-          answer: true,
-          explanation: "不法占拠者は177条の「第三者」ではない。正当な権利関係がないので、Bは登記なしで明渡請求できる。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "Aは、Bから購入した甲土地をCに売却してその旨の所有権移転登記をした。その後、AB間の売買契約が、Bの意思無能力を理由に無効とされた場合、Aは、Cの所有権移転登記の抹消をCに請求することができない。",
-          answer: false,
-          explanation: "AB間が無効なら、Aは最初から所有権を取得していない。したがって、Cへの移転も無効。Aは登記の抹消を請求できる(Cは「第三者」ではあるが、Aが無権利者なので)。",
-          category: "無効と第三者"
-        },
-        {
-          question: "AはBに甲土地を売却したが、その後Bの債務不履行により売買契約を解除した。解除前にBが甲土地をCに転売し、Cが所有権移転登記を備えた場合、AはCに対して所有権を主張することができない。",
-          answer: true,
-          explanation: "解除前の第三者Cは、登記を備えていれば保護される(545条1項ただし書)。",
-          category: "解除と第三者"
-        },
-        {
-          question: "AがBから購入した甲土地について、Aが所有権移転登記を備えた。その後、AB間の売買契約がBの強迫を理由に取り消された。取消し後、Bが甲土地をCに売却し、Cが所有権移転登記を備えた場合、Aが登記を回復していなくても、AはCに対して所有権を主張することができる。",
-          answer: false,
-          explanation: "取消し後の第三者との関係は177条の対抗問題。先に登記を備えたCが勝つ。",
-          category: "取消しと第三者"
-        },
-        {
-          question: "Aは、その所有する甲土地を、Bとの間の売買契約により、Bに売却した。Bが所有権移転登記を備えないうちに、Aが死亡し、Cが単独で相続した場合、Cは Bに対して、自らが所有者であると主張して、所有権移転登記をCに移すことを請求することができない。",
-          answer: true,
-          explanation: "相続人Cは「第三者」ではなく、Aの地位を承継するだけ。したがって、Bへの売却義務も承継するので、Bに登記を移すよう請求することはできない。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "Aが20年間所有の意思をもって平穏かつ公然にB所有の土地を占有し、取得時効が完成した。時効完成後、Bが Cに当該土地を売却し、Cが所有権移転登記を備えた場合、Aは登記がなければCに対して所有権を主張することができない。",
-          answer: true,
-          explanation: "取得時効完成後の第三者との関係は177条の対抗問題。登記がなければ対抗できない。",
-          category: "時効・後"
-        },
-        {
-          question: "Aが20年間所有の意思をもって平穏かつ公然にB所有の土地を占有していた。取得時効完成前に、BがCに当該土地を売却し、Cが所有権移転登記を備えた場合、その後Aの取得時効が完成しても、Aは登記がなければCに対して所有権を主張することができない。",
-          answer: false,
-          explanation: "時効完成「前」の第三者Cは、時効完成時の所有者であり「当事者」扱い。したがって、Aは登記なしでCに対抗できる(最判昭和41年11月22日)。",
-          category: "時効・前"
-        },
-        {
-          question: "AはBに甲土地を売却した。Bが登記を備える前に、AがCにも甲土地を売却し、Cが登記を備えた。Bは Aとの売買契約が先であることを理由に、Cに対して所有権を主張することができる。",
-          answer: false,
-          explanation: "二重譲渡では契約の先後は関係ない。登記の先後で決まる(177条)。先に登記したCが勝つ。",
-          category: "二重譲渡"
-        },
-        {
-          question: "AはBに甲土地を売却した。Bが登記を備える前に、AがCにも甲土地を売却し、Cが登記を備えた。Cが、Bの存在を知りながら、Bよりも先に登記を得る目的でAから購入した場合(背信的悪意者)でも、Cは所有権を取得する。",
-          answer: false,
-          explanation: "背信的悪意者は、登記があっても保護されない。判例により、このような者は「第三者」に当たらないとされる。",
-          category: "背信的悪意者"
-        },
-        {
-          question: "Aは、その所有する甲土地をBに売却し、所有権移転登記をBに移転した。その後、AB間の売買契約が詐欺を理由に取り消され、Aが登記を回復する前に、Bが甲土地をCに売却し、Cが所有権移転登記を備えた。この場合、CがBの詐欺について悪意であっても、AはCに対して所有権を主張することができない。",
-          answer: true,
-          explanation: "取消し後の第三者との関係は177条の対抗問題。悪意であっても、先に登記を備えたCが勝つ。",
-          category: "取消しと第三者"
-        },
-        {
-          question: "Aは、その所有する甲土地をBに売却した。Bが登記を備える前に、Cが甲土地を不法に占拠した場合、Bは登記がなくても、Cに対して所有権に基づく返還請求をすることができる。",
-          answer: true,
-          explanation: "不法占拠者は「第三者」ではない。Bは登記なしで返還請求できる。",
-          category: "第三者の範囲"
-        },
-        {
-          question: "AがBに甲土地を売却し、その後AがCにも甲土地を売却した。BとCがいずれも登記を備えていない場合、BはCに対して所有権を主張することができない。",
-          answer: true,
-          explanation: "BもCも登記がない場合、互いに対抗できない。この状態では権利関係が確定しない(どちらが先に登記するかによる)。",
-          category: "二重譲渡"
-        }
-      ];
-
-      const shuffleArray = (array) => {
-        const shuffled = [...array];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-      };
-
-      const startQuiz = (selectedLevel, mode = 'all') => {
-        setLevel(selectedLevel);
-        setReviewMode(mode);
-        const quizzes = selectedLevel === 1 ? quizzesLevel1 : quizzesLevel2;
-        
-        let filteredQuizzes = quizzes;
-        if (mode === 'unmastered') {
-          filteredQuizzes = quizzes.filter((_, idx) => !masteredQuestions.has(`${selectedLevel}-${idx}`));
-        }
-        
-        if (filteredQuizzes.length === 0) {
-          alert('未習得の問題がありません!全問題モードで開始します。');
-          filteredQuizzes = quizzes;
-        }
-        
-        setShuffledQuizzes(shuffleArray(filteredQuizzes));
-        setQuizStarted(true);
-        setQuizFinished(false);
-        setCurrentQuiz(0);
-        setScore(0);
-        setAnswered(false);
-        setSelectedAnswer(null);
-        setAnsweredQuestions([]);
-      };
-
-      const handleAnswer = (answer) => {
-        if (answered) return;
-        setSelectedAnswer(answer);
-        setAnswered(true);
-        const isCorrect = answer === shuffledQuizzes[currentQuiz].answer;
-        if (isCorrect) {
-          setScore(score + 1);
-        }
-        setAnsweredQuestions([...answeredQuestions, { index: currentQuiz, correct: isCorrect }]);
-      };
-
-      const markAsMastered = () => {
-        const quizzes = level === 1 ? quizzesLevel1 : quizzesLevel2;
-        const currentQuizData = shuffledQuizzes[currentQuiz];
-        const originalIndex = quizzes.indexOf(currentQuizData);
-        const key = `${level}-${originalIndex}`;
-        
-        const newMastered = new Set(masteredQuestions);
-        newMastered.add(key);
-        setMasteredQuestions(newMastered);
-        localStorage.setItem('takken_taikou_mastered', JSON.stringify([...newMastered]));
-        
-        nextQuiz();
-      };
-
-      const nextQuiz = () => {
-        if (currentQuiz + 1 >= shuffledQuizzes.length) {
-          setQuizFinished(true);
-        } else {
-          setCurrentQuiz(currentQuiz + 1);
-          setAnswered(false);
-          setSelectedAnswer(null);
-        }
-      };
-
-      const prevQuiz = () => {
-        if (currentQuiz > 0) {
-          setCurrentQuiz(currentQuiz - 1);
-          const prevAnswered = answeredQuestions.find(a => a.index === currentQuiz - 1);
-          if (prevAnswered) {
-            setAnswered(true);
-            setSelectedAnswer(prevAnswered.correct ? shuffledQuizzes[currentQuiz - 1].answer : !shuffledQuizzes[currentQuiz - 1].answer);
-          } else {
-            setAnswered(false);
-            setSelectedAnswer(null);
-          }
-        }
-      };
-
-      const resetQuiz = () => {
-        setQuizStarted(false);
-        setLevel(null);
-      };
-
-      const PersonCircle = ({ label, role, color }) => (
-        <div style={{ textAlign: 'center' }}>
-          <div style={{ 
-            fontSize: '10px', 
-            color: '#2c3e50', 
-            marginBottom: '2px',
-            fontWeight: 'bold',
-            backgroundColor: '#ecf0f1',
-            padding: '2px 6px',
-            borderRadius: '4px'
-          }}>
-            {role}
-          </div>
-          <div style={{
-            width: '40px',
-            height: '40px',
-            borderRadius: '50%',
-            backgroundColor: color,
-            color: 'white',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '20px',
-            fontWeight: 'bold',
-            margin: '0 auto'
-          }}>{label}</div>
-        </div>
-      );
-
-      const renderAbout = () => (
-        <div style={{ padding: '16px' }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#2c3e50',
-              marginBottom: '16px',
-              paddingBottom: '8px',
-              borderBottom: '2px solid #3498db'
-            }}>
-              🎯 このアプリの目的
-            </div>
-            
-            <div style={{
-              fontSize: '18px',
-              fontWeight: 'bold',
-              color: '#e74c3c',
-              marginBottom: '16px',
-              textAlign: 'center',
-              padding: '12px',
-              backgroundColor: '#ffebee',
-              borderRadius: '8px'
-            }}>
-              過去問が解けるようになること
-            </div>
-
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#2c3e50',
-              marginBottom: '12px',
-              marginTop: '24px'
-            }}>
-              📚 合格までの流れ
-            </div>
-
-            <div style={{
-              backgroundColor: '#e3f2fd',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '12px',
-              fontSize: '13px',
-              lineHeight: 1.8
-            }}>
-              <div style={{ fontWeight: 'bold', color: '#1976d2', marginBottom: '4px' }}>
-                【今ここ】このアプリで基礎固め
-              </div>
-              <div style={{ marginLeft: '8px' }}>
-                ↓<br/>
-                原理とパターンを理解する<br/>
-                過去問を解く準備ができる
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#fff3e0',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '12px',
-              fontSize: '13px',
-              lineHeight: 1.8,
-              border: '2px solid #ff9800'
-            }}>
-              <div style={{ fontWeight: 'bold', color: '#e65100', marginBottom: '4px' }}>
-                【次にやること】過去問を回す ★重要★
-              </div>
-              <div style={{ marginLeft: '8px' }}>
-                ↓<br/>
-                12年分を何周も繰り返す<br/>
-                間違えた問題を潰していく<br/>
-                <strong>→ ここが合格のカギ!</strong>
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#f3e5f5',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '16px',
-              fontSize: '13px',
-              lineHeight: 1.8
-            }}>
-              <div style={{ fontWeight: 'bold', color: '#7b1fa2', marginBottom: '4px' }}>
-                【仕上げ】細かい知識を補充
-              </div>
-              <div style={{ marginLeft: '8px' }}>
-                ↓<br/>
-                教科書で確認<br/>
-                → 合格!
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#fff9c4',
-              border: '2px solid #fbc02d',
-              borderRadius: '8px',
-              padding: '12px',
-              fontSize: '13px',
-              lineHeight: 1.8,
-              color: '#f57f17',
-              marginBottom: '16px'
-            }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '4px' }}>
-                💡 宅建は「過去問を回せば合格できる試験」
-              </div>
-              <div style={{ marginLeft: '8px' }}>
-                このアプリはそのための準備です
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#f5f5f5',
-              border: '2px solid #9e9e9e',
-              borderRadius: '8px',
-              padding: '12px',
-              fontSize: '12px',
-              lineHeight: 1.6
-            }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '8px', color: '#424242' }}>
-                💡 このアプリでカバーしていない論点
-              </div>
-              
-              <div style={{ marginBottom: '8px' }}>
-              <div style={{ marginBottom: '8px' }}>
-                以下のような論点は扱っていません：<br/>
-                ・動産の対抗要件(引渡し)<br/>
-                ・明認方法<br/>
-                ・即時取得(192条)<br/>
-                ・占有改定
-              </div>
-
-              <div style={{ fontSize: '11px', color: '#666', marginTop: '8px' }}>
-                このアプリの内容で、この分野の過去問約80%はカバーできます。<br/>
-                残りは教科書や過去問で確認してください。
-              </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-
-      const renderPrinciple = () => (
-        <div style={{ padding: '16px' }}>
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#2c3e50',
-              marginBottom: '12px',
-              borderBottom: '2px solid #9c27b0',
-              paddingBottom: '8px'
-            }}>
-              📖 よく出る法律用語
-            </div>
-            
-            <div style={{ fontSize: '13px', lineHeight: 1.8 }}>
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#1976d2' }}>対抗要件</strong> = 自分の権利を他人に主張するための条件<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:不動産なら「登記」、動産なら「引渡し」
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#1976d2' }}>対抗できる</strong> = 自分の権利を主張できる<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:「私が所有者だ」と主張できる
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#1976d2' }}>対抗できない</strong> = 自分の権利を主張できない<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:登記がないので負ける
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#1976d2' }}>第三者</strong> = 当事者以外の人(ただし正当な権利関係がある人)<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:二重譲渡の相手、差押債権者<br/>
-                  注意:相続人、不法占拠者は「第三者」ではない
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#d32f2f' }}>二重譲渡</strong> = 同じ物を2人に売ること<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:AがBに売った後、同じ土地をCにも売る
-                </span>
-              </div>
-
-              <div style={{ marginBottom: '12px', padding: '8px', backgroundColor: '#f5f5f5', borderRadius: '6px' }}>
-                <strong style={{ color: '#d32f2f' }}>取得時効</strong> = 一定期間占有すると所有権を取得<br/>
-                <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                  例:20年間占有し続けると、自分のものになる
-                </span>
-              </div>
-
-              <div style={{ 
-                marginTop: '16px', 
-                padding: '10px', 
-                backgroundColor: '#fff3e0', 
-                borderRadius: '6px',
-                borderLeft: '4px solid #ff9800'
-              }}>
-                <div style={{ fontSize: '12px', fontWeight: 'bold', color: '#e65100', marginBottom: '6px' }}>
-                  💡 応用編の用語
-                </div>
-                <div style={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}>
-                  <strong style={{ color: '#d84315' }}>背信的悪意者</strong> = 知っててあえと邪魔した人<br/>
-                  <span style={{ fontSize: '11px', color: '#666', marginLeft: '8px' }}>
-                    例:Bの存在を知ってて、あえと先に登記して横取りした
-                  </span><br/>
-                  <span style={{ fontSize: '11px', color: '#d84315', marginLeft: '8px', fontWeight: 'bold' }}>
-                    → こういう人は登記があっても保護されない(悪質すぎるから)
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#e74c3c',
-              marginBottom: '12px',
-              borderBottom: '2px solid #e74c3c',
-              paddingBottom: '8px'
-            }}>
-              原理① 不動産は登記が対抗要件
-            </div>
-            
-            <div style={{ 
-              backgroundColor: '#f5f5f5', 
-              padding: '12px', 
-              borderRadius: '8px', 
-              marginBottom: '16px',
-              fontSize: '13px',
-              lineHeight: 1.8
-            }}>
-              <div style={{ marginBottom: '8px' }}>
-                <strong>取引の流れ:</strong>
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                marginBottom: '8px'
-              }}>
-                <PersonCircle label="A" role="売主" color="#e74c3c" />
-                <div style={{ fontSize: '12px', color: '#666' }}>売却→</div>
-                <div style={{
-                  width: '30px',
-                  height: '30px',
-                  borderRadius: '50%',
-                  backgroundColor: '#95a5a6',
-                  color: 'white',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  opacity: 0.6
-                }}>B</div>
-                <div style={{ fontSize: '12px', color: '#666' }}>登記せず</div>
-              </div>
-              <div style={{ fontSize: '12px', color: '#666', textAlign: 'center', marginBottom: '8px' }}>
-                その後...
-              </div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px'
-              }}>
-                <PersonCircle label="A" role="売主" color="#e74c3c" />
-                <div style={{ fontSize: '12px', color: '#666' }}>→また売却</div>
-                <PersonCircle label="C" role="2人目" color="#27ae60" />
-                <div style={{ fontSize: '12px', color: '#666' }}>→登記!</div>
-              </div>
-            </div>
-
-            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '12px', textAlign: 'center', fontWeight: 'bold' }}>
-              どちらが土地を取得する?
-            </div>
-
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-around',
-              alignItems: 'center',
-              marginBottom: '16px'
-            }}>
-              <div style={{ textAlign: 'center' }}>
-                <PersonCircle label="B" role="先に買った" color="#3498db" />
-                <div style={{ fontSize: '11px', marginTop: '4px' }}>登記なし</div>
-              </div>
-              <div style={{ fontSize: '24px' }}>⚖️</div>
-              <div style={{ textAlign: 'center' }}>
-                <PersonCircle label="C" role="後から買った" color="#27ae60" />
-                <div style={{ fontSize: '11px', marginTop: '4px' }}>登記あり</div>
-              </div>
-            </div>
-
-            <div style={{ backgroundColor: '#e8f5e9', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8 }}>
-              <strong style={{ color: '#2e7d32' }}>答え:Cの勝ち</strong><br/>
-              <br/>
-              理由:<br/>
-              不動産の権利は「登記」で決まる(177条)<br/>
-              契約の先後は関係ない<br/>
-              登記の早い者勝ち
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#3498db',
-              marginBottom: '12px',
-              borderBottom: '2px solid #3498db',
-              paddingBottom: '8px'
-            }}>
-              原理② 善意悪意は関係ない
-            </div>
-            
-            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '12px' }}>
-              対抗要件(177条)では、善意悪意を問わない
-            </div>
-
-            <div style={{ backgroundColor: '#fff3e0', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8, marginBottom: '12px' }}>
-              <strong>例:</strong><br/>
-              Cさん「Bさんが先に買ったの、知ってたよ」(悪意)<br/>
-              でも、Cさんが先に登記 → Cの勝ち
-            </div>
-
-            <div style={{ backgroundColor: '#ffebee', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8 }}>
-              <strong style={{ color: '#c62828' }}>例外:背信的悪意者</strong><br/>
-              <br/>
-              「知ってた」だけでなく、<br/>
-              「あえと横取りした」場合<br/>
-              → 登記があっても保護されない
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-          }}>
-            <div style={{
-              fontSize: '16px',
-              fontWeight: 'bold',
-              color: '#9c27b0',
-              marginBottom: '12px',
-              borderBottom: '2px solid #9c27b0',
-              paddingBottom: '8px'
-            }}>
-              原理③ 「第三者」に注意
-            </div>
-            
-            <div style={{ fontSize: '14px', lineHeight: 1.8, marginBottom: '12px' }}>
-              177条の「第三者」= 正当な権利関係がある人
-            </div>
-
-            <div style={{ backgroundColor: '#e8f5e9', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8, marginBottom: '12px' }}>
-              <strong style={{ color: '#2e7d32' }}>第三者に含まれる:</strong><br/>
-              ・二重譲渡の相手<br/>
-              ・差押債権者<br/>
-              ・転得者(さらに買った人)
-            </div>
-
-            <div style={{ backgroundColor: '#ffebee', padding: '12px', borderRadius: '8px', fontSize: '13px', lineHeight: 1.8 }}>
-              <strong style={{ color: '#c62828' }}>第三者に含まれない:</strong><br/>
-              ・相続人(前の人の地位を引き継ぐだけ)<br/>
-              ・不法占拠者(正当な権利がない)<br/>
-              ・転得者(転々譲渡の後主)<br/>
-              <br/>
-              → これらには登記なしで対抗できる
-            </div>
-
-            <div style={{
-              backgroundColor: '#e3f2fd',
-              padding: '12px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              lineHeight: 1.8,
-              marginTop: '12px',
-              border: '2px solid #2196f3'
-            }}>
-              <strong style={{ color: '#1565c0' }}>💡 転得者(転々譲渡)の特殊性</strong><br/>
-              <br/>
-              <strong>例:A → B → C と転々譲渡</strong><br/>
-              <br/>
-              BとCの関係:<br/>
-              ・BとCは「当事者」(売買契約)<br/>
-              ・登記は不要<br/>
-              <br/>
-              <strong style={{ color: '#d32f2f' }}>AとCの関係:</strong><br/>
-              ・Cは「第三者」ではない<br/>
-              ・CはAに対して登記なしで対抗できる<br/>
-              <br/>
-              <strong>理由:</strong><br/>
-              転々譲渡では、前主(A)と後主(C)は<br/>
-              「当事者と類似の関係」にあるため
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            padding: '16px',
-            marginBottom: '16px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            border: '2px solid #e3f2fd'
-          }}>
-            <div style={{
-              fontSize: '15px',
-              fontWeight: 'bold',
-              color: '#1976d2',
-              marginBottom: '12px',
-              paddingBottom: '8px',
-              borderBottom: '2px solid #e3f2fd'
-            }}>
-              💡 この分野の他の論点
-            </div>
-            
-            <div style={{ fontSize: '13px', lineHeight: 1.8, marginBottom: '12px' }}>
-              このアプリでカバーしているのは、<br/>
-              物権変動「<strong>対抗要件</strong>」の<strong>頻出3パターン</strong>です。
-            </div>
-
-            <div style={{
-              backgroundColor: '#f5f5f5',
-              padding: '12px',
-              borderRadius: '8px',
-              marginBottom: '12px',
-              fontSize: '13px',
-              lineHeight: 1.8
-            }}>
-              <div style={{ fontWeight: 'bold', marginBottom: '6px', color: '#666' }}>
-                以下のような論点は扱っていません:
-              </div>
-              <div style={{ marginLeft: '8px', color: '#666' }}>
-                ・動産の対抗要件(引渡し)<br/>
-                ・明認方法<br/>
-                ・即時取得(192条)<br/>
-                ・占有改定
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#e8f5e9',
-              padding: '12px',
-              borderRadius: '8px',
-              fontSize: '13px',
-              lineHeight: 1.8
-            }}>
-              <div style={{ fontWeight: 'bold', color: '#2e7d32', marginBottom: '4px' }}>
-                💡 でも大丈夫!
-              </div>
-              <div style={{ color: '#2e7d32' }}>
-                このアプリの内容で、この分野の過去問<strong>約80%</strong>はカバーできます。<br/>
-                残りは教科書や過去問で確認してください。
-              </div>
-            </div>
-          </div>
-        </div>
-      );
-
-      const renderTable = () => (
-        <div style={{ padding: '16px' }}>
-          <div style={{
-            backgroundColor: '#e8f5e9',
-            padding: '12px',
-            borderRadius: '8px',
-            marginBottom: '16px',
-            fontSize: '12px'
-          }}>
-            <strong>見方:</strong> 登記がないとどうなるか
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              backgroundColor: '#2c3e50',
-              color: 'white',
-              padding: '12px',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              登記の有無と対抗
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.2fr 1fr 1fr',
-              backgroundColor: '#ecf0f1',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }}>
-              <div style={{ padding: '8px', borderRight: '1px solid #bdc3c7' }}>状況</div>
-              <div style={{ padding: '8px', textAlign: 'center', borderRight: '1px solid #bdc3c7' }}>登記</div>
-              <div style={{ padding: '8px', textAlign: 'center' }}>結果</div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.2fr 1fr 1fr',
-              borderBottom: '1px solid #ecf0f1',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1', backgroundColor: '#e3f2fd' }}>
-                <strong>二重譲渡</strong><br/>
-                <span style={{ fontSize: '10px', color: '#1565c0' }}>先に買ったB、後から買ったC</span>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#27ae60' }}>Cが先に</strong><br/>
-                <span style={{ fontSize: '10px' }}>登記</span>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#27ae60' }}>Cの勝ち</strong><br/>
-                <span style={{ fontSize: '10px' }}>登記の早い者勝ち</span>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.2fr 1fr 1fr',
-              borderBottom: '1px solid #ecf0f1',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1', backgroundColor: '#fff8e1' }}>
-                <strong>時効完成前</strong><br/>
-                <span style={{ fontSize: '10px', color: '#e65100' }}>Aが占有中、BがCに売却</span>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#27ae60' }}>Aは登記なし</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#27ae60' }}>Aの勝ち</strong><br/>
-                <span style={{ fontSize: '10px' }}>当事者なので登記不要</span>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1.2fr 1fr 1fr',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1', backgroundColor: '#f3e5f5' }}>
-                <strong>時効完成後</strong><br/>
-                <span style={{ fontSize: '10px', color: '#7b1fa2' }}>Aが時効取得、BがCに売却</span>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#e74c3c' }}>Aは登記なし</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#e74c3c' }}>Aの負け</strong><br/>
-                <span style={{ fontSize: '10px' }}>完成後は登記が必要</span>
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              backgroundColor: '#7b1fa2',
-              color: 'white',
-              padding: '12px',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              第三者の範囲
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              backgroundColor: '#ecf0f1',
-              fontSize: '11px',
-              fontWeight: 'bold'
-            }}>
-              <div style={{ padding: '8px', borderRight: '1px solid #bdc3c7' }}>相手</div>
-              <div style={{ padding: '8px', textAlign: 'center' }}>登記の必要性</div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              borderBottom: '1px solid #ecf0f1',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#27ae60' }}>二重譲渡の相手</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#e74c3c' }}>必要</strong>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              borderBottom: '1px solid #ecf0f1',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#27ae60' }}>差押債権者</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#e74c3c' }}>必要</strong>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              borderBottom: '1px solid #ecf0f1',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#e74c3c' }}>相続人</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#27ae60' }}>不要</strong><br/>
-                <span style={{ fontSize: '10px' }}>第三者ではない</span>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              fontSize: '12px'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#e74c3c' }}>不法占拠者</strong>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#27ae60' }}>不要</strong><br/>
-                <span style={{ fontSize: '10px' }}>第三者ではない</span>
-              </div>
-            </div>
-
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: '1fr 1fr',
-              fontSize: '12px',
-              backgroundColor: '#f0f9ff'
-            }}>
-              <div style={{ padding: '10px 8px', borderRight: '1px solid #ecf0f1' }}>
-                <strong style={{ color: '#1976d2' }}>転得者(A→B→C)</strong><br/>
-                <span style={{ fontSize: '10px' }}>AとCの関係</span>
-              </div>
-              <div style={{ padding: '10px 8px', textAlign: 'center' }}>
-                <strong style={{ color: '#27ae60' }}>不要</strong><br/>
-                <span style={{ fontSize: '10px' }}>前主と後主は当事者関係</span>
-              </div>
-            </div>
-          </div>
-
-          <div style={{
-            backgroundColor: 'white',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            marginBottom: '16px'
-          }}>
-            <div style={{
-              backgroundColor: '#c62828',
-              color: 'white',
-              padding: '12px',
-              textAlign: 'center',
-              fontWeight: 'bold'
-            }}>
-              特殊なケース
-            </div>
-
-            <div style={{ padding: '16px', fontSize: '13px', lineHeight: 1.8 }}>
-              <div style={{ marginBottom: '12px' }}>
-                <strong style={{ color: '#c62828' }}>背信的悪意者</strong><br/>
-                「Bの存在を知ってて、あえと先に登記して横取り」<br/>
-                → <strong>登記があっても保護されない</strong>
-              </div>
-
-              <div style={{ backgroundColor: '#ffebee', padding: '8px', borderRadius: '6px', fontSize: '12px' }}>
-                通常の悪意者:登記があれば勝つ<br/>
-                背信的悪意者:登記があっても負ける
-              </div>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            <a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_177" target="_blank" rel="noopener noreferrer"
-              style={{ display: 'block', backgroundColor: '#34495e', color: 'white', padding: '12px', borderRadius: '8px', textAlign: 'center', textDecoration: 'none', fontSize: '13px' }}>
-              📖 177条(不動産登記の対抗力)
-            </a>
-          </div>
-        </div>
-      );
-
-      const renderQuiz = () => {
-        if (!quizStarted) {
-          const level1Unmastered = quizzesLevel1.filter((_, idx) => !masteredQuestions.has(`1-${idx}`)).length;
-          const level2Unmastered = quizzesLevel2.filter((_, idx) => !masteredQuestions.has(`2-${idx}`)).length;
-          
-          return (
-            <div style={{ padding: '16px', textAlign: 'center' }}>
-              <div style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                padding: '24px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                marginBottom: '16px'
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
-                <div style={{ fontSize: '18px', fontWeight: 'bold', marginBottom: '16px' }}>千本ノック!</div>
-                
-                <div style={{ fontSize: '14px', color: '#7f8c8d', marginBottom: '24px' }}>
-                  レベルを選んでください
-                </div>
-
-                <div style={{ marginBottom: '24px' }}>
-                  <button
-                    onClick={() => startQuiz(1, 'all')}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#3498db',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    <div>レベル1:基礎(全問題)</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
-                      分かりやすい文章で原理を確認({quizzesLevel1.length}問)
-                    </div>
-                  </button>
-                  
-                  {level1Unmastered > 0 && (
-                    <button
-                      onClick={() => startQuiz(1, 'unmastered')}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#9b59b6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        marginBottom: '12px'
-                      }}
-                    >
-                      レベル1:未習得のみ({level1Unmastered}問)
-                    </button>
-                  )}
-                </div>
-
-                <div>
-                  <button
-                    onClick={() => startQuiz(2, 'all')}
-                    style={{
-                      width: '100%',
-                      backgroundColor: '#e74c3c',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '16px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      cursor: 'pointer',
-                      marginBottom: '8px'
-                    }}
-                  >
-                    <div>レベル2:実戦(全問題)</div>
-                    <div style={{ fontSize: '12px', fontWeight: 'normal', marginTop: '4px' }}>
-                      本試験レベルのややこしい文章({quizzesLevel2.length}問)
-                    </div>
-                  </button>
-                  
-                  {level2Unmastered > 0 && (
-                    <button
-                      onClick={() => startQuiz(2, 'unmastered')}
-                      style={{
-                        width: '100%',
-                        backgroundColor: '#9b59b6',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '8px',
-                        padding: '12px',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      レベル2:未習得のみ({level2Unmastered}問)
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        }
-
-        if (quizFinished) {
-          const percentage = Math.round((score / shuffledQuizzes.length) * 100);
-          let message = '';
-          let emoji = '';
-          if (percentage === 100) {
-            message = '完璧!素晴らしい!';
-            emoji = '🎉';
-          } else if (percentage >= 80) {
-            message = 'よくできました!';
-            emoji = '😊';
-          } else if (percentage >= 60) {
-            message = 'もう少し!復習しよう';
-            emoji = '💪';
-          } else {
-            message = '原理と表を確認してから再挑戦!';
-            emoji = '📚';
-          }
-
-          return (
-            <div style={{ padding: '16px', textAlign: 'center' }}>
-              <div style={{
-                backgroundColor: 'white',
-                borderRadius: '12px',
-                padding: '24px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>{emoji}</div>
-                <div style={{ 
-                  fontSize: '14px', 
-                  color: level === 1 ? '#3498db' : '#e74c3c',
-                  marginBottom: '8px'
-                }}>
-                  レベル{level}:{level === 1 ? '基礎' : '実戦'}
-                  {reviewMode === 'unmastered' && '(未習得のみ)'}
-                </div>
-                <div style={{ fontSize: '24px', fontWeight: 'bold', marginBottom: '8px' }}>
-                  {score} / {shuffledQuizzes.length} 正解
-                </div>
-                <div style={{ fontSize: '18px', color: '#7f8c8d', marginBottom: '8px' }}>
-                  正答率 {percentage}%
-                </div>
-                <div style={{ fontSize: '16px', marginBottom: '24px' }}>
-                  {message}
-                </div>
-                <button
-                  onClick={() => startQuiz(level, reviewMode)}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#3498db',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    marginBottom: '12px'
-                  }}
-                >
-                  同じ設定で再挑戦
-                </button>
-                <button
-                  onClick={resetQuiz}
-                  style={{
-                    width: '100%',
-                    backgroundColor: '#ecf0f1',
-                    color: '#2c3e50',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '16px',
-                    fontSize: '16px',
-                    fontWeight: 'bold',
-                    cursor: 'pointer'
-                  }}
-                >
-                  レベル選択に戻る
-                </button>
-              </div>
-            </div>
-          );
-        }
-
-        const quiz = shuffledQuizzes[currentQuiz];
-        const isCorrect = selectedAnswer === quiz.answer;
-
-        return (
-          <div style={{ padding: '16px' }}>
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '12px'
-            }}>
-              <div style={{ fontSize: '14px', color: '#7f8c8d' }}>
-                <span style={{ 
-                  color: level === 1 ? '#3498db' : '#e74c3c',
-                  fontWeight: 'bold'
-                }}>
-                  Lv.{level}
-                </span>
-                {' '}問題 {currentQuiz + 1} / {shuffledQuizzes.length}
-              </div>
-              <div style={{
-                backgroundColor: '#27ae60',
-                color: 'white',
-                padding: '4px 12px',
-                borderRadius: '12px',
-                fontSize: '11px'
-              }}>
-                {quiz.category}
-              </div>
-            </div>
-
-            <div style={{
-              backgroundColor: '#ecf0f1',
-              borderRadius: '4px',
-              height: '8px',
-              marginBottom: '16px'
-            }}>
-              <div style={{
-                backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
-                borderRadius: '4px',
-                height: '8px',
-                width: `${((currentQuiz + 1) / shuffledQuizzes.length) * 100}%`,
-                transition: 'width 0.3s'
-              }}></div>
-            </div>
-
-            <div style={{
-              backgroundColor: 'white',
-              borderRadius: '12px',
-              padding: '16px',
-              marginBottom: '16px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-              <div style={{ fontSize: '14px', lineHeight: 1.8 }}>
-                {quiz.question}
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-              <button
-                onClick={() => handleAnswer(true)}
-                disabled={answered}
-                style={{
-                  flex: 1,
-                  padding: '16px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: answered ? 'default' : 'pointer',
-                  backgroundColor: answered
-                    ? (quiz.answer === true ? '#27ae60' : (selectedAnswer === true ? '#e74c3c' : '#ecf0f1'))
-                    : '#e3f2fd',
-                  color: answered
-                    ? (quiz.answer === true || selectedAnswer === true ? 'white' : '#2c3e50')
-                    : '#2c3e50'
-                }}
-              >
-                ⭕ 正しい
-              </button>
-              <button
-                onClick={() => handleAnswer(false)}
-                disabled={answered}
-                style={{
-                  flex: 1,
-                  padding: '16px',
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  borderRadius: '12px',
-                  cursor: answered ? 'default' : 'pointer',
-                  backgroundColor: answered
-                    ? (quiz.answer === false ? '#27ae60' : (selectedAnswer === false ? '#e74c3c' : '#ecf0f1'))
-                    : '#fce4ec',
-                  color: answered
-                    ? (quiz.answer === false || selectedAnswer === false ? 'white' : '#2c3e50')
-                    : '#2c3e50'
-                }}
-              >
-                ❌ 誤り
-              </button>
-            </div>
-
-            {answered && (
-              <div style={{
-                backgroundColor: isCorrect ? '#e8f5e9' : '#ffebee',
-                borderRadius: '12px',
-                padding: '16px',
-                marginBottom: '16px'
-              }}>
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  marginBottom: '8px',
-                  color: isCorrect ? '#27ae60' : '#e74c3c'
-                }}>
-                  {isCorrect ? '⭕ 正解!' : '❌ 不正解'}
-                </div>
-                <div style={{ fontSize: '14px', lineHeight: 1.8 }}>
-                  {quiz.explanation}
-                </div>
-              </div>
-            )}
-
-            {answered && (
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                {isCorrect && (
-                  <button
-                    onClick={markAsMastered}
-                    style={{
-                      flex: 1,
-                      padding: '14px',
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      border: '2px solid #9b59b6',
-                      borderRadius: '12px',
-                      backgroundColor: 'white',
-                      color: '#9b59b6',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    ✅ 完璧!次回から出さない
-                  </button>
-                )}
-              </div>
-            )}
-
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-              <button
-                onClick={prevQuiz}
-                disabled={currentQuiz === 0}
-                style={{
-                  flex: 1,
-                  padding: '14px',
-                  fontSize: '14px',
-                  fontWeight: 'bold',
-                  border: 'none',
-                  borderRadius: '12px',
-                  backgroundColor: currentQuiz === 0 ? '#ecf0f1' : '#95a5a6',
-                  color: 'white',
-                  cursor: currentQuiz === 0 ? 'default' : 'pointer'
-                }}
-              >
-                ← 前の問題
-              </button>
-              
-              {answered && (
-                <button
-                  onClick={nextQuiz}
-                  style={{
-                    flex: 1,
-                    padding: '14px',
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    border: 'none',
-                    borderRadius: '12px',
-                    backgroundColor: level === 1 ? '#3498db' : '#e74c3c',
-                    color: 'white',
-                    cursor: 'pointer'
-                  }}
-                >
-                  {currentQuiz + 1 >= shuffledQuizzes.length ? '結果を見る' : '次の問題 →'}
-                </button>
-              )}
-            </div>
-            
-            <button
-              onClick={resetQuiz}
-              style={{
-                width: '100%',
-                padding: '12px',
-                fontSize: '13px',
-                fontWeight: 'bold',
-                border: '2px solid #95a5a6',
-                borderRadius: '12px',
-                backgroundColor: 'white',
-                color: '#95a5a6',
-                cursor: 'pointer'
-              }}
-            >
-              クイズを終了してレベル選択に戻る
-            </button>
-          </div>
-        );
-      };
-
-      return (
-        <div style={{
-          maxWidth: '400px',
-          margin: '0 auto',
-          backgroundColor: '#f8f9fa',
-          minHeight: '100vh'
-        }}>
-          <div style={{
-            backgroundColor: '#2c3e50',
-            color: 'white',
-            padding: '16px',
-            textAlign: 'center'
-          }}>
-            <div style={{ fontSize: '11px', opacity: 0.8 }}>宅建学習アプリ</div>
-            <div style={{ fontSize: '16px', fontWeight: 'bold', marginTop: '2px' }}>権利関係(民法)> 物権変動 > 対抗要件</div>
-            <div style={{ fontSize: '12px', marginTop: '4px', opacity: 0.9 }}>登記の対抗力(177条)</div>
-          </div>
-
-          <div style={{ display: 'flex', backgroundColor: '#ecf0f1' }}>
-            <button
-              onClick={() => setPage('about')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'about' ? '#9b59b6' : '#ecf0f1',
-                color: page === 'about' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              ℹ️ 説明
-            </button>
-            <button
-              onClick={() => setPage('principle')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'principle' ? '#3498db' : '#ecf0f1',
-                color: page === 'principle' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              原理を理解
-            </button>
-            <button
-              onClick={() => setPage('table')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'table' ? '#3498db' : '#ecf0f1',
-                color: page === 'table' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              表で暗記
-            </button>
-            <button
-              onClick={() => setPage('quiz')}
-              style={{
-                flex: 1,
-                padding: '12px',
-                border: 'none',
-                backgroundColor: page === 'quiz' ? '#27ae60' : '#ecf0f1',
-                color: page === 'quiz' ? 'white' : '#2c3e50',
-                fontWeight: 'bold',
-                fontSize: '13px',
-                cursor: 'pointer'
-              }}
-            >
-              🎯 クイズ
-            </button>
-          </div>
-
-          {page === 'about' && renderAbout()}
-          {page === 'principle' && renderPrinciple()}
-          {page === 'table' && renderTable()}
-          {page === 'quiz' && renderQuiz()}
-        </div>
-      );
-    };
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<QuizApp />);
-  </script>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 物権 ＞ 対抗要件</div>
+    <div class="header-desc">不動産登記・二重譲渡・背信的悪意者</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_taikou_youken_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "不動産に関する物権の得喪及び変更は、登記をしなければ第三者に対抗することができない。",
+    "a": true,
+    "ex": "正しい。不動産物権変動の対抗要件は「登記」です（民法177条）。これが対抗要件の大原則です。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "177条の「第三者」とは、全ての第三者を含む。",
+    "a": false,
+    "ex": "誤り。177条の「第三者」とは、当事者およびその包括承継人以外の者で、登記の欠缺を主張する正当な利益を有する者に限られます（判例）。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "売買契約による所有権移転は、当事者間では登記がなくても有効に生じる。",
+    "a": true,
+    "ex": "正しい。物権変動は当事者間の意思表示のみで生じます（民法176条）。登記は第三者に対する対抗要件であり、当事者間の効力には影響しません。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "二重譲渡において、先に売買契約をした者が常に所有権を取得する。",
+    "a": false,
+    "ex": "誤り。二重譲渡の場合、先に「登記」を備えた者が所有権を第三者に対抗できます（民法177条）。契約の先後ではなく、登記の先後で決まります。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "AがBに土地を売り、さらにCにも売った場合、BとCは対抗関係に立つ。",
+    "a": true,
+    "ex": "正しい。同一の不動産が二重に譲渡された場合、BとCは対抗関係に立ち、先に登記を備えた方が所有権を主張できます（民法177条）。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "相続による物権変動のうち、法定相続分の範囲内での取得は、登記なくして第三者に対抗できる。",
+    "a": true,
+    "ex": "正しい。法定相続分の範囲内での相続による権利取得は、登記なくして第三者に対抗できます。ただし、法定相続分を超える部分（遺産分割・遺贈等による取得）は、登記等の対抗要件を備えなければ第三者に対抗できません（民法899条の2第1項）。",
+    "cat": "相続と登記"
+  },
+  {
+    "q": "取消しによる物権の復帰は、取消し後に現れた第三者との関係では対抗問題として処理される。",
+    "a": true,
+    "ex": "正しい。取消し後の第三者については、取消しによる復帰的物権変動と第三者の取得が二重譲渡類似の関係に立ち、登記の先後で優劣が決まります（判例）。",
+    "cat": "取消し・解除と登記"
+  },
+  {
+    "q": "解除による物権の復帰の場合、解除前の第三者は登記がなくても保護される。",
+    "a": false,
+    "ex": "誤り。解除前の第三者は民法545条1項ただし書で保護されますが、「権利を保全するための登記」を備えている必要があります（判例）。",
+    "cat": "取消し・解除と登記"
+  },
+  {
+    "q": "時効による所有権取得は、登記なくして第三者に対抗できる。",
+    "a": false,
+    "ex": "誤り。時効完成後に現れた第三者との関係では対抗問題となり、先に登記を備えた方が優先されます（判例）。時効完成前の第三者には登記なくして対抗できます。",
+    "cat": "時効と登記"
+  },
+  {
+    "q": "不法占拠者に対しては、登記がなくても所有権を主張できる。",
+    "a": true,
+    "ex": "正しい。不法占拠者は177条の「第三者」に該当しません。登記の欠缺を主張する正当な利益がないためです（判例）。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "背信的悪意者は、民法177条の「第三者」に該当しない。",
+    "a": true,
+    "ex": "正しい。登記の欠缺を主張することが信義則に反する者（背信的悪意者）は、177条の「第三者」に当たりません（判例）。単なる悪意者と区別が必要です。",
+    "cat": "背信的悪意者"
+  },
+  {
+    "q": "悪意の第三者は、常に177条の「第三者」に該当しない。",
+    "a": false,
+    "ex": "誤り。単に悪意（先の売買を知っている）というだけでは177条の「第三者」から排除されません。排除されるのは「背信的悪意者」です（判例）。",
+    "cat": "背信的悪意者"
+  },
+  {
+    "q": "仮登記は対抗力を有しないが、後日本登記をすると仮登記の順位が維持される。",
+    "a": true,
+    "ex": "正しい。仮登記自体には対抗力はありませんが、後に本登記がされると仮登記の順位（順位保全効）が維持されます（不動産登記法106条）。",
+    "cat": "登記の効力"
+  },
+  {
+    "q": "賃借権は登記がなくても、建物の引渡しがあれば第三者に対抗できる場合がある。",
+    "a": true,
+    "ex": "正しい。建物賃貸借の場合は建物の引渡し（借地借家法31条）、土地賃借権の場合は借地上の建物の登記（借地借家法10条）により対抗力を得ることができます。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "物権変動の対抗要件として、不動産は登記、動産は引渡しが必要である。",
+    "a": true,
+    "ex": "正しい。不動産の対抗要件は登記（民法177条）、動産の対抗要件は引渡し（民法178条）です。この基本的な区別を押さえましょう。",
+    "cat": "対抗要件の基本"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "遺産分割による不動産の取得は、法定相続分を超える部分については登記がなければ第三者に対抗できない。",
+    "a": true,
+    "ex": "正しい。2019年改正により、相続による権利の取得でも、法定相続分を超える部分は登記等の対抗要件なしには第三者に対抗できません（民法899条の2）。",
+    "cat": "相続と登記"
+  },
+  {
+    "q": "時効完成前の所有者から譲り受けた者に対して、時効取得者は登記なくして対抗できる。",
+    "a": true,
+    "ex": "正しい。時効完成前に現れた第三者は、時効取得者の当事者的地位にあるため、対抗問題にはなりません。時効取得者は登記なくして対抗できます（判例）。",
+    "cat": "時効と登記"
+  },
+  {
+    "q": "時効完成後に目的不動産を取得した第三者は、時効取得者との関係で対抗関係に立つ。",
+    "a": true,
+    "ex": "正しい。時効完成後に第三者が現れた場合は、二重譲渡類似の関係となり、登記の先後で優劣が決まります（判例）。",
+    "cat": "時効と登記"
+  },
+  {
+    "q": "背信的悪意者からの転得者は、その転得者自身が背信的悪意者でなければ177条の「第三者」として保護される。",
+    "a": true,
+    "ex": "正しい。背信的悪意者からの転得者であっても、転得者自身が背信的悪意者でなければ、177条の「第三者」に該当し、登記を備えれば保護されます（判例）。",
+    "cat": "背信的悪意者"
+  },
+  {
+    "q": "解除後の第三者は、解除者との関係で対抗関係に立ち、登記の先後で優劣が決まる。",
+    "a": true,
+    "ex": "正しい。解除後に現れた第三者については、解除による復帰的物権変動と第三者の取得が対抗関係に立ち、登記の先後で決まります（判例）。",
+    "cat": "取消し・解除と登記"
+  },
+  {
+    "q": "取消し前の第三者は、96条3項により善意無過失であれば保護されるが、この場合も登記は不要である。",
+    "a": true,
+    "ex": "正しい。96条3項の善意無過失の第三者は、登記がなくても保護されます。これは対抗要件の問題ではなく、意思表示の効力の問題だからです。",
+    "cat": "取消し・解除と登記"
+  },
+  {
+    "q": "共同相続人の一人が、自己の相続分を超えて不動産の全部について登記を備えた場合、その登記は他の共同相続人の持分については無効である。",
+    "a": true,
+    "ex": "正しい。共同相続の場合、各相続人は法定相続分に応じた持分を有します。一人が全部の登記を得ても、他の相続人の持分については無権利であり、その部分の登記は無効です。",
+    "cat": "相続と登記"
+  },
+  {
+    "q": "地上権の設定は、登記をしなければ第三者に対抗できない。",
+    "a": true,
+    "ex": "正しい。地上権も物権ですので、177条により登記が対抗要件となります。地上権の設定登記を備えなければ、第三者に対抗できません。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "2020年改正後の民法では、詐害行為取消権を行使した場合、取消しの効力は債務者と受益者の間に相対的に生じ、取り消された財産は当然には債務者に復帰しない。",
+    "a": true,
+    "ex": "正しい。2020年改正により、詐害行為取消権の効力は相対的なものとなりました（民法425条）。取消しによって財産が当然に債務者に戻るわけではなく、受益者または転得者に対して財産の返還または価額の償還を請求する形になります。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "不動産の二重譲渡において、第二買主が先に登記を備えた場合、第一買主は第二買主に対して不法行為に基づく損害賠償を請求することができる。",
+    "a": false,
+    "ex": "誤り。二重譲渡の第二買主が先に登記を備えた場合、自由競争の範囲内であれば違法性がなく、不法行為は成立しません。ただし、第二買主が背信的悪意者に該当する場合は別です（判例）。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "中間省略登記は、登記原因が異なるため原則として認められない。",
+    "a": true,
+    "ex": "正しい。A→B→Cと所有権が移転した場合に、A→Cと直接の登記をする中間省略登記は原則として認められません。登記は実体的権利変動を忠実に反映すべきだからです。",
+    "cat": "登記の効力"
+  },
+  {
+    "q": "登記に公信力はなく、登記を信頼して取引した者が必ず保護されるわけではない。",
+    "a": true,
+    "ex": "正しい。日本の不動産登記には公信力がありません。したがって、登記を信頼して取引しても、登記名義人が真の権利者でなければ権利を取得できない場合があります。",
+    "cat": "登記の効力"
+  },
+  {
+    "q": "抵当権の設定は、登記をしなくても当事者間では有効に成立する。",
+    "a": true,
+    "ex": "正しい。抵当権も物権変動の一般原則により、当事者間の合意のみで成立します（民法176条）。登記は第三者に対する対抗要件です。",
+    "cat": "対抗要件の基本"
+  },
+  {
+    "q": "特定遺贈による不動産の取得は、登記を備えなければ第三者に対抗できない。",
+    "a": true,
+    "ex": "正しい。特定遺贈による不動産取得は、物権変動の一般原則（民法177条）により、登記を備えなければ第三者に対抗できません（判例）。なお、包括遺贈の場合は相続と同様の扱いとなります（民法990条）。",
+    "cat": "相続と登記"
+  },
+  {
+    "q": "二重譲渡の第一買主は、登記を備えた第二買主に対して、売主への債務不履行に基づく損害賠償を請求できる。",
+    "a": true,
+    "ex": "正しい。第一買主は第二買主に対しては対抗できませんが、売主に対しては売買契約に基づく債務不履行責任（履行不能）を追及して損害賠償を請求できます。",
+    "cat": "二重譲渡"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🗺️ 基本構造を理解する</div><div class="info-box" style="background:#e0f7fa"><strong style="color:#00838f">対抗要件の登場人物：</strong><br><br><div style="text-align:center;font-size:15px;line-height:2;letter-spacing:1px"><span style="background:#1565c0;color:white;padding:4px 10px;border-radius:6px">A（売主）</span><span style="margin:0 8px;color:#555">→</span><span style="background:#2e7d32;color:white;padding:4px 10px;border-radius:6px">B（第一買主）</span><br><span style="margin:0 32px"></span>↘<br><span style="margin:0 8px"></span><span style="background:#6a1b9a;color:white;padding:4px 10px;border-radius:6px">C（第二買主）</span></div><br>AがBにもCにも同じ不動産を売った場合、<br><strong>先に登記を備えた方</strong>が所有権を主張できます。</div><div class="info-box" style="background:#f5f5f5"><strong>処理の流れ：</strong><br>① 当事者間では意思表示だけで物権変動が生じる（176条）<br>② 第三者に対抗するには登記が必要（177条）<br>③ その「第三者」は登記の欠缺を主張する正当な利益を持つ者に限られる<br>④ 背信的悪意者・不法占拠者等は③から除外される</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで対抗要件の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・動産の対抗要件（引渡し）の詳細<br>・明認方法<br>・即時取得（192条）<br>・占有改定</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最重要】悪意 ≠ 背信的悪意者</strong><br>単に事情を知っている（悪意）だけでは177条の第三者から排除されません。信義則に反する程度の悪意（背信的悪意者）でなければ排除されないのです。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【時効と登記のパターン】</strong><br>時効完成<strong>前</strong>の第三者 → 対抗問題にならない（時効取得者勝ち）<br>時効完成<strong>後</strong>の第三者 → 対抗問題（登記の先後で決まる）<br>「いつ第三者が現れたか」がカギです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">177条の「第三者」に該当しない者（判例）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">該当しない者</th><th style="border:1px solid #90caf9">理由</th></tr><tr><td style="border:1px solid #90caf9;padding:6px">不法占拠者</td><td style="border:1px solid #90caf9;padding:6px">正当な利益なし</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:6px">背信的悪意者</td><td style="border:1px solid #90caf9;padding:6px">信義則違反</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">無権利者</td><td style="border:1px solid #90caf9;padding:6px">正当な利益なし</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:6px">詐欺・強迫により登記を取得した者</td><td style="border:1px solid #90caf9;padding:6px">正当な利益なし</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 対抗要件とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「自分の権利を第三者に主張するために必要な条件」です。<br>不動産なら「登記」、動産なら「引渡し」が対抗要件です。</div><div class="info-box" style="background:#f5f5f5"><strong>物権変動の2つの原則：</strong><br>① <strong>意思主義</strong>（176条）：当事者の意思表示だけで物権変動が生じる<br>② <strong>対抗要件主義</strong>（177条）：第三者に主張するには登記が必要<br>→ 「当事者間では有効。でも第三者には登記がないと主張できない」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔄 二重譲渡</div><div class="info-box" style="background:#fce4ec"><strong>AがBにもCにも同じ土地を売った場合</strong><br>BもCも有効に所有権を取得しています。<br>しかし、先に<strong>登記を備えた方</strong>が最終的に所有権を主張できます。</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>契約の先後は関係ない！</strong><br>Bが先に契約していても、Cが先に登記を備えればCの勝ちです。これが177条の核心です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🛡️ 背信的悪意者排除論</div><div class="info-box" style="background:#e8f5e9"><strong>背信的悪意者 ＝ 登記の欠缺を主張することが信義則に反する者</strong><br>単なる悪意（事情を知っている）だけでは排除されません。<br>登記の欠缺を利用して不当な利益を得ようとするような場合に限って排除されます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📝 登記の効力</div><div class="info-box" style="background:#f3e5f5"><strong>日本の登記には「公信力」がない</strong><br>登記を信頼して取引しても、登記が実体と異なれば保護されない場合があります。<br>フランスやドイツとは異なる日本独自のルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>登記の種類：</strong><br>・<strong>本登記</strong>：完全な対抗力あり<br>・<strong>仮登記</strong>：対抗力なし。ただし順位保全効あり</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_176" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法176条〜（物権変動）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">対抗要件クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
 </body>
 </html>
