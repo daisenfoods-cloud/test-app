@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 時効クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 民法総則 ＞ 時効</div>
+    <div class="header-desc">取得時効・消滅時効・完成猶予と更新・援用</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_jikou_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "所有権の取得時効が成立するためには、所有の意思をもって一定期間占有を継続する必要がある。",
+    "a": true,
+    "ex": "正しい。所有権の取得時効が成立するには、「所有の意思」をもって、平穏かつ公然に一定期間（20年間、または善意無過失なら10年間）占有を継続する必要があります（民法162条）。",
+    "cat": "取得時効の要件"
+  },
+  {
+    "q": "他人の土地を善意かつ無過失で占有を開始した者は、10年間の占有継続により、その土地の所有権を時効取得できる。",
+    "a": true,
+    "ex": "正しい。占有開始時に善意かつ無過失であれば、10年間の占有継続で取得時効が成立します（民法162条2項）。善意無過失でない場合は20年間必要です（同条1項）。",
+    "cat": "取得時効の要件"
+  },
+  {
+    "q": "他人の土地を賃借して使用している者は、賃料を支払い続けて20年間占有しても、その土地の所有権を時効取得することはできない。",
+    "a": true,
+    "ex": "正しい。賃借人として土地を使用している者には「所有の意思」がありません。所有の意思のない占有（他主占有）では、いくら長期間占有しても取得時効は成立しません（民法162条）。",
+    "cat": "取得時効の要件"
+  },
+  {
+    "q": "取得時効の成立に必要な「所有の意思」の有無は、占有者の内心の意思で決まる。",
+    "a": false,
+    "ex": "誤り。「所有の意思」の有無は、占有者の内心ではなく、占有取得の原因となった事実によって外形的・客観的に判断されます。売買であれば自主占有、賃貸借であれば他主占有となります（判例）。",
+    "cat": "取得時効の要件"
+  },
+  {
+    "q": "取得時効を主張する者は、自己の占有期間だけでなく、前主の占有期間を合わせて主張することもできる。",
+    "a": true,
+    "ex": "正しい。占有者は、自己の占有に前主の占有を合算して時効を主張できます（民法187条1項）。ただし、前主の占有を合算する場合は、前主の瑕疵（悪意・過失）も引き継ぎます（同条2項）。",
+    "cat": "占有の承継"
+  },
+  {
+    "q": "消滅時効は、権利を行使することができることを知った時から5年間行使しないときに完成する。",
+    "a": true,
+    "ex": "正しい。債権の消滅時効は、①権利を行使できることを知った時（主観的起算点）から5年間、または②権利を行使できる時（客観的起算点）から10年間のいずれか早い方で完成します（民法166条1項）。",
+    "cat": "消滅時効の期間"
+  },
+  {
+    "q": "消滅時効は、権利を行使できる時から一律に10年間で完成する。",
+    "a": false,
+    "ex": "誤り。2020年民法改正により、消滅時効は「知った時から5年」または「権利を行使できる時から10年」のいずれか早い方で完成します（民法166条1項）。一律10年ではありません。",
+    "cat": "消滅時効の期間"
+  },
+  {
+    "q": "時効は、当事者が援用しなければ、裁判所がこれによって裁判をすることができない。",
+    "a": true,
+    "ex": "正しい。時効は当事者の援用がなければ効力を生じません（民法145条）。裁判所が自ら時効の完成を認定して判決することはできません。",
+    "cat": "時効の援用"
+  },
+  {
+    "q": "時効の利益は、時効が完成する前であっても放棄することができる。",
+    "a": false,
+    "ex": "誤り。時効の利益はあらかじめ放棄することができません（民法146条）。時効完成後であれば放棄できますが、完成前の放棄は無効です。",
+    "cat": "時効の援用"
+  },
+  {
+    "q": "裁判上の請求があった場合、その事由が終了するまでの間は時効の完成が猶予される。",
+    "a": true,
+    "ex": "正しい。裁判上の請求、支払督促、訴え提起前の和解などがあった場合、その事由が終了するまでの間は時効は完成しません（民法147条1項）。これを時効の完成猶予といいます。",
+    "cat": "完成猶予と更新"
+  },
+  {
+    "q": "確定判決によって権利が確定した場合、時効はその事由が終了した時から新たにその進行を始める。",
+    "a": true,
+    "ex": "正しい。確定判決またはこれと同一の効力を有するものによって権利が確定したときは、時効は更新され、新たにその進行を始めます（民法147条2項）。",
+    "cat": "完成猶予と更新"
+  },
+  {
+    "q": "訴えが取り下げられた場合でも、訴え提起の時点で時効は更新される。",
+    "a": false,
+    "ex": "誤り。訴えが取り下げられた場合は、確定判決等によって権利が確定することなく事由が終了した場合にあたり、時効は更新されません。その終了の時から6か月間の完成猶予が生じるにとどまります（民法147条1項）。",
+    "cat": "完成猶予と更新"
+  },
+  {
+    "q": "権利についての協議を行う旨の合意が書面でされたときは、一定期間、時効の完成が猶予される。",
+    "a": true,
+    "ex": "正しい。当事者間で権利について協議を行う旨の合意が書面（電磁的記録を含む）でされた場合、一定期間（原則1年間）時効の完成が猶予されます（民法151条）。2020年改正で新設された制度です。",
+    "cat": "完成猶予と更新"
+  },
+  {
+    "q": "債務者が債務の承認をした場合、時効は更新される。",
+    "a": true,
+    "ex": "正しい。債務者が権利の承認をしたときは、時効は更新され、その時から新たにその進行を始めます（民法152条1項）。「払います」と認めた時点で時効はリセットされます。",
+    "cat": "完成猶予と更新"
+  },
+  {
+    "q": "所有権以外の財産権であっても、一定の要件を満たせば時効によって取得することができる。",
+    "a": true,
+    "ex": "正しい。所有権以外の財産権（地上権、地役権、賃借権など）も、自己のためにする意思をもって一定期間行使することにより、時効取得が可能です（民法163条）。",
+    "cat": "取得時効の要件"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "土地の買主が代金を支払い引渡しを受けて占有を開始した後、同じ土地が第三者にも売却されたことを知った場合、その時点で買主の「所有の意思」は失われる。",
+    "a": false,
+    "ex": "誤り。所有の意思は占有取得の原因（売買契約）によって外形的・客観的に決まります。後から二重譲渡の事実を知った（悪意になった）としても、占有開始時の売買に基づく所有の意思は消えません（判例）。",
+    "cat": "所有の意思"
+  },
+  {
+    "q": "取得時効の完成前に、占有している不動産が第三者に譲渡された場合、時効取得者はその第三者に対して登記なくして所有権を主張できる。",
+    "a": true,
+    "ex": "正しい。時効完成前に目的物が第三者に譲渡された場合、時効取得者とその第三者は「当事者」類似の関係に立つため、時効取得者は登記がなくても所有権を主張できます（判例）。",
+    "cat": "時効と登記"
+  },
+  {
+    "q": "取得時効が完成した後に、元の所有者から不動産を譲り受けた第三者に対しては、時効取得者は登記なくして所有権を主張できる。",
+    "a": false,
+    "ex": "誤り。時効完成後に元の所有者から不動産を譲り受けた第三者と時効取得者は「対抗関係」に立ちます。時効取得者は登記を備えなければ、その第三者に所有権を対抗できません（民法177条、判例）。",
+    "cat": "時効と登記"
+  },
+  {
+    "q": "保証人は、主たる債務者の消滅時効を援用することができる。",
+    "a": true,
+    "ex": "正しい。保証人は、主たる債務の消滅時効が完成すれば、自己の保証債務も消滅するという正当な利益を有するため、主たる債務の消滅時効を援用できます（民法145条、判例）。",
+    "cat": "時効の援用権者"
+  },
+  {
+    "q": "主たる債務者が消滅時効完成後に時効の利益を放棄した場合、保証人はもはや時効を援用することができない。",
+    "a": false,
+    "ex": "誤り。主たる債務者が時効利益を放棄しても、その効果は保証人には及びません。保証人は独立して消滅時効を援用することができます（民法145条、判例）。",
+    "cat": "時効の援用権者"
+  },
+  {
+    "q": "後順位抵当権者は、先順位抵当権の被担保債権について消滅時効を援用することができる。",
+    "a": false,
+    "ex": "誤り。後順位抵当権者は、先順位抵当権の被担保債権が消滅すれば順位が上がるという利益があるものの、「権利の消滅について正当な利益を有する者」には該当せず、援用することはできません（民法145条、判例）。",
+    "cat": "時効の援用権者"
+  },
+  {
+    "q": "詐害行為取消権を行使された受益者は、その取消権の基礎となる被保全債権の消滅時効を援用することができる。",
+    "a": true,
+    "ex": "正しい。詐害行為の受益者は、被保全債権が時効消滅すれば詐害行為として取り消されなくなるという正当な利益を有するため、消滅時効を援用できます（民法145条、424条、判例）。",
+    "cat": "時効の援用権者"
+  },
+  {
+    "q": "債務者が消滅時効の完成を知らずに債務を承認した場合、その後に時効の完成を知っても、もはや時効を援用することはできない。",
+    "a": true,
+    "ex": "正しい。消滅時効完成後に債務者が債務を承認した場合、時効完成の事実を知らなかったとしても、信義則上、その後に時効を援用することは許されません（判例）。承認を受けた債権者の信頼を保護するためです。",
+    "cat": "時効完成後の承認"
+  },
+  {
+    "q": "訴えの提起後に請求棄却の判決が確定した場合、時効は更新される。",
+    "a": false,
+    "ex": "誤り。請求棄却の判決が確定した場合は、訴えを提起した者に権利がないことが確定したものであり、確定判決等によって権利が「確定したとき」には該当しません。時効の更新は生じず、完成猶予のみです（民法147条）。",
+    "cat": "完成猶予と更新の区別"
+  },
+  {
+    "q": "訴えの提起後に裁判上の和解が成立した場合、確定判決と同一の効力を有するため、時効は更新される。",
+    "a": true,
+    "ex": "正しい。裁判上の和解は確定判決と同一の効力を有します。したがって、権利が「確定したとき」に該当し、和解成立時に時効は更新されます（民法147条2項）。",
+    "cat": "完成猶予と更新の区別"
+  },
+  {
+    "q": "訴えの提起後に訴えが却下された場合、権利が確定することなく事由が終了したにすぎないため、時効は更新されない。",
+    "a": true,
+    "ex": "正しい。訴えの却下は、形式的な理由で裁判が開始されなかった場合（いわば門前払い）であり、権利が確定したとはいえません。時効の更新は生じず、終了の時から6か月間の完成猶予にとどまります（民法147条）。",
+    "cat": "完成猶予と更新の区別"
+  },
+  {
+    "q": "土地を他人に賃貸して間接的に占有している場合、賃貸人自身は直接占有していないため、取得時効を主張することはできない。",
+    "a": false,
+    "ex": "誤り。取得時効に必要な占有は、直接占有に限られません。賃借人を通じた間接占有でも、所有の意思その他の要件を満たせば取得時効を主張できます（民法181条参照、判例）。",
+    "cat": "占有と時効"
+  },
+  {
+    "q": "占有者が第三者に占有を奪われた場合、占有回収の訴えにより占有を回復したときは、奪われていた期間も取得時効の期間に算入される。",
+    "a": true,
+    "ex": "正しい。占有回収の訴えを提起した場合、占有権は消滅しません（民法203条ただし書）。そのため、占有を奪われても占有回収の訴えにより回復すれば、占有の継続が認められ、奪われていた期間も取得時効の期間に算入されます（民法164条参照、判例）。",
+    "cat": "占有と時効"
+  },
+  {
+    "q": "農地について賃借権を時効取得するには、農地法の許可が必要である。",
+    "a": false,
+    "ex": "誤り。農地の賃借権を時効取得する場合、農地法の許可は不要です（判例）。長期間にわたり賃料を支払い耕作を継続している事実があれば、農地法の趣旨に反しないと考えられるためです（民法163条）。",
+    "cat": "占有と時効"
+  },
+  {
+    "q": "物上保証人は、被担保債権の消滅時効を援用することができる。",
+    "a": true,
+    "ex": "正しい。物上保証人は、被担保債権が時効消滅すれば自己の不動産に設定された抵当権も消滅するという正当な利益を有するため、消滅時効を援用できます（民法145条）。",
+    "cat": "時効の援用権者"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで時効の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・不法行為による損害賠償請求権の消滅時効（724条）の詳細<br>・生命・身体の侵害による損害賠償請求権の特則（167条）<br>・所有権は消滅時効にかからないことの詳細<br>・仮差押え・仮処分による完成猶予の詳細<br>・天災等による完成猶予（161条）の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 時効の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【取得時効（162条・163条）】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px">占有開始</span> ─── 一定期間の占有継続 ─── <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px">時効完成</span> → <span style="background:#fff9c4;padding:3px 8px;border-radius:4px">援用</span><br>├ 善意無過失 → <strong style="color:#2e7d32">10年</strong><br>└ それ以外 → <strong style="color:#d32f2f">20年</strong><br><br><div style="font-weight:bold;margin-bottom:4px">【消滅時効（166条）】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px">権利行使可能</span> ─── 一定期間の不行使 ─── <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px">時効完成</span> → <span style="background:#fff9c4;padding:3px 8px;border-radius:4px">援用</span><br>├ 知った時から → <strong style="color:#2e7d32">5年</strong>（主観的起算点）<br>└ 行使可能時から → <strong style="color:#d32f2f">10年</strong>（客観的起算点）<br><span style="font-size:12px;color:#666">※ いずれか早い方で完成</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最頻出】「所有の意思」は客観的に決まる</strong><br>「所有の意思」は占有者の主観ではなく、<strong>占有を開始した原因</strong>で判断します。<br>覚え方：「<strong>買ったのか、借りたのか？で決まる。後から何を知っても変わらない。</strong>」</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【最頻出】時効完成「前」vs「後」の第三者</strong><br>時効完成<strong>前</strong>の第三者 → 「当事者」の関係 → <strong style="color:#2e7d32">登記不要</strong><br>時効完成<strong>後</strong>の第三者 → 「対抗関係」 → <strong style="color:#d32f2f">登記必要</strong><br>覚え方：「<strong>前なら登記不要、後なら登記必要</strong>」</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【ひっかけ注意】時効完成後の債務承認</strong><br>時効完成を<strong>知らなくても</strong>、一度「払います」と承認すると時効援用はできなくなります（信義則）。<br>覚え方：「<strong>『知らなかった』は通用しない。一度払うと言ったらアウト。</strong>」</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#c62828">【区別が大事】更新される場合 vs されない場合</strong><br><strong style="color:#2e7d32">更新あり</strong>：確定判決、裁判上の和解（＝確定判決と同一の効力）<br><strong style="color:#d32f2f">更新なし</strong>：訴え取下げ、訴え却下、請求棄却 → 完成猶予のみ（6か月）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">時効の援用ができる者・できない者（145条）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">者</th><th style="border:1px solid #90caf9">援用</th><th style="border:1px solid #90caf9">理由</th></tr><tr><td>保証人</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>保証債務が消滅する正当な利益</td></tr><tr style="background:#fafafa"><td>物上保証人</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>抵当権が消滅する正当な利益</td></tr><tr><td>第三取得者</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>抵当権が消滅する正当な利益</td></tr><tr style="background:#fafafa"><td>詐害行為の受益者</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>取消権を免れる正当な利益</td></tr><tr><td>後順位抵当権者</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌</td><td>順位が上がるだけ＝正当な利益なし</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px 0">裁判上の請求と時効の効果（147条）</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">事由の終了パターン</th><th style="border:1px solid #9fa8da">完成猶予</th><th style="border:1px solid #9fa8da">更新</th></tr><tr><td>確定判決（権利確定）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td></tr><tr style="background:#fafafa"><td>裁判上の和解</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td></tr><tr><td>訴えの取下げ</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕（6か月）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌</td></tr><tr style="background:#fafafa"><td>訴えの却下（門前払い）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕（6か月）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌</td></tr><tr><td>請求棄却</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕（6か月）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px 0">取得時効と第三者の登記の要否</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">第三者の出現時期</th><th style="border:1px solid #ffcc80">関係</th><th style="border:1px solid #ffcc80">登記</th></tr><tr><td>時効完成<strong>前</strong>の第三者</td><td style="text-align:center">当事者の関係</td><td style="text-align:center;color:#2e7d32;font-weight:bold">不要</td></tr><tr style="background:#fafafa"><td>時効完成<strong>後</strong>の第三者</td><td style="text-align:center">対抗関係</td><td style="text-align:center;color:#d32f2f;font-weight:bold">必要</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 時効とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「一定の事実状態が長期間続いたとき、その状態に合わせて権利関係を確定させる制度」です。<br><br><strong>2つの種類：</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">取得時効</span>：長期間占有した人が所有権などを取得する<br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">消滅時効</span>：長期間行使されなかった権利が消滅する</div><div class="info-box" style="background:#f5f5f5">時効は自動的に効力が生じるのではなく、<strong>当事者が「援用」（主張）して初めて効果が発生</strong>します（民法145条）。時効が完成しても、援用しなければ何も起こりません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 取得時効（162条・163条）</div><div class="info-box" style="background:#e8f5e9"><strong>取得時効の要件：</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> <strong>所有の意思</strong>をもった占有（自主占有）<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> <strong>平穏かつ公然</strong>に占有<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> 一定期間の占有継続<br>→ 善意無過失：<strong>10年</strong> ／ それ以外：<strong>20年</strong></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>「所有の意思」が最重要ポイント</strong><br>所有の意思は「自分のものだと思っていたかどうか」という主観ではありません。<strong>占有を始めた原因</strong>によって外形的・客観的に決まります。<br><br><strong>自主占有（所有の意思あり）</strong>：売買で取得した場合<br><strong>他主占有（所有の意思なし）</strong>：賃貸借で借りている場合<br><br>「買ったのか、借りたのか？」── これで決まります。</div><div class="info-box" style="background:#f5f5f5"><strong>占有の承継（187条）</strong><br>前主の占有期間を自己の占有期間に合算できます。<br>ただし、合算する場合は前主の<strong>瑕疵</strong>（悪意・過失）も引き継ぎます。<br>いいとこ取りはできません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⏰ 消滅時効（166条）</div><div class="info-box" style="background:#fce4ec"><strong>消滅時効の期間（2020年改正で統一）：</strong><br><span style="display:inline-block;background:#f8bbd0;padding:2px 8px;border-radius:4px;font-weight:bold">主観的起算点</span>：権利を行使できることを<strong>知った時</strong>から <strong style="color:#d32f2f">5年</strong><br><span style="display:inline-block;background:#f8bbd0;padding:2px 8px;border-radius:4px;font-weight:bold">客観的起算点</span>：権利を行使<strong>できる時</strong>から <strong style="color:#d32f2f">10年</strong><br><br>いずれか<strong>早い方</strong>で時効が完成します。</div><div class="info-box" style="background:#f5f5f5">💡 改正前は「債権は10年」「商事債権は5年」など複雑でしたが、改正後は上記の二本立てに統一されました。試験では新法（改正後）の知識が問われます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⏸️ 完成猶予と更新（147条〜）</div><div class="info-box" style="background:#f3e5f5"><strong style="color:#6a1b9a">完成猶予</strong>：時効の完成を一時的にストップさせること<br><strong style="color:#6a1b9a">更新</strong>：時効期間をリセットして最初から数え直すこと<br><br>旧法では「停止」「中断」と呼ばれていた概念が、改正で整理されました。</div><div class="info-box" style="background:#f5f5f5"><strong>裁判上の請求（147条）の仕組み：</strong><br><span style="display:inline-block;background:#e1bee7;padding:2px 8px;border-radius:4px;font-weight:bold">裁判中</span> → 時効の完成が猶予される<br><span style="display:inline-block;background:#e1bee7;padding:2px 8px;border-radius:4px;font-weight:bold">権利が確定</span>（確定判決・裁判上の和解） → <strong style="color:#2e7d32">時効更新</strong><br><span style="display:inline-block;background:#e1bee7;padding:2px 8px;border-radius:4px;font-weight:bold">権利が確定しない</span>（取下げ・却下・棄却） → <strong style="color:#d32f2f">更新なし</strong>（6か月の完成猶予のみ）</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>裁判上の和解が「更新される」のを見落とさない！</strong><br>取下げ・却下・棄却は更新なし。でも<strong>裁判上の和解</strong>は確定判決と同一の効力があるため<strong>更新あり</strong>。ここが試験で問われます。</div><div class="info-box" style="background:#e8f5e9"><strong>承認（152条）</strong><br>債務者が「払います」と認めると、時効は<strong>即座に更新</strong>されます。<br>裁判手続きを経る必要がないので、実務では最も簡単な更新方法です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🤝 時効の援用（145条）</div><div class="info-box" style="background:#e0f7fa"><strong>援用 ＝ 「時効の利益を受けます」と主張すること</strong><br>時効が完成しても、援用しない限り効果は発生しません。<br><br><strong>援用できる者の範囲：</strong><br>「当事者」＝ 権利の消滅について<strong>正当な利益を有する者</strong><br>保証人、物上保証人、第三取得者、詐害行為の受益者 → <strong style="color:#2e7d32">援用できる</strong><br>後順位抵当権者 → <strong style="color:#d32f2f">援用できない</strong>（順位が上がるだけで「正当な利益」に該当しない）</div><div class="info-box" style="background:#f5f5f5"><strong>時効利益の放棄（146条）</strong><br>時効完成<strong>前</strong>の放棄 → <strong style="color:#d32f2f">無効</strong>（あらかじめ放棄させて借金を永久に残すのを防ぐ）<br>時効完成<strong>後</strong>の放棄 → <strong style="color:#2e7d32">有効</strong>（自分の意思で利益を手放すのは自由）</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_145" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法145条〜（時効）</a><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_162" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法162条〜（取得時効）</a><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_166" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法166条〜（消滅時効）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">時効クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
