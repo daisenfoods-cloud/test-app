@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 相続クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 相続</div>
+    <div class="header-desc">法定相続分・代襲相続・承認放棄・遺留分・配偶者居住権</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_souzoku_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "被相続人の配偶者は、他にどのような相続人がいる場合であっても、常に相続人となる。",
+    "a": true,
+    "ex": "正しい。配偶者は常に相続人となります（民法890条）。第1順位（子）、第2順位（直系尊属）、第3順位（兄弟姉妹）のいずれと組み合わせても、配偶者は相続人です。",
+    "cat": "相続人の順位"
+  },
+  {
+    "q": "被相続人に子がいる場合でも、被相続人の父母は子と一緒に相続人となることができる。",
+    "a": false,
+    "ex": "誤り。相続人には順位があり、第1順位の子がいる場合、第2順位の直系尊属（父母）は相続人になりません（民法889条1項）。上の順位の相続人がいれば、下の順位は相続人にならないのが原則です。",
+    "cat": "相続人の順位"
+  },
+  {
+    "q": "被相続人の配偶者と子が相続人である場合、配偶者の法定相続分は2分の1であり、子の法定相続分も2分の1である。",
+    "a": true,
+    "ex": "正しい。配偶者と子が相続人の場合、法定相続分はそれぞれ2分の1です（民法900条1号）。子が複数いる場合は、子の2分の1をさらに均等に分けます。",
+    "cat": "法定相続分"
+  },
+  {
+    "q": "被相続人の配偶者と直系尊属が相続人である場合、配偶者の法定相続分は2分の1であり、直系尊属の法定相続分も2分の1である。",
+    "a": false,
+    "ex": "誤り。配偶者と直系尊属が相続人の場合、配偶者が3分の2、直系尊属が3分の1です（民法900条2号）。配偶者と子の場合（各2分の1）と混同しやすいので注意してください。",
+    "cat": "法定相続分"
+  },
+  {
+    "q": "被相続人の配偶者と兄弟姉妹が相続人である場合、配偶者の法定相続分は4分の3であり、兄弟姉妹の法定相続分は4分の1である。",
+    "a": true,
+    "ex": "正しい。配偶者と兄弟姉妹が相続人の場合、配偶者が4分の3、兄弟姉妹が4分の1です（民法900条3号）。配偶者の保護が最も厚くなるパターンです。",
+    "cat": "法定相続分"
+  },
+  {
+    "q": "被相続人の子が相続開始前に死亡していた場合、その子の子（被相続人の孫）が代わりに相続人となる。",
+    "a": true,
+    "ex": "正しい。これを代襲相続といいます（民法887条2項）。被相続人の子が相続開始前に死亡していた場合、その子（孫）が代襲して相続人となります。",
+    "cat": "代襲相続"
+  },
+  {
+    "q": "代襲相続は、被相続人の子の場合は孫までに限られ、ひ孫以降には認められない。",
+    "a": false,
+    "ex": "誤り。被相続人の子の代襲相続は、孫→ひ孫→…と無制限に認められます（民法887条3項、再代襲）。一方、兄弟姉妹の代襲相続はおい・めいまでの一代限りです（民法889条2項）。",
+    "cat": "代襲相続"
+  },
+  {
+    "q": "相続人は、自己のために相続の開始があったことを知った時から3か月以内に、単純承認、限定承認、または相続放棄をしなければならない。",
+    "a": true,
+    "ex": "正しい。この3か月の期間を熟慮期間といいます（民法915条1項）。起算点は「自己のために相続の開始があったことを知った時」であり、「相続開始の時」ではない点に注意してください。",
+    "cat": "承認・放棄"
+  },
+  {
+    "q": "限定承認は、共同相続人のうち1人だけでも行うことができる。",
+    "a": false,
+    "ex": "誤り。限定承認は、共同相続人の全員が共同して行わなければなりません（民法923条）。1人でも反対すれば限定承認はできず、その場合は各自が単純承認か相続放棄を選ぶことになります。",
+    "cat": "承認・放棄"
+  },
+  {
+    "q": "相続放棄は、相続人間の合意によって行うことができる。",
+    "a": false,
+    "ex": "誤り。相続放棄は、家庭裁判所への申述によって行わなければなりません（民法938条）。相続人同士の話し合いや口頭での合意だけでは法的な効力はありません。",
+    "cat": "承認・放棄"
+  },
+  {
+    "q": "相続人が相続財産に属する建物を取り壊した場合、法定単純承認とみなされる。",
+    "a": true,
+    "ex": "正しい。相続人が相続財産の全部または一部を処分した場合、単純承認をしたものとみなされます（民法921条1号）。建物の取壊しは処分行為に該当します。",
+    "cat": "法定単純承認"
+  },
+  {
+    "q": "相続人が相続財産である建物について不法占拠者に明渡しを求めることは、法定単純承認の事由となる処分行為に当たる。",
+    "a": false,
+    "ex": "誤り。不法占拠者への明渡し請求は、相続財産の現状を維持するための保存行為であり、処分行為には該当しません。したがって、法定単純承認とはみなされません（民法921条1号参照）。",
+    "cat": "法定単純承認"
+  },
+  {
+    "q": "兄弟姉妹には遺留分が認められていない。",
+    "a": true,
+    "ex": "正しい。遺留分が認められるのは、配偶者、子（代襲相続人を含む）、直系尊属だけです。兄弟姉妹には遺留分はありません（民法1042条1項）。",
+    "cat": "遺留分"
+  },
+  {
+    "q": "相続人が直系尊属のみの場合、遺留分の割合は被相続人の財産の2分の1である。",
+    "a": false,
+    "ex": "誤り。直系尊属のみが相続人の場合、遺留分は被相続人の財産の3分の1です（民法1042条1項1号）。それ以外の場合（配偶者がいる場合、子がいる場合など）は2分の1です。",
+    "cat": "遺留分"
+  },
+  {
+    "q": "配偶者居住権は、被相続人の配偶者が相続開始時に被相続人所有の建物に居住していた場合に認められる権利である。",
+    "a": true,
+    "ex": "正しい。配偶者居住権は、被相続人の配偶者が相続開始時にその建物に居住していた場合に、遺産分割や遺贈等により取得できる権利です（民法1028条1項）。2020年改正で新設されました。",
+    "cat": "配偶者居住権"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "被相続人Aの子Bが相続開始後に死亡した場合、Bの子C（Aの孫）がBに代わってAの遺産を代襲相続する。",
+    "a": false,
+    "ex": "誤り。代襲相続は、相続人が相続開始「以前」に死亡していた場合に発生します（民法887条2項）。Bが相続開始「後」に死亡した場合は代襲相続ではなく、Bが取得した相続権がBの相続人（配偶者や子）に承継されます（数次相続）。",
+    "cat": "代襲相続の要件"
+  },
+  {
+    "q": "被相続人の兄弟姉妹が相続開始前に死亡していた場合、その兄弟姉妹の子（おい・めい）が代襲相続するが、おい・めいも死亡していた場合、おい・めいの子はさらに代襲相続することはできない。",
+    "a": true,
+    "ex": "正しい。兄弟姉妹の代襲相続は、おい・めいまでの一代限りです（民法889条2項）。子の場合は無制限に再代襲が認められますが（民法887条3項）、兄弟姉妹の場合はおい・めいの子には代襲相続権がありません。",
+    "cat": "代襲相続の要件"
+  },
+  {
+    "q": "被相続人Aに子がなく、Aの父は既に死亡し母が健在である場合、Aの母のみが直系尊属として相続人となる。父方の祖父母が存命でも、母より親等が遠いため相続人にはならない。",
+    "a": true,
+    "ex": "正しい。直系尊属が相続人となる場合、親等が近い者が優先します（民法889条1項1号）。母（1親等）が健在であれば、祖父母（2親等）は相続人になりません。なお、直系尊属には代襲相続という概念はなく、単に親等の近い者が優先するだけです。",
+    "cat": "直系尊属の相続"
+  },
+  {
+    "q": "被相続人Aに子がなく、Aの両親とも死亡している場合、父方の祖父と母方の祖母が存命であるときは、父方の祖父の法定相続分が母方の祖母より多くなる。",
+    "a": false,
+    "ex": "誤り。同じ親等の直系尊属が複数いる場合、法定相続分は均等に分けます。父方・母方の区別なく、人数で均等に分割します。したがって、父方の祖父と母方の祖母はそれぞれ2分の1ずつの相続分となります。",
+    "cat": "直系尊属の相続"
+  },
+  {
+    "q": "相続人が被相続人の未払い賃料を回収した場合、法定単純承認とみなされることがある。",
+    "a": true,
+    "ex": "正しい。未払賃料の取立て・収受は、相続財産の処分行為に該当し、法定単純承認とみなされます（民法921条1号）。不法占拠者への明渡し請求（保存行為）とは異なり、財産に変動を生じさせる行為だからです。",
+    "cat": "法定単純承認"
+  },
+  {
+    "q": "熟慮期間（相続の承認・放棄ができる期間）は、相続が開始した時から3か月である。",
+    "a": false,
+    "ex": "誤り。熟慮期間の起算点は「自己のために相続の開始があったことを知った時」です（民法915条1項）。「相続開始の時」ではありません。例えば、被相続人が遠方で亡くなり、1か月後に知らされた場合、そこから3か月です。",
+    "cat": "承認・放棄"
+  },
+  {
+    "q": "遺産である不動産から生じた賃料債権は、遺産分割が終了するまでは遺産の一部を構成し、遺産分割の対象となる。",
+    "a": false,
+    "ex": "誤り。遺産分割前に遺産である不動産から生じた賃料債権は、遺産とは別個の財産です。各共同相続人が法定相続分に応じて確定的に取得し、その後の遺産分割の影響を受けません（最判平成17年9月8日）。",
+    "cat": "遺産分割と賃料"
+  },
+  {
+    "q": "遺産分割協議で不動産を取得した相続人は、遺産分割の遡及効により、相続開始から遺産分割までの間にその不動産から生じた賃料も遡って取得する。",
+    "a": false,
+    "ex": "誤り。遺産分割には遡及効がありますが（民法909条本文）、遺産分割前の賃料債権には及びません。遺産分割前の賃料は各相続人が法定相続分に応じて確定的に取得済みであり、後の遺産分割で覆ることはありません（最判平成17年9月8日）。",
+    "cat": "遺産分割と賃料"
+  },
+  {
+    "q": "相続開始前に遺留分の放棄をするには、家庭裁判所の許可を得なければならない。",
+    "a": true,
+    "ex": "正しい。相続開始前の遺留分放棄は、家庭裁判所の許可が必要です（民法1049条1項）。被相続人や他の相続人からの圧力で不当に放棄させられることを防ぐためです。なお、相続開始後の遺留分放棄には許可は不要です。",
+    "cat": "遺留分"
+  },
+  {
+    "q": "遺留分を放棄した者は、相続人としての地位も失い、相続することができなくなる。",
+    "a": false,
+    "ex": "誤り。遺留分の放棄は、遺留分侵害額請求権を行使しないというだけであり、相続人としての地位には影響しません。遺留分を放棄しても、相続する権利自体は残ります。遺留分放棄と相続放棄は全く別の制度です。",
+    "cat": "遺留分"
+  },
+  {
+    "q": "相続の放棄は、相続開始前に家庭裁判所に申述して行うこともできる。",
+    "a": false,
+    "ex": "誤り。相続放棄は相続開始後にしかできません（民法915条1項）。一方、遺留分の放棄は相続開始前でも家庭裁判所の許可があれば可能です（民法1049条1項）。この違いは試験で頻出です。",
+    "cat": "遺留分と相続放棄の比較"
+  },
+  {
+    "q": "配偶者居住権の存続期間は、別段の定めがない場合、原則として20年である。",
+    "a": false,
+    "ex": "誤り。配偶者居住権の存続期間は、別段の定めがない限り、配偶者の終身の間です（民法1030条）。20年ではありません。遺産分割協議や遺言で別の期間を定めることもできますが、定めがなければ亡くなるまで続きます。",
+    "cat": "配偶者居住権"
+  },
+  {
+    "q": "配偶者居住権を取得した配偶者は、居住建物の所有者の承諾を得なければ、第三者に建物を賃貸することができない。",
+    "a": true,
+    "ex": "正しい。配偶者は、居住建物の所有者の承諾を得なければ、第三者に使用または収益をさせることができません（民法1032条3項）。配偶者居住権はあくまで配偶者自身の居住を保護する権利であり、自由に又貸しできるわけではありません。",
+    "cat": "配偶者居住権"
+  },
+  {
+    "q": "配偶者居住権が設定された建物の通常の必要費は、建物の所有者が負担する。",
+    "a": false,
+    "ex": "誤り。居住建物の通常の必要費は、配偶者が負担します（民法1034条1項で民法595条1項を準用）。固定資産税や通常の修繕費などが該当します。居住しているのは配偶者なので、日常的な維持費は配偶者が持つという考え方です。",
+    "cat": "配偶者居住権"
+  },
+  {
+    "q": "共同相続人の一人が遺留分を放棄しても、他の共同相続人の遺留分が増えることはない。",
+    "a": true,
+    "ex": "正しい。共同相続人の一人がした遺留分の放棄は、他の各共同相続人の遺留分に影響を及ぼしません（民法1049条2項）。これは相続放棄の場合（初めから相続人でなかったとみなされ、他の相続人の相続分が変動する）とは異なります。",
+    "cat": "遺留分"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで相続の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・遺言の方式（自筆証書遺言・公正証書遺言など）<br>・遺言の効力・撤回<br>・遺留分侵害額請求権の行使方法と消滅時効の詳細<br>・法務局での自筆証書遺言保管制度<br>・特別受益・寄与分の詳細<br>・相続登記の義務化（2024年4月施行）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 相続の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【相続人の順位】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">被相続人（亡くなった人）</span><br><br><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">配偶者</span> ← 常に相続人<br><br><span style="color:#d32f2f;font-weight:bold">第1順位</span>：子（直系卑属）→ 代襲：孫→ひ孫…<strong style="color:#d32f2f">無制限</strong><br><span style="color:#e65100;font-weight:bold">第2順位</span>：直系尊属（父母→祖父母）※代襲なし<br><span style="color:#6a1b9a;font-weight:bold">第3順位</span>：兄弟姉妹 → 代襲：おい・めいまで<strong style="color:#d32f2f">一代限り</strong></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【ひっかけ注意】相続開始「前」vs「後」の死亡</strong><br>・相続開始<strong>前</strong>に子が死亡 → <strong>代襲相続</strong>（孫が代わりに相続人に）<br>・相続開始<strong>後</strong>に子が死亡 → 代襲相続ではない。子自身の相続が発生する<br>「Aの死亡後にBが死亡 → 孫CがBを代襲」は<strong>誤り</strong>！</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【似て非なるもの】遺留分放棄 ≠ 相続放棄</strong><br>・遺留分放棄 → 相続人としての地位は<strong>失わない</strong>、相続開始<strong>前</strong>でも可能（許可必要）<br>・相続放棄 → 初めから相続人で<strong>なかったことになる</strong>、相続開始<strong>後</strong>のみ可能<br>この違いは過去問の定番です。</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【判例知識】遺産分割前の賃料は「別の財産」</strong><br>遺産（不動産）から生じた賃料は、遺産とは別個の財産。各相続人が法定相続分に応じて確定的に取得し、後の遺産分割の影響を受けません。判決文がそのまま出題されたことも！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">法定相続分（900条）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">相続人の組合せ</th><th style="border:1px solid #90caf9">配偶者</th><th style="border:1px solid #90caf9">他の相続人</th></tr><tr><td>配偶者＋子</td><td style="text-align:center;font-weight:bold">1/2</td><td style="text-align:center;font-weight:bold">1/2</td></tr><tr style="background:#fafafa"><td>配偶者＋直系尊属</td><td style="text-align:center;font-weight:bold">2/3</td><td style="text-align:center;font-weight:bold">1/3</td></tr><tr><td>配偶者＋兄弟姉妹</td><td style="text-align:center;font-weight:bold">3/4</td><td style="text-align:center;font-weight:bold">1/4</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">代襲相続の範囲</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">相続人</th><th style="border:1px solid #f48fb1">代襲の範囲</th></tr><tr><td>子（直系卑属）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">無制限（孫→ひ孫→…）</td></tr><tr style="background:#fafafa"><td>兄弟姉妹</td><td style="text-align:center;color:#d32f2f;font-weight:bold">一代限り（おい・めいまで）</td></tr><tr><td>直系尊属</td><td style="text-align:center;color:#795548;font-weight:bold">代襲なし（親等の近い者が優先）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">承認・放棄の比較</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">項目</th><th style="border:1px solid #9fa8da">単純承認</th><th style="border:1px solid #9fa8da">限定承認</th><th style="border:1px solid #9fa8da">相続放棄</th></tr><tr><td>効果</td><td style="text-align:center;font-size:12px">全部承継</td><td style="text-align:center;font-size:12px">プラス財産の範囲で債務弁済</td><td style="text-align:center;font-size:12px">初めから相続人でない</td></tr><tr style="background:#fafafa"><td>方式</td><td style="text-align:center;font-size:12px">特になし</td><td style="text-align:center;color:#d32f2f;font-weight:bold;font-size:12px">全員共同</td><td style="text-align:center;font-size:12px">家裁に申述</td></tr><tr><td>期間</td><td colspan="3" style="text-align:center;font-size:12px">知った時から3か月（熟慮期間）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">遺留分放棄 vs 相続放棄</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">項目</th><th style="border:1px solid #ffcc80">遺留分放棄</th><th style="border:1px solid #ffcc80">相続放棄</th></tr><tr><td>相続開始前</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕（許可必要）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ 不可</td></tr><tr style="background:#fafafa"><td>相続人の地位</td><td style="text-align:center;color:#2e7d32;font-weight:bold">失わない</td><td style="text-align:center;color:#d32f2f;font-weight:bold">失う</td></tr><tr><td>他の相続人への影響</td><td style="text-align:center;font-size:12px">遺留分は増えない</td><td style="text-align:center;font-size:12px">相続分が変動する</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">配偶者居住権の3つの急所</div><table><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">ポイント</th><th style="border:1px solid #a5d6a7">内容</th></tr><tr><td>存続期間</td><td style="font-weight:bold">別段の定めなし → <span style="color:#d32f2f">終身</span>（20年ではない）</td></tr><tr style="background:#fafafa"><td>第三者への賃貸</td><td style="font-weight:bold"><span style="color:#d32f2f">所有者の承諾が必要</span></td></tr><tr><td>通常の必要費</td><td style="font-weight:bold"><span style="color:#d32f2f">配偶者が負担</span>（所有者ではない）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">法定単純承認：保存行為 vs 処分行為</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">行為</th><th style="border:1px solid #90caf9">分類</th><th style="border:1px solid #90caf9">単純承認</th></tr><tr><td>不法占拠者への明渡し請求</td><td style="text-align:center">保存行為</td><td style="text-align:center;color:#2e7d32;font-weight:bold">ならない</td></tr><tr style="background:#fafafa"><td>未払賃料の取立て・収受</td><td style="text-align:center">処分行為</td><td style="text-align:center;color:#d32f2f;font-weight:bold">なる</td></tr><tr><td>建物の取壊し</td><td style="text-align:center">処分行為</td><td style="text-align:center;color:#d32f2f;font-weight:bold">なる</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 相続とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「人が亡くなったとき、その人の財産（権利も義務も）を家族が引き継ぐ制度」です。<br>プラスの財産（土地・預金）だけでなく、マイナスの財産（借金）も引き継ぎます。</div><div class="info-box" style="background:#f5f5f5">亡くなった人を<strong>「被相続人」</strong>、財産を引き継ぐ人を<strong>「相続人」</strong>と呼びます。誰がどれだけ相続するかは、まず法律で定められたルール（法定相続分）があり、遺言があればそちらが優先します。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">👨‍👩‍👧‍👦 相続人の順位と法定相続分</div><div class="info-box" style="background:#fce4ec"><strong>配偶者は「常に」相続人</strong>（民法890条）<br>他にどんな相続人がいても、配偶者は必ず相続人になります。内縁の配偶者は含まれません。</div><div class="info-box" style="background:#f5f5f5"><strong>血族相続人には順位がある：</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">第1順位</span> <strong>子</strong>（直系卑属）── 配偶者と子：<strong style="color:#d32f2f">1/2 ずつ</strong><br><span style="display:inline-block;background:#fff9c4;padding:2px 8px;border-radius:4px;font-weight:bold">第2順位</span> <strong>直系尊属</strong>（父母・祖父母）── 配偶者 <strong style="color:#d32f2f">2/3</strong>：直系尊属 <strong style="color:#d32f2f">1/3</strong><br><span style="display:inline-block;background:#e1bee7;padding:2px 8px;border-radius:4px;font-weight:bold">第3順位</span> <strong>兄弟姉妹</strong> ── 配偶者 <strong style="color:#d32f2f">3/4</strong>：兄弟姉妹 <strong style="color:#d32f2f">1/4</strong><br><br><span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 上の順位がいれば、下の順位は相続人にならない！</span></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>覚え方のコツ</strong>：配偶者の取り分は「2分の1 → 3分の2 → 4分の3」と順位が下がるほど大きくなります。「血のつながりが遠くなるほど、配偶者の取り分が増える」と覚えましょう。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🔄 代襲相続</div><div class="info-box" style="background:#e8f5e9"><strong>代襲相続 ＝ 「代わりに相続する」</strong><br>本来の相続人が相続開始<strong>前</strong>に亡くなっていた場合、その子が代わりに相続人になる制度です（民法887条2項）。</div><div class="info-box" style="background:#f5f5f5"><strong>代襲相続の範囲が超重要：</strong><br>・<strong>子の場合</strong>：孫→ひ孫→…と<strong style="color:#2e7d32">無制限に代襲</strong>（再代襲）<br>・<strong>兄弟姉妹の場合</strong>：おい・めいまでの<strong style="color:#d32f2f">一代限り</strong><br>・<strong>直系尊属</strong>：代襲相続の概念なし（親等の近い者が優先するだけ）</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 最重要ひっかけポイント</strong><br>代襲相続は「相続開始<strong>前</strong>」の死亡が要件です。<br>・相続開始<strong>前</strong>の死亡 → <strong>代襲相続が発生</strong><br>・相続開始<strong>後</strong>の死亡 → <strong>代襲相続ではない</strong>（数次相続）<br>この「前か後か」の違いは過去問の定番ひっかけです！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⚖️ 承認と放棄</div><div class="info-box" style="background:#f3e5f5"><strong>3つの選択肢：</strong>相続人は、相続を「受けるか」「断るか」「条件付きで受けるか」を選べます。<br>期限は「自己のために相続の開始があったことを<strong>知った時</strong>から<strong>3か月</strong>」（熟慮期間、民法915条1項）。</div><div class="info-box" style="background:#f5f5f5"><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">単純承認</span> プラスもマイナスも全部引き継ぐ<br><span style="display:inline-block;background:#fff9c4;padding:2px 8px;border-radius:4px;font-weight:bold">限定承認</span> プラスの範囲でだけマイナスを引き継ぐ → <strong style="color:#d32f2f">全員共同が必要！</strong><br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold">相続放棄</span> 初めから相続人でなかったことになる → 家庭裁判所への申述が必要</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">法定単純承認に注意！</strong><br>相続財産を「処分」すると、単純承認したとみなされます（民法921条1号）。<br>ただし、<strong>保存行為</strong>（現状維持のための行為）は処分にあたりません。<br>「不法占拠者への明渡し請求 ＝ 保存行為 ＝ 単純承認にならない」<br>「未払賃料の取立て ＝ 処分行為 ＝ 単純承認になる」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🛡️ 遺留分</div><div class="info-box" style="background:#e0f7fa"><strong>遺留分 ＝ 相続人に保障された「最低限の取り分」</strong><br>被相続人が「全財産を愛人に遺贈する」と遺言しても、一定の相続人は最低限の取り分を主張できます。これが遺留分です。</div><div class="info-box" style="background:#f5f5f5"><strong>遺留分がある人・ない人：</strong><br>⭕ 配偶者、子（代襲相続人含む）、直系尊属 → 遺留分<strong>あり</strong><br>❌ <strong>兄弟姉妹 → 遺留分なし</strong>（民法1042条1項）<br><br><strong>遺留分の割合：</strong><br>・原則：相続財産の<strong>2分の1</strong><br>・直系尊属のみの場合：相続財産の<strong>3分の1</strong></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 遺留分放棄と相続放棄を混同しない！</strong><br><strong>遺留分放棄</strong>：遺留分の主張を放棄するだけ。相続人の地位は<strong>残る</strong>。相続開始<strong>前</strong>でも可能（家裁の許可要）。<br><strong>相続放棄</strong>：初めから相続人で<strong>なくなる</strong>。相続開始<strong>後</strong>のみ可能。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">🏠 配偶者居住権（2020年新設）</div><div class="info-box" style="background:#fff3e0"><strong>配偶者居住権 ＝ 残された配偶者が住み慣れた家に住み続ける権利</strong>（民法1028条〜）<br>2020年4月施行の改正民法で新設されました。相続開始時に被相続人の建物に居住していた配偶者が対象です。</div><div class="info-box" style="background:#f5f5f5"><strong>押さえるべき3つの急所：</strong><br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 存続期間：別段の定めがなければ<strong style="color:#d32f2f">終身</strong>（20年ではない！）<br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 第三者への賃貸：<strong style="color:#d32f2f">所有者の承諾が必要</strong><br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> 通常の必要費：<strong style="color:#d32f2f">配偶者が負担</strong>（所有者ではない）</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_882" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法882条〜（相続）</a><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_1028" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法1028条〜（配偶者居住権）</a><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_1042" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法1042条〜（遺留分）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">相続クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
