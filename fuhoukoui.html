@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 不法行為クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 債権 ＞ 不法行為</div>
+    <div class="header-desc">損害賠償・使用者責任・工作物責任・消滅時効</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_fuhoukoui_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "故意または過失によって他人の権利や法律上保護される利益を侵害した者は、これによって生じた損害を賠償する責任を負う。",
+    "a": true,
+    "ex": "正しい。不法行為の基本要件です。①故意または過失、②権利侵害、③損害の発生、④因果関係の4つが揃うと損害賠償責任が生じます（民法709条）。",
+    "cat": "成立要件"
+  },
+  {
+    "q": "不法行為による損害賠償では、財産的な損害だけでなく、精神的な苦痛に対する慰謝料も請求することができる。",
+    "a": true,
+    "ex": "正しい。不法行為では、身体・自由・名誉などの財産以外の損害に対しても賠償を請求できます（民法710条）。これが慰謝料請求権の根拠です。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "不法行為に基づく損害賠償請求権は、被害者またはその法定代理人が損害及び加害者を知った時から3年間行使しないときは、時効によって消滅する。",
+    "a": true,
+    "ex": "正しい。不法行為の消滅時効の原則です。「知った時から3年」が基本の時効期間です（民法724条第1号）。起算点は「損害と加害者の両方を現実に認識した時」です。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "不法行為に基づく損害賠償請求権は、不法行為の時から10年間行使しないときは、時効によって消滅する。",
+    "a": false,
+    "ex": "誤り。不法行為の時からの時効期間は「10年」ではなく「20年」です（民法724条第2号）。債権一般の時効期間（権利を行使することができる時から10年）と混同しないよう注意しましょう。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "生命または身体を侵害する不法行為による損害賠償請求権の消滅時効は、被害者が損害及び加害者を知った時から5年である。",
+    "a": true,
+    "ex": "正しい。生命・身体の侵害の場合は、通常の3年ではなく「5年」に延長されます（民法724条の2）。2020年改正で新設された重要条文です。被害者の保護を手厚くする趣旨です。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "ある事業のために他人を使用する者は、被用者がその事業の執行について第三者に損害を加えた場合、使用者としての損害賠償責任を負う。",
+    "a": true,
+    "ex": "正しい。使用者責任の基本です（民法715条1項）。使用者は、被用者の行為について賠償責任を負います。これは、人を使って利益を得ている以上、そのリスクも負うべきという考え方（報償責任）に基づきます。",
+    "cat": "使用者責任"
+  },
+  {
+    "q": "使用者が被用者の選任及びその事業の監督について相当の注意をしたとき、または相当の注意をしても損害が生ずべきであったときは、使用者は責任を免れる。",
+    "a": true,
+    "ex": "正しい。使用者は、選任・監督について相当の注意をしたこと、または注意をしても損害を防げなかったことを証明すれば免責されます（民法715条1項ただし書）。ただし、実際に免責が認められることはほとんどありません。",
+    "cat": "使用者責任"
+  },
+  {
+    "q": "土地の工作物の設置または保存に瑕疵があることによって他人に損害を生じたときは、まず工作物の占有者がその損害を賠償する責任を負う。",
+    "a": true,
+    "ex": "正しい。工作物責任では、まず占有者が一次的な責任を負います（民法717条1項本文）。占有者が損害の発生を防止するのに必要な注意をしたときは、所有者が責任を負います。",
+    "cat": "工作物責任"
+  },
+  {
+    "q": "工作物責任において、占有者が損害の発生を防止するのに必要な注意をしたことを証明した場合、所有者も過失がなければ責任を免れる。",
+    "a": false,
+    "ex": "誤り。占有者が注意を尽くした場合、所有者は過失の有無にかかわらず責任を負います。所有者の責任は無過失責任です（民法717条1項ただし書）。所有者は最終的な責任を逃れることができません。",
+    "cat": "工作物責任"
+  },
+  {
+    "q": "被害者にも過失があったときは、裁判所は、これを考慮して損害賠償の額を定めることができる。",
+    "a": true,
+    "ex": "正しい。過失相殺の規定です（民法722条2項）。裁判所は被害者の過失を考慮して賠償額を減額できます。なお、過失相殺は裁判所の裁量であり、必ず減額しなければならないわけではありません。",
+    "cat": "過失相殺"
+  },
+  {
+    "q": "数人が共同の不法行為によって他人に損害を加えたときは、各自が損害の全額について連帯してその賠償の責任を負う。",
+    "a": true,
+    "ex": "正しい。共同不法行為者は、各自が連帯して損害賠償責任を負います（民法719条1項前段）。被害者は共同不法行為者のうち、誰に対しても全額の賠償を請求することができます。",
+    "cat": "共同不法行為"
+  },
+  {
+    "q": "他人を教唆して不法行為をさせた者は、不法行為の実行者ではないため、共同行為者とはみなされない。",
+    "a": false,
+    "ex": "誤り。教唆者（そそのかした者）は共同行為者とみなされ、連帯して損害賠償責任を負います（民法719条2項）。幇助者（手助けした者）も同様です。",
+    "cat": "共同不法行為"
+  },
+  {
+    "q": "責任能力を有しない未成年者が不法行為をした場合、その未成年者を監督する法定の義務を負う者が損害賠償責任を負う。",
+    "a": true,
+    "ex": "正しい。責任無能力者（幼児など）が他人に損害を加えた場合、その監督義務者（親権者など）が賠償責任を負います（民法714条1項）。ただし、監督義務を怠らなかったことを証明すれば免責されます。",
+    "cat": "監督義務者の責任"
+  },
+  {
+    "q": "不法行為によって被害者が即死した場合、被害者本人には慰謝料請求権が発生しないため、遺族はその慰謝料請求権を相続することができない。",
+    "a": false,
+    "ex": "誤り。判例によれば、被害者が即死した場合でも、被害者本人に慰謝料請求権が発生し、これが相続人に相続されます。即死であっても慰謝料請求権の相続は認められています。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "不法行為の被害者が未成年者である場合において、その親に過失があったときは、裁判所は被害者側の過失として考慮し、損害賠償額を定めることができる。",
+    "a": true,
+    "ex": "正しい。判例は、被害者と身分上・生活関係上一体の関係にある者の過失を「被害者側の過失」として過失相殺において考慮することを認めています。幼児の親の監督上の過失がこれにあたります（民法722条2項）。",
+    "cat": "過失相殺"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "不法行為に基づく損害賠償請求権の消滅時効の起算点である「損害及び加害者を知った時」とは、被害者が損害の発生を確実な資料により客観的に認識できた時をいう。",
+    "a": false,
+    "ex": "誤り。判例は、「知った時」とは被害者が損害及び加害者を「現実に認識した時」としています。確実な資料により客観的に認識可能であった時ではなく、主観的に実際に認識した時が起算点です。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "不法行為の時から20年の消滅時効期間は、2020年民法改正により除斥期間から消滅時効に変更されたため、時効の完成猶予の規定が適用される。",
+    "a": true,
+    "ex": "正しい。改正前の判例は20年の期間を除斥期間と解していましたが、2020年改正で消滅時効と明文化されました（民法724条第2号）。これにより、時効の完成猶予や更新の規定が適用されます。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "生命または身体を侵害する不法行為による損害賠償請求権については、不法行為の時から30年で時効が完成する。",
+    "a": false,
+    "ex": "誤り。「知った時から5年」に延長される特則はありますが（民法724条の2）、不法行為の時からの期間は通常どおり20年です（民法724条第2号）。30年にはなりません。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "不法行為に基づく損害賠償債務の遅延損害金は、催告がなくても、不法行為の時から発生する。",
+    "a": true,
+    "ex": "正しい。不法行為に基づく損害賠償債務は、不法行為の時から遅滞に陥ります（判例）。つまり、催告を待たずに不法行為の日から遅延損害金が発生します。債務不履行の場合（催告が必要）とは異なります。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "使用者が被用者の不法行為について被害者に損害賠償を支払った場合、使用者は被用者に対して支払った全額を求償することができる。",
+    "a": false,
+    "ex": "誤り。使用者から被用者への求償は「信義則上相当と認められる限度」に制限されます（判例）。業務上のリスクは使用者も負担すべきであり、全額の求償は認められません。「全額」「常に」という表現には注意しましょう。",
+    "cat": "使用者責任"
+  },
+  {
+    "q": "被用者が不法行為によって被害者に損害賠償を支払った場合、被用者は使用者に対して、損害の公平な分担の見地から相当と認められる額について求償することができる。",
+    "a": true,
+    "ex": "正しい。判例（最判令和2年2月28日）は、被用者から使用者への逆求償を認めました。求償は使用者→被用者だけでなく、被用者→使用者の双方向で可能です。いずれも全額ではなく「相当な額」に限られます。",
+    "cat": "使用者責任"
+  },
+  {
+    "q": "不法行為によって建物が焼失した場合、被害者が受け取った火災保険金は損害賠償額から控除（損益相殺）される。",
+    "a": false,
+    "ex": "誤り。火災保険金は、被害者が保険料を支払って得たものであり、加害者の賠償責任とは別の性質です。したがって、損害賠償額から控除されません（判例）。損益相殺の対象となるのは、不法行為と同一原因で同質の利益に限られます。",
+    "cat": "損益相殺"
+  },
+  {
+    "q": "名誉を侵害された者は、人格権に基づいて、名誉を毀損する行為の差止めを請求することができる。",
+    "a": true,
+    "ex": "正しい。判例は、人格権としての名誉権に基づく差止請求を認めています。不法行為に基づく損害賠償だけでなく、事前の差止めによる救済も可能です。",
+    "cat": "名誉毀損"
+  },
+  {
+    "q": "継続的に発生する不法行為においては、損害は一体として発生するため、最初の不法行為の時から一括して消滅時効が進行する。",
+    "a": false,
+    "ex": "誤り。継続的不法行為の場合、判例は日々発生する損害についてそれぞれ別個に消滅時効が進行するとしています。最初の行為の時から一括して時効が進行するわけではありません。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "建物としての基本的な安全性を損なう瑕疵がある場合、建物の建築業者は、直接の契約関係にない居住者に対しても不法行為に基づく損害賠償責任を負うことがある。",
+    "a": true,
+    "ex": "正しい。判例（最判平成19年7月6日）は、建物としての基本的な安全性を損なう瑕疵がある場合、建築業者は契約関係にない居住者に対しても不法行為責任を負うとしました。",
+    "cat": "成立要件"
+  },
+  {
+    "q": "認知症の高齢者が他人に損害を加えた場合、その者と同居する配偶者は、当然に法定の監督義務者として損害賠償責任を負う。",
+    "a": false,
+    "ex": "誤り。判例（最判平成28年3月1日）は、精神障害者と同居する配偶者であるというだけでは、民法714条の法定の監督義務者に当たらないとしました。個別の事情を総合的に考慮して判断されます。",
+    "cat": "監督義務者の責任"
+  },
+  {
+    "q": "不法行為に基づく損害賠償請求権の消滅時効は、被害者が損害及び加害者を知った時から5年間行使しないとき、または不法行為の時から10年間行使しないときに完成する。",
+    "a": false,
+    "ex": "誤り。これは債権一般の消滅時効の期間（権利を行使できることを知った時から5年、権利を行使できる時から10年）です（民法166条1項）。不法行為の時効は「知った時から3年（生命・身体は5年）、不法行為の時から20年」です（724条）。試験では両者の混同を狙って出題されます。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "工作物責任における占有者は、損害の発生を防止するのに必要な注意をしたことを証明すれば、損害賠償責任を免れることができる。",
+    "a": true,
+    "ex": "正しい。工作物の占有者は、損害発生の防止に必要な注意をしたことを証明すれば免責されます（民法717条1項ただし書）。ただし、その場合は所有者が無過失責任を負うことになります。",
+    "cat": "工作物責任"
+  },
+  {
+    "q": "使用者責任が成立する場合、被害者は被用者に対しては損害賠償を請求することができず、使用者にのみ請求することができる。",
+    "a": false,
+    "ex": "誤り。使用者責任が成立する場合でも、不法行為をした被用者自身は民法709条に基づく損害賠償責任を免れません。被害者は使用者と被用者のどちらにも（あるいは両方に）損害賠償を請求することができます。",
+    "cat": "使用者責任"
+  },
+  {
+    "q": "不法行為による損害賠償について、加害者からの過失相殺の主張がなくても、裁判所は職権で被害者の過失を考慮して賠償額を定めることができる。",
+    "a": true,
+    "ex": "正しい。不法行為における過失相殺は裁判所の職権事項であり、当事者からの主張がなくても裁判所が自ら被害者の過失を考慮して賠償額を定めることができます（民法722条2項、判例）。",
+    "cat": "過失相殺"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 不法行為の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【不法行為の基本（709条）】</div><span style="background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold">加害者</span> ──故意・過失で損害──→ <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">被害者</span><br>←── 損害賠償請求 ──<br><br><div style="font-weight:bold;margin-bottom:4px">【特殊な不法行為】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">使用者</span> ←求償（双方向）→ <span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">被用者</span><br><span style="font-size:12px">被用者の行為 → 使用者も責任（715条）</span><br><br><span style="background:#e1bee7;padding:3px 8px;border-radius:4px;font-weight:bold">占有者</span>（一次的責任）→ <span style="background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold">所有者</span>（最終責任・無過失）<br><span style="font-size:12px">工作物責任（717条）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最大のひっかけ】時効の「数字の混同」</strong><br>不法行為の時効は「<strong>3年 / 5年 / 20年</strong>」の3つの数字。過去問では、債権一般の時効（5年/10年）とすり替えてきます。「不法行為の時効は不法行為専用のルール」と意識するだけで、ひっかけを見破れます。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【双方向ルール】使用者責任の求償</strong><br>使用者→被用者への求償だけでなく、被用者→使用者への逆求償も認められます（最判R2）。ただし、どちらの方向でも「<strong>全額ではなく相当な限度</strong>」です。過去問では「全額」「常に」で引っかけてきます。</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【所有者は逃げられない】工作物責任</strong><br>占有者が注意を尽くしても、所有者は<strong>無過失責任</strong>として損害を賠償しなければなりません。「過失なし→責任なし」と思わせる肢に注意。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">消滅時効の数字（最重要！）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">種類</th><th style="border:1px solid #90caf9">知った時から</th><th style="border:1px solid #90caf9">不法行為の時から</th></tr><tr><td>原則（財産的損害など）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">3年</td><td style="text-align:center;color:#1565c0;font-weight:bold">20年</td></tr><tr style="background:#fafafa"><td>生命・身体の侵害</td><td style="text-align:center;color:#d32f2f;font-weight:bold">5年</td><td style="text-align:center;color:#1565c0;font-weight:bold">20年</td></tr><tr><td style="color:#999">参考：債権一般の時効</td><td style="text-align:center;color:#999">5年</td><td style="text-align:center;color:#999">10年</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px">使用者責任の求償（715条）</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">方向</th><th style="border:1px solid #f48fb1">可否</th><th style="border:1px solid #f48fb1">範囲</th></tr><tr><td>使用者→被用者</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>信義則上相当な限度</td></tr><tr style="background:#fafafa"><td>被用者→使用者（逆求償）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕</td><td>相当と認められる額</td></tr><tr><td style="color:#d32f2f;font-weight:bold">いずれの方向でも「全額」は❌</td><td colspan="2"></td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px">工作物責任の責任の順序（717条）</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">責任者</th><th style="border:1px solid #9fa8da">責任の性質</th><th style="border:1px solid #9fa8da">免責</th></tr><tr><td>占有者（一次的責任）</td><td>過失推定（中間責任）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">注意を尽くせば免責</td></tr><tr style="background:#fafafa"><td>所有者（最終責任）</td><td style="color:#d32f2f;font-weight:bold">無過失責任</td><td style="text-align:center;color:#d32f2f;font-weight:bold">免責なし</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">⚠️ カバーできていない論点</div><div class="info-box" style="background:#eceff1">・不法行為と債務不履行の競合・選択関係<br>・正当防衛・緊急避難（720条）<br>・共同不法行為者間の求償関係の詳細<br>・名誉毀損における免責要件（真実性の証明等）の詳細<br>・不法行為と消費者契約法等の特別法との関係</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">📌 このアプリの位置づけ</div><div class="info-box" style="background:#e8f5e9"><strong>このアプリは「過去問学習への橋渡し」です。</strong><br>不法行為の基本をこのアプリでしっかり押さえれば、過去問がスムーズに解けるようになります。<br><br>⚠️ <strong>このアプリだけでは合格できません。</strong><br>合格に必要なのは<strong>過去問の反復学習（何周も回すこと）</strong>です。このアプリで基礎を固めたら、早めに過去問に取り組みましょう。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 不法行為とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「わざと、またはうっかりで他人に損害を与えたら、お金で償いなさい」という制度です（民法709条）。<br>交通事故、暴力、建物の欠陥による被害──さまざまな場面で問題になります。</div><div class="info-box" style="background:#f5f5f5"><strong>不法行為が成立する4つの要件：</strong><br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 加害者に<strong>故意または過失</strong>がある<br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 他人の<strong>権利・法律上の利益</strong>を侵害した<br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> <strong>損害</strong>が発生した<br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">④</span> 行為と損害に<strong>因果関係</strong>がある<br><span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 被害者側が①〜④を立証する必要があります（債務不履行と異なるポイント）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⏰ 消滅時効──「3・5・20」で覚える</div><div class="info-box" style="background:#fce4ec"><strong>不法行為の時効は専用ルール！</strong><br>債権一般の時効（5年/10年）とは全く別です。混同すると確実に間違えます。</div><div class="info-box" style="background:#f5f5f5"><strong>3つの数字をセットで暗記：</strong><br><span style="display:inline-block;background:#ef9a9a;padding:3px 10px;border-radius:4px;font-weight:bold;font-size:18px">3年</span> 原則：損害と加害者を知った時から<br><span style="display:inline-block;background:#ce93d8;padding:3px 10px;border-radius:4px;font-weight:bold;font-size:18px">5年</span> 例外：生命・身体の侵害の場合（知った時から）<br><span style="display:inline-block;background:#90caf9;padding:3px 10px;border-radius:4px;font-weight:bold;font-size:18px">20年</span> 不法行為の時から（種類を問わず共通）<br><br>💡 覚え方：「不法行為は<strong>サン・ゴ・ニジュウ</strong>（3・5・20）」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">👔 使用者責任（715条）</div><div class="info-box" style="background:#e8f5e9"><strong>会社の従業員が仕事中にやらかしたら、会社も責任を負う</strong><br>人を使って利益を得ている以上、そのリスクも負うべき（報償責任の原則）。</div><div class="info-box" style="background:#f5f5f5"><strong>最重要ポイント：求償は「双方向」で「全額ではない」</strong><br><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px">使用者→被用者</span>：信義則上「相当な限度」で求償可能<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px">被用者→使用者</span>：「相当と認められる額」で逆求償可能（最判R2）<br><br>覚え方：「<strong>求償は双方向、でも全額じゃない</strong>」<br><span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 試験では「全額を求償できる」「常に回収できる」が頻出ひっかけ！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">🏠 工作物責任（717条）</div><div class="info-box" style="background:#f3e5f5"><strong>建物のブロック塀が崩れて通行人がケガ → 誰の責任？</strong><br>工作物の設置・保存に欠陥（瑕疵）があって損害が生じた場合の特別ルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>「まず占有者、最後は所有者」の順序：</strong><br><br><span style="display:inline-block;background:#e1bee7;padding:2px 8px;border-radius:4px;font-weight:bold">①占有者</span>：一次的に責任を負う（注意を尽くせば免責）<br>　↓ 占有者が免責された場合<br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">②所有者</span>：<span style="color:#d32f2f;font-weight:bold">無過失責任</span>（過失がなくても責任を負う）<br><br>覚え方：「<strong>所有者は絶対に逃げられない</strong>」<br><span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 試験では「所有者も注意を尽くせば免責」が頻出ひっかけ！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">⚖️ 過失相殺（722条2項）</div><div class="info-box" style="background:#e0f7fa"><strong>被害者にも落ち度があれば、賠償額が減る</strong><br>裁判所が被害者の過失を考慮して損害賠償額を調整します。これは裁判所の裁量であり、当事者の主張がなくても職権で適用できます。</div><div class="info-box" style="background:#f5f5f5"><strong>「被害者側の過失」に注意：</strong><br>被害者本人だけでなく、被害者と身分上一体の関係にある者（幼児の親など）の過失も考慮されます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">🤝 共同不法行為（719条）</div><div class="info-box" style="background:#fff3e0"><strong>複数人で損害を与えたら → 全員が連帯責任</strong><br>共同不法行為者は各自が損害全額の賠償義務を負います。教唆者（そそのかした人）や幇助者（手助けした人）も共同行為者とみなされます。</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_709" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法709条〜（不法行為）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">不法行為クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
