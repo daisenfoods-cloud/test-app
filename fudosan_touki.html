@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 不動産登記法クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限・その他 ＞ 不動産登記法</div>
+    <div class="header-desc">登記の申請・登記識別情報・区分建物</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_fudosan_touki_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "新築した建物の所有権を取得した者は、その取得の日から1月以内に、建物の表題登記を申請しなければならない。",
+    "a": true,
+    "ex": "正しい。新築建物を取得した場合、1月以内に表題登記を申請する義務があります（不動産登記法47条1項）。表題登記は申請義務がある登記であり、保存登記（義務なし）と混同しないことが重要です。",
+    "cat": "表題登記・申請義務"
+  },
+  {
+    "q": "新築した建物の所有権を取得した者は、その取得の日から1月以内に、所有権の保存登記を申請しなければならない。",
+    "a": false,
+    "ex": "誤り。1月以内に申請義務があるのは「表題登記」であり、「保存登記」ではありません。保存登記は権利の登記であり、申請義務はありません。表題登記と保存登記の混同は最頻出のひっかけパターンです。",
+    "cat": "表題登記・申請義務"
+  },
+  {
+    "q": "建物が滅失したときは、表題部所有者または所有権の登記名義人は、その滅失の日から1月以内に、建物の滅失の登記を申請しなければならない。",
+    "a": true,
+    "ex": "正しい。建物が滅失した場合、1月以内に滅失登記を申請する義務があります（不動産登記法57条）。表題登記と同様に、滅失登記にも申請義務があります。",
+    "cat": "表題登記・申請義務"
+  },
+  {
+    "q": "所有権の保存登記は、表題部所有者またはその相続人のみが申請できる。",
+    "a": true,
+    "ex": "正しい。通常の建物の場合、保存登記を申請できるのは表題部所有者またはその相続人その他の一般承継人です（不動産登記法74条1項1号）。なお、確定判決を得た者（同項2号）や収用による取得者（同項3号）も申請可能です。また区分建物には特例があり、この点はLevel 2で扱います。",
+    "cat": "保存登記"
+  },
+  {
+    "q": "不動産登記法上、登記することができる権利には、所有権、地上権、抵当権のほか、賃借権や配偶者居住権も含まれる。",
+    "a": true,
+    "ex": "正しい。登記できる権利は、所有権・地上権・永小作権・地役権・先取特権・質権・抵当権・賃借権・配偶者居住権・採石権の10種類です（不動産登記法3条）。2020年改正で配偶者居住権が追加されました。",
+    "cat": "登記できる権利"
+  },
+  {
+    "q": "配偶者短期居住権は、不動産登記法上、登記することができる権利に含まれる。",
+    "a": false,
+    "ex": "誤り。登記できるのは「配偶者居住権」であり、「配偶者短期居住権」は登記することができません。両者の違いは頻出です。配偶者短期居住権は短期間の暫定的な権利であり、登記の対象外です。",
+    "cat": "登記できる権利"
+  },
+  {
+    "q": "権利に関する登記の申請は、原則として、登記権利者と登記義務者の共同申請によらなければならない。",
+    "a": true,
+    "ex": "正しい。権利に関する登記は、原則として登記権利者と登記義務者が共同で申請します（不動産登記法60条）。これが「共同申請の原則」です。ただし、相続や単独申請が認められる例外があります。",
+    "cat": "共同申請の原則"
+  },
+  {
+    "q": "相続による所有権の移転登記は、登記権利者が単独で申請することができる。",
+    "a": true,
+    "ex": "正しい。相続による権利の移転登記は、共同申請の例外として、登記権利者（相続人）が単独で申請できます（不動産登記法63条2項）。被相続人は亡くなっており、共同申請ができないためです。",
+    "cat": "共同申請の原則"
+  },
+  {
+    "q": "登記の申請をする場合には、原則として、登記原因を証する情報を提供しなければならない。",
+    "a": true,
+    "ex": "正しい。登記の申請にあたっては、原則として登記原因証明情報の提供が必要です（不動産登記法61条）。売買契約書や相続を証する書面などがこれにあたります。",
+    "cat": "登記原因証明情報"
+  },
+  {
+    "q": "登記が完了すると、登記官は、申請人に対して登記完了証を交付しなければならない。",
+    "a": true,
+    "ex": "正しい。登記が完了した場合、登記官は申請人に対して登記完了証を交付します（不動産登記法21条参照、不動産登記規則181条）。登記完了証は登記識別情報とは別のものであり、単に登記が完了したことを知らせる書面です。",
+    "cat": "登記完了証"
+  },
+  {
+    "q": "登記識別情報は、登記の申請人が自ら登記名義人となる場合に、登記官から通知される。",
+    "a": true,
+    "ex": "正しい。登記識別情報は、その登記によって新たに登記名義人となる申請人に対して通知されます（不動産登記法21条）。あくまで「自ら登記名義人となる申請人」に通知される点が重要です。",
+    "cat": "登記識別情報"
+  },
+  {
+    "q": "登記の申請をする場合で、申請人が登記義務者であるときは、原則として、登記識別情報を提供しなければならない。",
+    "a": true,
+    "ex": "正しい。登記権利者及び登記義務者が共同して登記の申請をする場合、登記義務者は原則として登記識別情報を提供しなければなりません（不動産登記法22条本文）。なりすまし防止のためです。",
+    "cat": "登記識別情報"
+  },
+  {
+    "q": "何人も、登記官に対し、手数料を納付して、登記簿の附属書類のうち地積測量図や建物図面の閲覧を請求することができる。",
+    "a": true,
+    "ex": "正しい。地積測量図、建物図面、地図に準ずる図面などは「何人も」閲覧を請求できます（不動産登記法121条2項）。誰でも請求できる点がポイントです。",
+    "cat": "閲覧制度"
+  },
+  {
+    "q": "登記簿の附属書類のうち、申請書や委任状については、何人も理由の有無にかかわらず閲覧を請求することができる。",
+    "a": false,
+    "ex": "誤り。申請書や委任状などの登記簿附属書類は「正当な理由」がなければ閲覧できません（不動産登記法121条3項）。地積測量図等とは異なり、プライバシーに関わる情報が含まれるためです。",
+    "cat": "閲覧制度"
+  },
+  {
+    "q": "登記申請の委任による代理権は、本人の死亡によっても消滅しない。",
+    "a": true,
+    "ex": "正しい。民法では代理権は本人の死亡で消滅するのが原則ですが、登記申請に関しては特例があり、本人が死亡しても委任による代理権は消滅しません（不動産登記法17条）。登記手続の安定性を確保するための規定です。",
+    "cat": "代理権の特例"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "区分建物にあっては、表題部所有者から所有権を取得した者も、直接自己の名義で保存登記を申請することができる。",
+    "a": true,
+    "ex": "正しい。通常の建物では表題部所有者またはその相続人しか保存登記を申請できませんが、区分建物に限り、表題部所有者から所有権を取得した者も保存登記を申請できます（不動産登記法74条1項2号）。分譲マンションの購入者が直接自分名義で登記できるようにするための特例です。",
+    "cat": "区分建物の保存登記"
+  },
+  {
+    "q": "敷地権付き区分建物について、表題部所有者から所有権を取得した者が保存登記を申請する場合、敷地権登記名義人の承諾を証する情報は不要である。",
+    "a": false,
+    "ex": "誤り。敷地権付き区分建物について保存登記を申請する場合には、敷地権の登記名義人の承諾を証する情報を提供しなければなりません（不動産登記法74条2項）。敷地権にも影響が及ぶため、承諾が必要です。",
+    "cat": "区分建物の保存登記"
+  },
+  {
+    "q": "買戻しの特約に関する登記がされた後、売買契約の日から10年を経過した場合、買主は単独で当該登記の抹消を申請することができる。",
+    "a": true,
+    "ex": "正しい。買戻しの特約は売買契約の日から10年を経過すると効力を失います。この場合、買主（登記権利者）は単独で抹消登記を申請できます（不動産登記法69条の2）。共同申請の例外の一つです。",
+    "cat": "単独申請の例外"
+  },
+  {
+    "q": "収用によって土地の所有権を取得した者は、単独で所有権移転の登記を申請することができる。",
+    "a": true,
+    "ex": "正しい。収用による所有権の移転登記は、起業者が単独で申請できます（不動産登記法118条1項）。収用は国や地方公共団体の公権力の行使であり、相手方の協力が得られない場合があるためです。",
+    "cat": "単独申請の例外"
+  },
+  {
+    "q": "遺贈による所有権の移転登記は、受遺者が相続人であっても、必ず登記権利者と登記義務者の共同申請によらなければならない。",
+    "a": false,
+    "ex": "誤り。相続人に対する遺贈による所有権の移転登記は、受遺者（登記権利者）が単独で申請できます（不動産登記法63条3項）。ただし、相続人以外への遺贈の場合は共同申請が必要です。この違いは重要です。",
+    "cat": "単独申請の例外"
+  },
+  {
+    "q": "登記名義人の氏名や住所に変更があった場合、登記名義人は単独で変更の登記を申請することができる。",
+    "a": true,
+    "ex": "正しい。登記名義人の氏名・名称・住所の変更登記は、登記名義人が単独で申請できます（不動産登記法64条1項）。相手方がいない手続なので、共同申請は不要です。",
+    "cat": "単独申請の例外"
+  },
+  {
+    "q": "司法書士などの資格者代理人が登記を申請する場合、登記義務者の登記識別情報の提供は不要となる。",
+    "a": false,
+    "ex": "誤り。資格者代理人が登記を申請する場合であっても、原則として登記識別情報の提供は必要です（不動産登記法22条）。「資格者代理人だから不要」は典型的なひっかけです。",
+    "cat": "登記識別情報の詳細"
+  },
+  {
+    "q": "申請人があらかじめ登記識別情報の通知を希望しない旨の申出をした場合、登記が完了しても登記識別情報は通知されない。",
+    "a": true,
+    "ex": "正しい。申請人は、あらかじめ登記識別情報の通知を希望しない旨を申し出ることができ、この申出をした場合は通知されません（不動産登記法21条ただし書、不動産登記規則62条1項）。ただし、「非通知希望」をしたからといって、次回の申請時に登記識別情報の提供を省略できるわけではありません。",
+    "cat": "登記識別情報の詳細"
+  },
+  {
+    "q": "債権者が債務者に代位して登記を申請した場合、登記識別情報は代位債権者に通知される。",
+    "a": false,
+    "ex": "誤り。登記識別情報は「自ら登記名義人となる申請人」に通知されます（不動産登記法21条）。代位による登記申請の場合、代位債権者は登記名義人にならないため、代位債権者には通知されません。",
+    "cat": "登記識別情報の詳細"
+  },
+  {
+    "q": "仮登記の登記名義人が、その仮登記に基づく本登記を申請する場合、本登記について登記上の利害関係を有する第三者がいるときは、その第三者の承諾を証する情報を提供しなければならない。",
+    "a": true,
+    "ex": "正しい。仮登記に基づく本登記をする場合に、登記上の利害関係を有する第三者があるときは、その第三者の承諾を証する情報の提供が必要です（不動産登記法109条1項）。本登記により利害関係人の権利に影響が及ぶためです。",
+    "cat": "仮登記"
+  },
+  {
+    "q": "一筆の土地の一部が別の地目になった場合、登記官は職権でその土地の分筆の登記をすることができる。",
+    "a": true,
+    "ex": "正しい。地目や地番区域を異にするに至った場合、登記官は職権で分筆の登記をすることができます（不動産登記法39条2項）。登記官が自らの判断で行える「職権登記」の一つです。",
+    "cat": "職権登記"
+  },
+  {
+    "q": "共有物の分割禁止の定めに係る権利の変更の登記は、共有者の1人が単独で申請することができる。",
+    "a": false,
+    "ex": "誤り。共有物の分割禁止の定めに係る権利の変更の登記は、共有者全員が共同して申請しなければなりません（不動産登記法65条）。共有者全員に影響する事項であるため、全員の合意が必要です。",
+    "cat": "共有物分割禁止"
+  },
+  {
+    "q": "合筆の登記は、所有権の登記名義人が異なる土地については申請することができない。",
+    "a": true,
+    "ex": "正しい。合筆の登記は、所有権の登記名義人が同一でなければ申請できません（不動産登記法41条1号参照）。異なる所有者の土地を合体させることは認められていません。",
+    "cat": "合筆・分筆"
+  },
+  {
+    "q": "相続人以外の者に対してなされた遺贈による所有権の移転登記は、受遺者が単独で申請することができる。",
+    "a": false,
+    "ex": "誤り。単独申請が認められる遺贈は「相続人に対する遺贈」に限られます（不動産登記法63条3項）。相続人以外の者への遺贈の場合は、登記権利者（受遺者）と登記義務者（相続人全員）の共同申請が必要です。",
+    "cat": "単独申請の例外"
+  },
+  {
+    "q": "登記官が登記の申請を却下する場合として、申請に係る登記の目的である権利が登記することができない権利であるときがある。",
+    "a": true,
+    "ex": "正しい。登記することができない権利に関する登記の申請は、却下事由に該当します（不動産登記法25条参照）。登記できる権利は法定されており（不動産登記法3条）、それ以外の権利は登記できません。",
+    "cat": "却下事由"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで不動産登記法の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・登記記録の詳細な構成（表示に関する登記の細部）<br>・筆界特定制度<br>・登記の更正・抹消の詳細手続<br>・嘱託登記の詳細<br>・地図・地図に準ずる図面の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 不動産登記簿の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【登記簿の構成】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">不動産登記簿</span><br>┌─────┴─────┐<br><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">表題部</span>　　　　<span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">権利部</span><br><span style="font-size:12px">（所在・面積等）</span>　　<span style="font-size:12px">（権利関係）</span><br><span style="color:#d32f2f;font-weight:bold">申請義務あり</span>　　<span style="color:#1565c0;font-weight:bold">申請義務なし</span><br><span style="font-size:11px">（1月以内）</span>　　　┌──┴──┐<br>　　　　　　<span style="background:#e1bee7;padding:2px 6px;border-radius:4px;font-size:12px">甲区</span>　<span style="background:#b2dfdb;padding:2px 6px;border-radius:4px;font-size:12px">乙区</span><br>　　　　<span style="font-size:11px">(所有権)</span>　<span style="font-size:11px">(その他)</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最頻出】区分建物の保存登記の特例</strong><br>通常の建物は表題部所有者・相続人しか保存登記できませんが、<strong>区分建物は「表題部所有者から取得した者」も申請OK</strong>。さらに敷地権付きなら<strong>敷地権登記名義人の承諾が必要</strong>。3/6年で出題されています。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【ひっかけ注意】表題登記 vs 保存登記</strong><br>表題登記 → 申請義務<strong>あり</strong>（1月以内）<br>保存登記 → 申請義務<strong>なし</strong>（任意）<br>覚え方：「<strong>表題は義務、保存は任意</strong>」。問題文で「保存登記を1月以内に」とあったら誤りです。</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【要注意】資格者代理人でも登記識別情報は必要</strong><br>司法書士が代理しても登記識別情報は<strong>省略できません</strong>。覚え方：「<strong>プロが代理しても本人確認は別問題</strong>」。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">申請義務のある登記 vs ない登記</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">登記の種類</th><th style="border:1px solid #90caf9">申請義務</th><th style="border:1px solid #90caf9">期間</th></tr><tr><td>表題登記（新築）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">あり</td><td style="text-align:center">1月以内</td></tr><tr style="background:#fafafa"><td>滅失登記</td><td style="text-align:center;color:#d32f2f;font-weight:bold">あり</td><td style="text-align:center">1月以内</td></tr><tr><td>保存登記</td><td style="text-align:center;color:#2e7d32;font-weight:bold">なし</td><td style="text-align:center">─</td></tr><tr style="background:#fafafa"><td>その他の権利登記</td><td style="text-align:center;color:#2e7d32;font-weight:bold">なし</td><td style="text-align:center">─</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">単独申請が認められる主な場合</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">場面</th><th style="border:1px solid #f48fb1">申請者</th></tr><tr><td>相続による移転登記</td><td>相続人（単独）</td></tr><tr style="background:#fafafa"><td>相続人への遺贈</td><td>受遺者（単独）</td></tr><tr><td>買戻し特約の抹消（10年経過後）</td><td>買主（単独）</td></tr><tr style="background:#fafafa"><td>収用による所有権移転</td><td>起業者（単独）</td></tr><tr><td>氏名・住所の変更登記</td><td>登記名義人（単独）</td></tr><tr style="background:#fafafa"><td style="color:#d32f2f;font-weight:bold">相続人以外への遺贈</td><td style="color:#d32f2f;font-weight:bold">共同申請が必要</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">登記できる権利10種類（3条）</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">権利</th><th style="border:1px solid #9fa8da">メモ</th></tr><tr><td>所有権</td><td>甲区に記録</td></tr><tr style="background:#fafafa"><td>地上権・永小作権・地役権</td><td>用益物権</td></tr><tr><td>先取特権・質権・抵当権</td><td>担保物権</td></tr><tr style="background:#fafafa"><td>賃借権</td><td>債権だが登記可</td></tr><tr><td style="color:#1565c0;font-weight:bold">配偶者居住権</td><td style="color:#1565c0">2020年新設</td></tr><tr style="background:#fafafa"><td>採石権</td><td>採石法上の権利</td></tr><tr><td style="color:#d32f2f">配偶者短期居住権</td><td style="color:#d32f2f;font-weight:bold">登記不可</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">閲覧制度の違い（121条）</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">対象</th><th style="border:1px solid #ffcc80">閲覧の条件</th></tr><tr><td>地積測量図・建物図面等</td><td style="text-align:center;color:#2e7d32;font-weight:bold">何人でもOK</td></tr><tr style="background:#fafafa"><td>申請書・委任状等</td><td style="text-align:center;color:#d32f2f;font-weight:bold">正当な理由が必要</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 不動産登記法とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「不動産の情報を公の帳簿（登記簿）に記録し、誰でも見られるようにする制度」のルールを定めた法律です。<br>土地や建物が「誰のもので、どんな権利がついているか」を明らかにし、取引の安全を守ります。</div><div class="info-box" style="background:#f5f5f5">不動産登記簿は<strong>表題部</strong>と<strong>権利部</strong>で構成されます。表題部は不動産の物理的な情報（所在・面積など）、権利部は権利関係（所有者は誰か、抵当権はあるか等）を記録します。権利部はさらに<strong>甲区</strong>（所有権に関する事項）と<strong>乙区</strong>（所有権以外の権利）に分かれます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 最重要ルール：申請義務があるのは表題登記・滅失登記だけ</div><div class="info-box" style="background:#fce4ec"><strong>表題登記と保存登記の違いを理解することが、不動産登記法攻略の第一歩です。</strong></div><div class="info-box" style="background:#f5f5f5"><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">表題登記</span> → 不動産の物理的な情報を初めて記録すること<br>→ <strong style="color:#d32f2f">申請義務あり（1月以内）</strong><br>→ 新しく建物を建てたら、必ずやらなければならない<br><br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">保存登記</span> → 所有権を初めて権利部に記録すること<br>→ <strong style="color:#1565c0">申請義務なし（任意）</strong><br>→ やらなくても罰則はない<br><br>💡 覚え方：「<strong>表題は義務、保存は任意</strong>」──試験で最も狙われるポイントです。「1月以内に保存登記を」と出たら誤りです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">📝 共同申請の原則と例外</div><div class="info-box" style="background:#e8f5e9"><strong>原則：権利の登記は「共同申請」</strong>（60条）<br>登記権利者（権利を得る人）と登記義務者（権利を失う人）が一緒に申請します。</div><div class="info-box" style="background:#f5f5f5"><strong>例外：単独申請が認められる主な場合</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> 相続による移転（相続人が単独）<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> 相続人への遺贈（受遺者が単独）<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> 買戻し特約の抹消（10年経過で買主が単独）<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">④</span> 収用による移転（起業者が単独）<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">⑤</span> 氏名・住所の変更（登記名義人が単独）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 注意：</span>相続人<strong>以外</strong>への遺贈は共同申請が必要！<br>覚え方：「<strong>買・収・相続の遺贈・住所</strong>」が単独申請OK。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">🔐 登記識別情報の基本</div><div class="info-box" style="background:#f3e5f5"><strong>登記識別情報 ＝ 登記名義人の「本人確認パスワード」</strong><br>かつての「権利証」に代わるもので、12桁の英数字の組み合わせです。新たに登記名義人になった人に通知されます。</div><div class="info-box" style="background:#f5f5f5"><strong>通知されるのは</strong>：自ら登記名義人となる申請人<br><strong>通知されないのは</strong>：代位債権者（登記名義人にならないため）<br><br><strong>提供が必要な場面</strong>：登記義務者として共同申請するとき<br>→ 資格者代理人（司法書士等）が申請しても、原則として省略不可！</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">非通知希望制度</strong><br>事前に「通知を希望しない」と申し出れば、登記識別情報は通知されません。ただし、これは<strong>次回の提供義務とは無関係</strong>です。「通知を受けていないから提供不要」とはなりません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🏢 区分建物の保存登記の特例（74条）</div><div class="info-box" style="background:#e0f7fa"><strong>区分建物（マンション等）だけの特別ルール：</strong><br>通常の建物 → 表題部所有者 or 相続人 しか保存登記できない<br>区分建物 → <strong>表題部所有者から取得した者も保存登記OK</strong></div><div class="info-box" style="background:#f5f5f5">なぜ特例があるの？<br>→ マンション分譲では、デベロッパーが建物全体の表題登記をした後、各部屋の購入者がそれぞれ保存登記をする流れになります。この場合、購入者が直接自分名義で保存登記できないと不便だからです。</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#d32f2f">さらに注意：敷地権付きの場合</strong><br>敷地権付き区分建物の場合は、上記に加えて<strong>敷地権登記名義人の承諾</strong>も必要です。建物の登記が敷地の権利にも影響するためです。<br>覚え方：「<strong>区分建物は取得者OK、でも敷地権あれば承諾も必要</strong>」</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=416AC0000000123" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 不動産登記法（e-Gov法令検索）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">不動産登記法クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
