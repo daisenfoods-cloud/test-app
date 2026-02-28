@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 共有・相隣関係クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 物権 ＞ 所有権</div>
+    <div class="header-desc">共有・相隣関係（民法209条〜253条）</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kyoyu_rinsetsu_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "共有物の「保存行為」は、各共有者が単独で行うことができる。",
+    "a": true,
+    "ex": "正しい。保存行為（共有物の現状を維持する行為）は、各共有者が単独で行うことができます（民法252条5項）。例：共有建物の雨漏り修繕など。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "共有物の「管理行為」は、共有者全員の同意がなければ行うことができない。",
+    "a": false,
+    "ex": "誤り。管理行為は、各共有者の持分の価格の過半数で決定します（民法252条1項）。全員の同意が必要なのは「変更行為」です。変更・管理・保存の3つの区別は最重要論点です。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "共有物に「著しい形状の変更」を加えるには、共有者全員の同意が必要である。",
+    "a": true,
+    "ex": "正しい。共有物に著しい形状または効用の変更（変更行為）を加えるには、共有者全員の同意が必要です（民法251条1項）。軽微な変更は管理行為として持分価格の過半数で決定できます。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "各共有者は、その持分に応じて、共有物の全部を使用することができる。",
+    "a": true,
+    "ex": "正しい。各共有者は、共有物の全部について、持分に応じた使用をする権利を有します（民法249条1項）。共有物全体を使えますが、持分に応じた範囲内での使用が原則です。",
+    "cat": "共有物の使用"
+  },
+  {
+    "q": "共有者の一人が共有物の管理費用を立て替えた場合、他の共有者に対してその費用の全額を請求することができる。",
+    "a": false,
+    "ex": "誤り。共有者は、持分に応じて管理費用を負担します（民法253条1項）。費用を立て替えた共有者は、他の共有者に対してその者の持分割合に応じた部分のみを請求できます。",
+    "cat": "費用負担"
+  },
+  {
+    "q": "各共有者は、いつでも共有物の分割を請求することができるのが原則である。",
+    "a": true,
+    "ex": "正しい。各共有者は、原則としていつでも共有物の分割を請求できます（民法256条1項）。ただし、5年を超えない期間、分割しない旨の契約ができます。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "土地の所有者は、境界線の測量のために隣地を使用する必要があるときは、隣人の承諾がなくても隣地を使用することができる。",
+    "a": true,
+    "ex": "正しい。土地の所有者は、境界線の測量などの目的がある場合、隣地を使用することができます（民法209条1項）。ただし、あらかじめ目的・日時・場所・方法を通知しなければならず（民法209条3項）、住家への立入りは居住者の承諾が必要です（民法209条1項ただし書）。",
+    "cat": "隣地使用権"
+  },
+  {
+    "q": "隣地使用権に基づいて隣地に立ち入る場合、住家に立ち入るときは、その家の居住者の承諾を得なければならない。",
+    "a": true,
+    "ex": "正しい。隣地使用権の目的が正当であっても、住家への立入りについては、居住者の承諾が必要です（民法209条1項ただし書）。住家は特別扱いです。",
+    "cat": "隣地使用権"
+  },
+  {
+    "q": "囲繞地通行権（袋地の通行権）は、公道に至るために他の土地を通行する権利であり、通行者は最も利便性の高い経路を自由に選択できる。",
+    "a": false,
+    "ex": "誤り。袋地通行権の通行の場所と方法は、通行権者のために必要で、かつ他の土地への損害が最も少ないものを選ばなければなりません（民法211条1項）。利便性を優先して自由に選択することはできません。",
+    "cat": "袋地通行権"
+  },
+  {
+    "q": "隣地の竹木の「根」が境界線を越えたとき、土地の所有者はその根を自ら切り取ることができる。",
+    "a": true,
+    "ex": "正しい。隣地の竹木の根が境界線を越えて自分の土地に入ってきた場合、土地の所有者は自らその根を切り取ることができます（民法233条4項）。「枝」と「根」では扱いが異なります。",
+    "cat": "竹木の枝・根"
+  },
+  {
+    "q": "隣地の竹木の「枝」が境界線を越えたとき、土地の所有者は自らその枝を切り取ることができる。",
+    "a": false,
+    "ex": "誤り。枝が越境した場合、原則として竹木の所有者に切除させることになります（民法233条1項）。ただし、催告後相当期間内に切除しないときなど例外的な3条件に該当する場合に限り、自ら切り取ることができます（民法233条3項）。",
+    "cat": "竹木の枝・根"
+  },
+  {
+    "q": "境界線上に設けた障壁（塀）は、相隣者が等しい割合で費用を負担して設置するのが原則である。",
+    "a": true,
+    "ex": "正しい。境界線上の障壁の設置費用は、相隣者が等しい割合で負担するのが原則です（民法224条）。ただし、高さを増す部分については、その工事をする者が費用を負担します。",
+    "cat": "障壁・塀"
+  },
+  {
+    "q": "共有者は、その持分を自由に譲渡することができ、他の共有者の同意は不要である。",
+    "a": true,
+    "ex": "正しい。共有者は自己の持分を自由に処分（譲渡・抵当権設定等）することができます。所有権の一形態として持分権の処分は各共有者が単独でできるのが原則であり、他の共有者の同意は不要です（民法249条等）。「共有物全体」の処分（変更行為）とは区別して覚えましょう。",
+    "cat": "持分の処分"
+  },
+  {
+    "q": "相隣者の一方は、共有の障壁の高さを増すことができ、その場合の費用は共有者が等しい割合で負担する。",
+    "a": false,
+    "ex": "誤り。障壁の高さを増す工事は相隣者の一方が単独で行えますが、その費用はその工事をした者が単独で負担します（民法225条2項）。増築部分は工事をした者の単独所有となります（民法225条1項参照）。",
+    "cat": "障壁・塀"
+  },
+  {
+    "q": "共有者の持分について、各共有者の持分は相等しいものと推定される。",
+    "a": true,
+    "ex": "正しい。各共有者の持分は、相等しいものと推定されます（民法250条）。実際の割合が不明な場合、平等な持分とみなされます。",
+    "cat": "共有の基本"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "AとBがそれぞれ2分の1ずつの持分を持つ共有土地について、Aが単独でCに賃貸借契約を締結した場合、この賃貸借は有効に成立する。",
+    "a": false,
+    "ex": "誤り。共有物の賃貸借は管理行為に該当し、持分の価格の過半数（この場合Bの同意も必要）での決定が必要です（民法252条1項）。AとBがそれぞれ2分の1ずつでは過半数にならないため、Aだけでは賃貸借を成立させることができません。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "共有者の一人が共有物の管理行為に反対していた場合でも、過半数で決定された管理費用については、反対した共有者も持分割合に応じて負担しなければならない。",
+    "a": true,
+    "ex": "正しい。管理行為の意思決定（持分の過半数）と費用負担（持分割合）は別のルールです（民法252条・253条）。反対していた共有者も、適法に決定された管理費用については持分割合で負担します。「反対したから払わない」は認められません。",
+    "cat": "費用負担"
+  },
+  {
+    "q": "AがBの土地に囲まれた袋地を時効取得した場合、AはBの土地を通行する権利を主張することができる。",
+    "a": true,
+    "ex": "正しい。袋地の通行権は、土地の所有権の取得原因を問わず認められます。時効取得によって袋地の所有者となった者も、民法210条の通行権を主張することができます。",
+    "cat": "袋地通行権"
+  },
+  {
+    "q": "隣地の竹木の枝が境界線を越えて自分の土地に伸びている場合、竹木の所有者が枝の切除を催告されてから相当期間内に切除しないとき、土地の所有者は自らその枝を切り取ることができる。",
+    "a": true,
+    "ex": "正しい。2020年民法改正により、①催告後相当期間内に切除しないとき、②竹木の所有者が不明・所在不明のとき、③急迫の事情があるとき、の3条件に該当する場合は土地の所有者が自ら枝を切り取ることができるようになりました（民法233条3項）。",
+    "cat": "竹木の枝・根"
+  },
+  {
+    "q": "竹木の所有者が不明または所在不明の場合、越境した枝についても、土地の所有者は自ら切り取ることができる。",
+    "a": true,
+    "ex": "正しい。竹木の所有者が不明・所在不明の場合は、土地の所有者が自ら越境した枝を切り取ることができます（民法233条3項2号）。根の場合は元々自ら切取り可ですが、枝の場合も2020年改正でこの例外が設けられました。",
+    "cat": "竹木の枝・根"
+  },
+  {
+    "q": "袋地通行権に基づく通行は無償であり、通行地の所有者は通行料を請求することができない。",
+    "a": false,
+    "ex": "誤り。袋地通行権は有償が原則です（民法212条）。通行地の所有者は、通行の対価として償金を請求することができます。ただし、分割によって生じた袋地の場合は無償となります（民法213条）。",
+    "cat": "袋地通行権"
+  },
+  {
+    "q": "A・B・Cが各3分の1の持分を持つ共有建物の用途変更（事務所→店舗）は、AとBの合意だけで行うことができる。",
+    "a": true,
+    "ex": "正しい。用途変更が共有物の管理行為（形状・効用の「著しい」変更でない）に該当する場合、持分の価格の過半数（AとBで3分の2）で決定できます（民法252条1項）。ただし、著しい変更を伴うと判断されれば全員同意が必要です。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "隣地使用権に基づいて隣地を使用する場合、事前に目的・日時・場所・方法を通知しなければならないが、急を要する場合はこの限りでない。",
+    "a": true,
+    "ex": "正しい。隣地使用権を行使する際は、原則として事前に目的・日時・場所・方法を通知しなければなりません（民法209条3項）。ただし、あらかじめ通知することが困難なとき（急迫の事情がある場合や所有者が不明・所在不明の場合など）は、使用開始後に遅滞なく通知することで足ります（同条3項ただし書）。通知義務が完全に免除されるわけではない点に注意。",
+    "cat": "隣地使用権"
+  },
+  {
+    "q": "Aが単独で所有する土地が他の数筆の土地に囲まれて公道に出られない場合、Aは周囲の土地全てに対して均等に通行権を主張しなければならない。",
+    "a": false,
+    "ex": "誤り。袋地通行権は、「他の土地への損害が最も少ない」方法で行使します（民法211条1項）。一部の土地への通行だけで公道に出られる場合、他の全ての土地への通行権を主張する必要はありません。最小限の通行が原則です。",
+    "cat": "袋地通行権"
+  },
+  {
+    "q": "共有者の一人が死亡し、相続人がいない場合、他の共有者は共有物の分割請求をすることができない。",
+    "a": false,
+    "ex": "誤り。共有者の一人が死亡して相続人がいない場合、他の共有者は相続財産清算人の選任申立てを行った上で、共有物の分割を請求することができます。2021年改正（施行2023年）により、共有者不明の土地についても共有関係の解消手続きが整備されています。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "AとBが共有する土地について、AがBの同意なく第三者Cに売却しようとしても、共有物全体の処分は全員の同意が必要なため、Aの売却は無効となる。",
+    "a": true,
+    "ex": "正しい。共有物全体の処分（売却）は変更行為にあたり、全共有者の同意が必要です（民法251条1項）。Aが無断で共有物全体を売却しようとしても、Bの持分については処分権限がなく、共有物全体の売却は無効となります。",
+    "cat": "共有物の管理"
+  },
+  {
+    "q": "急迫の事情がある場合、越境した隣地の枝を、竹木の所有者への事前催告なしに土地の所有者が自ら切り取ることができる。",
+    "a": true,
+    "ex": "正しい。急迫の事情（台風で木が傾き今すぐ切らないと建物が壊れるなど）がある場合は、催告なしに土地の所有者が自ら枝を切り取ることができます（民法233条3項3号）。2020年改正で明文化された重要論点です。",
+    "cat": "竹木の枝・根"
+  },
+  {
+    "q": "共有持分の放棄によって、その持分は国庫に帰属する。",
+    "a": false,
+    "ex": "誤り。共有者の一人がその持分を放棄したとき、または共有者が相続人なく死亡したときは、その持分は他の共有者に帰属します（民法255条）。共有の場合は他の共有者に帰属する点が、単独所有（→国庫）とは異なります。",
+    "cat": "共有の基本"
+  },
+  {
+    "q": "BがAの土地（要役地）のために、A所有の隣接する土地（承役地）に通行地役権を設定している場合、その後Cが承役地を取得したとしても、登記された地役権はCに対抗することができる。",
+    "a": true,
+    "ex": "正しい。地役権は承役地の所有者が変わっても、登記（対抗要件）を備えていれば新所有者Cに対抗できます（民法177条・280条）。袋地通行権（法定）と異なり、地役権は当事者間の設定行為に基づく権利ですが、登記による対抗力が認められています。",
+    "cat": "袋地通行権"
+  },
+  {
+    "q": "分割によって袋地が生じた場合、袋地の所有者は、公道に出るために他の分割された土地のみを通行することができ、その通行は無償である。",
+    "a": true,
+    "ex": "正しい。分割によって袋地が生じた場合、袋地の所有者は他の分割地のみを通行でき（分割した他の土地は対象外）、通行料は無償です（民法213条）。分割の際に土地の利用を制限した当事者間での調整のため、無償となっています。",
+    "cat": "袋地通行権"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで共有・相隣関係の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・共有物分割の手続きの詳細（裁判分割など）<br>・相隣関係の中で使用頻度の低い規定（水流・境界標設置費用など）<br>・地役権との比較・区別<br>・旧法ベースの枝切除ルール</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 共有・相隣関係の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:8px">【共有の基本構造】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">共有者A（持分1/2）</span> ＋ <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">共有者B（持分1/2）</span><br>↓<br><span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">共有物（一つの不動産を共同所有）</span><div style="margin-top:16px;font-weight:bold;margin-bottom:8px">【相隣関係の基本構造】</div><span style="background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold">A所有地</span> ｜境界線｜ <span style="background:#d7ccc8;padding:3px 8px;border-radius:4px;font-weight:bold">B所有地（隣地）</span><br>↑ 越境・通行・竹木などで紛争が生じる ↑</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⚡ 過去問でよく狙われるポイント（Principleに載っていない内容）</div><div class="info-box" style="background:#f3e5f5"><strong>① 共有物を不法占拠されたとき → 保存行為として単独で明渡請求できる</strong><br>第三者が共有物を不法占拠している場合、各共有者は単独で明渡請求ができます（保存行為）。<br>⇒ 「共有者全員で訴えなければならない」は誤り！</div><div class="info-box" style="background:#ede7f6"><strong>② 共有者が管理費用を1年以上払わない → 持分を強制取得できる</strong><br>共有者が1年以内に管理費用を支払わない場合、他の共有者は相当価格でその持分を取得できます（民法253条2項）。<br>⇒ 払わなくても持分は守られる、は誤り！</div><div class="info-box" style="background:#e8eaf6"><strong>③ 分割禁止特約は「5年以内」でしか結べない</strong><br>共有者は5年を超えない期間、分割しない旨の契約ができます（民法256条1項）。<br>5年経過後は更新可能ですが、更新も5年以内の制限あり。<br>⇒ 「永久に分割禁止」の合意は無効！</div><div class="info-box" style="background:#e0f2f1"><strong>④ 隣地使用後は損害を補償する義務がある</strong><br>隣地を使用した後は、その土地の所有者・使用者に生じた損害を補償しなければなりません（民法209条4項）。<br>⇒ 正当な目的があっても「タダで使える」わけではない！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 変更・管理・保存の早見表</div><table><tr style="background:#ffccbc"><th style="border:1px solid #ff8a65;text-align:left">区分</th><th style="border:1px solid #ff8a65">必要な同意</th><th style="border:1px solid #ff8a65">例</th></tr><tr><td><strong>変更行為</strong></td><td style="text-align:center;color:#b71c1c;font-weight:bold">全員の同意</td><td>売却・取壊し・著しい形状変更</td></tr><tr style="background:#fafafa"><td><strong>管理行為</strong></td><td style="text-align:center;color:#e65100;font-weight:bold">持分過半数</td><td>賃貸借・用途変更・軽微な変更</td></tr><tr><td><strong>保存行為</strong></td><td style="text-align:center;color:#2e7d32;font-weight:bold">単独可</td><td>修繕・不法占拠者への明渡請求</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">🔍 共有とは何か</div><div class="info-box" style="background:#e8f5e9">共有とは、一つの物を複数人が共同で所有する形態です。<br>各共有者は「持分」という割合的な権利を持ちます。例えばAが1/2、Bが1/2の場合、物全体に対してそれぞれの割合の権利を持ちます（民法249条）。<br><br><strong>持分は自由に処分できます</strong>（他の共有者の同意不要）。ただし、物全体の処分（売却など）には全員同意が必要です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📋 共有物の3つの行為類型（最重要）</div><div class="info-box" style="background:#e3f2fd"><strong>■ 変更行為（民法251条）</strong><br>定義：共有物の形状・効用を著しく変える行為<br>例：売却、取壊し、用途の根本的変更<br>必要要件：<strong style="color:#b71c1c">共有者全員の同意</strong><br><br><strong>■ 管理行為（民法252条）</strong><br>定義：共有物の利用・改良を目的とする行為（軽微な変更を含む）<br>例：賃貸借、用途変更、簡単な改修<br>必要要件：<strong style="color:#e65100">持分価格の過半数の同意</strong><br><br><strong>■ 保存行為（民法252条5項）</strong><br>定義：共有物の現状を維持する行為<br>例：修繕、不法占拠者への明渡請求、時効中断<br>必要要件：<strong style="color:#2e7d32">各共有者が単独でできる</strong></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">💰 費用負担のルール（民法253条）</div><div class="info-box" style="background:#f3e5f5">各共有者は、<strong>持分に応じて</strong>管理費用を負担します。<br><br>重要ポイント：<br>・意思決定（過半数）と費用負担（持分割合）は別ルール<br>・管理行為に反対した共有者も費用は負担しなければならない<br>・1年以内に費用を支払わなければ、他の共有者はその持分を適正価格で取得できる（民法253条2項）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">🌿 竹木の枝・根の越境（民法233条）【2020年改正】</div><div class="info-box" style="background:#fff3e0"><strong>■ 枝が越境した場合（原則：切らせる）</strong><br>①まず竹木の所有者に切除を催告する<br>②例外的に土地の所有者が自ら切り取れる3条件：<br>　・催告後、相当期間内に切除しないとき<br>　・竹木の所有者が不明または所在不明のとき<br>　・急迫の事情があるとき（民法233条3項）<br><br><strong>■ 根が越境した場合（原則：自ら切れる）</strong><br>土地の所有者は自らその根を切り取ることができる（民法233条4項）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 枝と根で扱いが逆！これが最頻出ひっかけです</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #0277bd;color:#0277bd">🚶 袋地通行権（民法210条〜213条）</div><div class="info-box" style="background:#e1f5fe"><strong>■ 袋地とは</strong><br>他の土地に囲まれ、公道に出るには必ず他人の土地を通らざるを得ない土地。<br><br><strong>■ 通行の制限（民法211条）</strong><br>通行の場所・方法は、通行権者のために必要で、かつ<strong>他の土地への損害が最も少ない</strong>ものでなければならない。<br>→ 自分の都合で自由に経路を選べるわけではない！<br><br><strong>■ 有償・無償の区別（重要）</strong><br>・原則：有償（通行料を払う）（民法212条）<br>・例外：分割によって袋地が生じた場合は無償（民法213条）<br><br><strong>■ 土地取得原因は問わない</strong><br>時効取得によって袋地の所有者になった場合も通行権あり</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 隣地使用権（民法209条）【2020年改正で拡充】</div><div class="info-box" style="background:#e8f5e9"><strong>■ 使用できる目的（例示）</strong><br>・境界標の調査・設置<br>・境界線の測量<br>・越境した枝の切取り<br>・建物の建築・修繕のための足場設置　など<br><br><strong>■ 手続き（原則）</strong><br>事前に目的・日時・場所・方法を通知しなければならない。<br>ただし、あらかじめ通知することが困難なとき（急迫の事情がある場合、所有者が不明・所在不明の場合）は、使用開始後に遅滞なく通知することで足りる（民法209条3項）。<br><br><strong>■ 住家への立入り（特別ルール）</strong><br>たとえ正当な目的があっても、<strong>住家への立入りは居住者の承諾が必須</strong>（民法209条1項ただし書）<br>→ これが唯一の承諾必要ケース！</div></div><div style="margin-top:12px;padding:10px;background:#f5f5f5;border-radius:8px;font-size:13px;color:#666">📖 条文参照：<a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089" target="_blank" style="color:#1565c0">民法（e-Gov法令検索）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">共有・相隣関係クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
