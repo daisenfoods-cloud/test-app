@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 共有クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 物権 ＞ 共有</div>
+    <div class="header-desc">管理・変更・保存の区別、持分の処分・放棄・分割</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kyoyu_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "共有物の保存行為は、各共有者が単独で行うことができる。",
+    "a": true,
+    "ex": "正しい。保存行為は共有物の現状を維持する行為であり、各共有者が単独で行えます（民法252条5項）。他の共有者全員の同意や過半数の決定は不要です。",
+    "cat": "保存行為"
+  },
+  {
+    "q": "共有物の管理に関する事項は、共有者全員の同意がなければ決定できない。",
+    "a": false,
+    "ex": "誤り。共有物の管理に関する事項は、各共有者の持分の価格に従い、その過半数で決定します（民法252条1項）。全員の同意が必要なのは「変更」です。",
+    "cat": "管理行為"
+  },
+  {
+    "q": "共有物に重大な変更を加えるには、共有者全員の同意が必要である。",
+    "a": true,
+    "ex": "正しい。共有物の変更（その形状又は効用の著しい変更を伴うもの）は、共有者全員の同意が必要です（民法251条1項）。例えば、共有建物の大規模な改築などが該当します。",
+    "cat": "変更行為"
+  },
+  {
+    "q": "各共有者の持分は、相等しいものと推定される。",
+    "a": true,
+    "ex": "正しい。共有者の持分が明らかでない場合、各共有者の持分は均等であると推定されます（民法250条）。あくまで「推定」なので、反証があれば覆る可能性があります。",
+    "cat": "持分の割合"
+  },
+  {
+    "q": "共有者の一人が自己の持分を第三者に譲渡するには、他の共有者全員の同意が必要である。",
+    "a": false,
+    "ex": "誤り。各共有者は、自己の持分を自由に処分（譲渡・担保設定など）することができます（民法206条）。持分の処分は自分の権利の範囲内の行為なので、他の共有者の同意は不要です。",
+    "cat": "持分の処分"
+  },
+  {
+    "q": "共有者の一人がその持分を放棄したときは、その持分は国庫に帰属する。",
+    "a": false,
+    "ex": "誤り。共有者の一人がその持分を放棄したとき、又は死亡して相続人がないときは、その持分は他の共有者に帰属します（民法255条）。国庫に帰属するのではなく、他の共有者に帰属する点に注意してください。",
+    "cat": "持分の放棄"
+  },
+  {
+    "q": "各共有者は、いつでも共有物の分割を請求することができる。",
+    "a": true,
+    "ex": "正しい。各共有者は、いつでも共有物の分割を請求できます（民法256条1項本文）。ただし、5年以内の期間を定めて分割しない旨の契約（不分割特約）をすることは認められています。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "共有物の不分割特約は、10年を超えない期間であれば有効に定めることができる。",
+    "a": false,
+    "ex": "誤り。不分割特約の期間は5年を超えることができません（民法256条1項ただし書）。なお、更新も可能ですが、その期間も更新の時から5年が上限です。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "各共有者は、共有物の全部について、その持分に応じた使用をすることができる。",
+    "a": true,
+    "ex": "正しい。各共有者は、共有物の全部について、その持分に応じた使用をすることができます（民法249条1項）。持分が3分の1であっても、共有物の「3分の1の部分だけ」ではなく「全部」を使えます。",
+    "cat": "共有物の使用"
+  },
+  {
+    "q": "共有物の軽微な変更（形状又は効用の著しい変更を伴わないもの）は、持分の価格の過半数で決定できる。",
+    "a": true,
+    "ex": "正しい。2021年（令和3年）改正（2023年4月1日施行）により、共有物に変更を加える行為であっても、その形状又は効用の著しい変更を伴わないもの（軽微変更）は、管理行為として持分の過半数で決定できるようになりました（民法251条1項かっこ書）。",
+    "cat": "変更行為"
+  },
+  {
+    "q": "共有物の管理に関する事項を決定するための「過半数」とは、共有者の人数の過半数のことである。",
+    "a": false,
+    "ex": "誤り。共有物の管理に関する事項は、共有者の「人数」ではなく、各共有者の持分の「価格」の過半数で決定します（民法252条1項）。例えば、A（持分3分の2）とB（持分3分の1）の共有の場合、Aだけで管理行為を決定できます。",
+    "cat": "管理行為"
+  },
+  {
+    "q": "共有者の一人は、自己の持分に抵当権を設定することができる。",
+    "a": true,
+    "ex": "正しい。各共有者は自己の持分を自由に処分できるため、持分に抵当権を設定することも可能です。他の共有者の同意は不要です。",
+    "cat": "持分の処分"
+  },
+  {
+    "q": "不分割特約は更新することができるが、更新の時から5年を超えることはできない。",
+    "a": true,
+    "ex": "正しい。不分割特約は更新が可能ですが、更新の時から5年を超えることはできません（民法256条1項ただし書）。したがって、5年＋更新5年＝10年間分割を禁止するといったことも可能です。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "共有者の一人が共有物に対して有する持分は、共有物そのものとは別に、単独で譲渡することはできない。",
+    "a": false,
+    "ex": "誤り。各共有者は自己の持分を単独で自由に譲渡できます。持分は共有者それぞれの権利であり、他の共有者の同意なく第三者に譲渡することが可能です。",
+    "cat": "持分の処分"
+  },
+  {
+    "q": "共有者の一人が死亡し、相続人がないときは、その持分は他の共有者に帰属する。",
+    "a": true,
+    "ex": "正しい。共有者の一人がその持分を放棄したとき、又は死亡して相続人がないときは、その持分は他の共有者に帰属します（民法255条）。",
+    "cat": "持分の放棄"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "共有者の一人が持分の価格で過半数を超えている場合、その共有者は、共有物を単独で占有している他の共有者に対し、当然に明渡しを請求できる。",
+    "a": false,
+    "ex": "誤り。各共有者は持分に応じて共有物の全部を使用する権利があります（民法249条1項）。そのため、持分が過半数を超える共有者であっても、共有物を現に占有する他の共有者に対し、当然には明渡しを請求することはできません（判例）。",
+    "cat": "共有物の占有"
+  },
+  {
+    "q": "第三者が共有物を不法に占拠している場合、共有者の一人は単独でその第三者に対して明渡しを請求できる。",
+    "a": true,
+    "ex": "正しい。不法占拠者への明渡請求は、共有物の現状を維持するための保存行為にあたり、各共有者が単独で行えます（民法252条5項、判例）。",
+    "cat": "保存行為"
+  },
+  {
+    "q": "不実の登記がされている共有物について、共有者の一人が単独でその抹消登記を請求することは認められない。",
+    "a": false,
+    "ex": "誤り。不実の登記名義の抹消請求は、共有物の現状を維持する保存行為として、各共有者が単独で行うことができます（判例）。他の共有者の同意は不要です。",
+    "cat": "保存行為"
+  },
+  {
+    "q": "第三者が共有物を不法に占拠している場合、共有者の一人が当該第三者に損害賠償を請求するとき、自己の持分の割合に応じた額のみを請求できる。",
+    "a": true,
+    "ex": "正しい。不法占拠者への明渡請求は保存行為として単独で全部を請求できますが、損害賠償請求権は分割債権となるため、各共有者は自己の持分の割合に応じた額のみ請求できます（民法427条）。",
+    "cat": "損害賠償請求"
+  },
+  {
+    "q": "共有地を第三者に賃貸する場合において、その賃貸借の期間が5年以内であるときは、持分の価格の過半数で決定できる。",
+    "a": true,
+    "ex": "正しい。土地の賃借権等の設定で、その存続期間が5年以内のものは、管理に関する事項として持分の過半数で決定できます（民法252条4項2号）。5年を超える場合は変更行為として全員の同意が必要です。",
+    "cat": "賃貸借の設定"
+  },
+  {
+    "q": "共有地を第三者に賃貸する場合、その賃貸借の期間が8年であるときでも、持分の価格の過半数で決定できる。",
+    "a": false,
+    "ex": "誤り。土地の賃貸借の期間が5年を超える場合は、管理行為ではなく変更行為にあたるため、共有者全員の同意が必要です（民法252条4項2号参照、251条1項）。",
+    "cat": "賃貸借の設定"
+  },
+  {
+    "q": "共有者の所在が不明な場合、他の共有者は裁判所の決定を得て、所在不明の共有者の持分を取得することができる。",
+    "a": true,
+    "ex": "正しい。不動産が数人の共有に属する場合で、共有者を知ることができず又はその所在を知ることができないときは、裁判所は他の共有者の請求により、その共有者の持分を取得させる旨の裁判をすることができます（民法262条の2第1項）。2021年改正で新設された制度です。",
+    "cat": "所在等不明共有者"
+  },
+  {
+    "q": "所在等不明共有者の持分を取得した共有者は、所在不明の共有者に対して時価相当額を支払う義務を負うが、この支払請求権には特別の短期消滅時効が適用される。",
+    "a": false,
+    "ex": "誤り。所在等不明共有者の時価相当額の支払請求権について、特別の短期消滅時効の定めはありません。一般の消滅時効（権利行使できることを知った時から5年、又は権利行使できる時から10年）が適用されます（民法166条1項）。",
+    "cat": "所在等不明共有者"
+  },
+  {
+    "q": "所在等不明共有者がいる場合、裁判所の決定を得れば、所在不明の共有者以外の共有者の持分の過半数で、共有物の管理に関する事項を決定できる。",
+    "a": true,
+    "ex": "正しい。2021年改正により、所在等不明共有者がいる場合、裁判所の決定を得て、所在不明の共有者以外の共有者の持分の過半数により管理に関する事項を決定できるようになりました（民法252条2項1号）。",
+    "cat": "所在等不明共有者"
+  },
+  {
+    "q": "共有物の分割について共有者間で協議が調わないときは、各共有者は裁判所にその分割を請求することができ、裁判所は現物分割のほか、競売による分割や賠償分割を命じることができる。",
+    "a": true,
+    "ex": "正しい。共有物の分割について協議が調わないとき又は協議ができないときは、裁判所に分割を請求できます。裁判所はまず現物分割（258条2項1号）・賠償分割（同2号）を検討し、これらができない場合又は分割によってその価格を著しく減少させるおそれがある場合に限り、競売分割（同3項）を命じることができます。2021年改正で賠償分割が明文化され、三つの方法の検討順序が明確になりました。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "共有者の一人が共有物について他の共有者に対して有する債権は、その共有者の特定承継人に対しても行使できる。",
+    "a": true,
+    "ex": "正しい。共有者の一人が共有物について他の共有者に対して有する債権は、その特定承継人に対しても行使することができます（民法254条）。例えば、共有物の管理費用を負担した共有者は、持分を譲り受けた第三者にも費用の償還を請求できます。",
+    "cat": "共有物の負担"
+  },
+  {
+    "q": "共有建物を第三者に賃貸する場合において、その賃貸借の期間が3年以内であるときは、持分の価格の過半数で決定できる。",
+    "a": true,
+    "ex": "正しい。建物の賃借権等の設定で、その存続期間が3年以内のものは、管理に関する事項として持分の過半数で決定できます（民法252条4項1号）。建物は土地（5年）より短い3年が基準です。",
+    "cat": "賃貸借の設定"
+  },
+  {
+    "q": "裁判所による共有物の分割では、現物分割が困難な場合であっても、競売による分割のみが認められ、特定の共有者に全部を取得させて他の共有者に金銭を支払わせる方法は認められない。",
+    "a": false,
+    "ex": "誤り。2021年改正により、裁判所は賠償分割（全面的価格賠償）を命じることも明文で認められました（民法258条2項2号）。特定の共有者に共有物を取得させ、他の共有者に金銭を支払わせる方法も可能です。",
+    "cat": "共有物の分割"
+  },
+  {
+    "q": "共有物の管理者は、共有者の持分の価格の過半数で選任することができる。",
+    "a": true,
+    "ex": "正しい。2021年改正により、共有物の管理者を選任できることが明文化されました。管理者の選任・解任は管理に関する事項として、持分の価格の過半数で決定します（民法252条1項）。",
+    "cat": "管理者"
+  },
+  {
+    "q": "所在等不明共有者がいる場合でも、裁判所の決定なしに、所在不明の共有者以外の共有者だけで共有物の変更行為を決定することができる。",
+    "a": false,
+    "ex": "誤り。所在等不明共有者がいる場合に、その共有者以外の共有者全員の同意で変更行為を決定するには、裁判所の決定を得なければなりません（民法251条2項）。裁判所を通さず勝手に決定することはできません。",
+    "cat": "所在等不明共有者"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで共有の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・準共有の詳細（264条）<br>・共有物に関する負担の詳細（253条）<br>・区分所有法との関係<br>・相隣関係との統合論点<br>・所在等不明共有者がいる場合の変更行為の裁判（251条2項）の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 共有の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【共有の全体像】</div><span style="background:#e1f5fe;padding:4px 10px;border-radius:4px;font-weight:bold;font-size:14px">共有物（1つのモノ）</span><br>　↕ 持分に応じて全部を使用できる（249条）<br><span style="background:#f3e5f5;padding:3px 8px;border-radius:4px">共有者A（持分1/3）</span>　<span style="background:#f3e5f5;padding:3px 8px;border-radius:4px">共有者B（持分1/3）</span>　<span style="background:#f3e5f5;padding:3px 8px;border-radius:4px">共有者C（持分1/3）</span><br><span style="font-size:12px;color:#555">※持分は自由に処分OK ／ 放棄→他の共有者に帰属 ／ いつでも分割請求可</span></div><div class="info-box" style="background:#f5f5f5;text-align:center;line-height:2"><div style="font-weight:bold;margin-bottom:4px">【共有物への行為＝3段階で判断】</div><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px">保存</span> → <strong style="color:#2e7d32">単独</strong>　＜　<span style="background:#fff9c4;padding:3px 8px;border-radius:4px">管理</span> → <strong style="color:#e65100">過半数</strong>　＜　<span style="background:#ffccbc;padding:3px 8px;border-radius:4px">変更</span> → <strong style="color:#d32f2f">全員同意</strong><br><span style="font-size:12px;color:#555">※詳しくは「原則」タブで解説しています</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【ひっかけ注意】持分が多くても「追い出し」はできない</strong><br>持分が過半数でも、共有物を占有する他の共有者に「出て行け」とは言えません。各共有者には持分に応じて共有物の<strong>全部</strong>を使う権利があるからです。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【区別が大事】明渡請求と損害賠償は別ルール</strong><br>不法占拠者への<strong>明渡請求</strong>＝保存行為→単独でOK<br>不法占拠者への<strong>損害賠償請求</strong>＝分割債権→自分の持分の分だけ<br>同じ不法占拠者への対応でも、請求の種類で結論が変わります。</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【期間で変わる】賃貸借の設定は期間に注意</strong><br>土地の賃貸借5年以下＝管理行為（過半数でOK）<br>土地の賃貸借5年超＝変更行為（全員の同意が必要）<br><strong>建物の賃貸借は3年が基準</strong>（3年以下＝管理行為、3年超＝変更行為）<br>期間の長さ・対象物で必要な同意レベルが変わる点がよく狙われます。</div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #9c27b0"><strong style="color:#6a1b9a">【「過半数」の落とし穴】人数ではなく持分の価格</strong><br>管理行為に必要な「過半数」は、共有者の<strong>人数</strong>ではなく<strong>持分の価格</strong>の過半数です。3人の共有でも、1人が持分の3分の2を持っていれば、その1人だけで管理行為を決定できます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">共有物に対する行為と必要な要件</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">行為</th><th style="border:1px solid #90caf9">必要な要件</th><th style="border:1px solid #90caf9">具体例</th></tr><tr><td>保存行為</td><td style="text-align:center;color:#2e7d32;font-weight:bold">単独でOK</td><td style="font-size:12px">明渡請求、不実登記抹消</td></tr><tr style="background:#fafafa"><td>管理行為</td><td style="text-align:center;color:#e65100;font-weight:bold">過半数</td><td style="font-size:12px">使用方法決定、短期賃貸借</td></tr><tr><td>軽微変更</td><td style="text-align:center;color:#e65100;font-weight:bold">過半数</td><td style="font-size:12px">形状・効用の著しい変更なし</td></tr><tr style="background:#fafafa"><td>変更行為</td><td style="text-align:center;color:#d32f2f;font-weight:bold">全員の同意</td><td style="font-size:12px">大規模改築、長期賃貸借</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">持分の処分・放棄・分割</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">場面</th><th style="border:1px solid #f48fb1">結論</th></tr><tr><td>持分の譲渡</td><td style="text-align:center;color:#2e7d32;font-weight:bold">自由（同意不要）</td></tr><tr style="background:#fafafa"><td>持分への抵当権設定</td><td style="text-align:center;color:#2e7d32;font-weight:bold">自由（同意不要）</td></tr><tr><td>持分の放棄</td><td style="text-align:center;font-weight:bold">他の共有者に帰属（255条）</td></tr><tr style="background:#fafafa"><td>相続人なく死亡</td><td style="text-align:center;font-weight:bold">他の共有者に帰属（255条）</td></tr><tr><td>分割請求</td><td style="text-align:center;color:#2e7d32;font-weight:bold">いつでも可能（256条）</td></tr><tr style="background:#fafafa"><td>不分割特約</td><td style="text-align:center;font-weight:bold">5年以内（更新可・更新後も5年上限）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">賃貸借の設定と期間の基準</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">対象</th><th style="border:1px solid #9fa8da">管理行為の上限</th><th style="border:1px solid #9fa8da">超えると</th></tr><tr><td>土地</td><td style="text-align:center;color:#e65100;font-weight:bold">5年以下</td><td style="text-align:center;color:#d32f2f;font-weight:bold">変更行為（全員同意）</td></tr><tr style="background:#fafafa"><td>建物</td><td style="text-align:center;color:#e65100;font-weight:bold">3年以下</td><td style="text-align:center;color:#d32f2f;font-weight:bold">変更行為（全員同意）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">裁判所による共有物の分割方法</div><table><tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;text-align:left">方法</th><th style="border:1px solid #80cbc4">内容</th></tr><tr><td>現物分割</td><td style="font-size:12px">物理的に分ける</td></tr><tr style="background:#fafafa"><td>賠償分割</td><td style="font-size:12px">一人が取得し、他に金銭を支払う（2021年改正で明文化）</td></tr><tr><td>競売分割</td><td style="font-size:12px">競売して代金を分ける</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 共有とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「ひとつのモノを、複数人で所有すること」です（民法249条〜264条）。<br>兄弟で相続した土地、夫婦で購入したマンション──共有は身近に存在します。</div><div class="info-box" style="background:#f5f5f5">共有では、各共有者が「持分」を持ちます。持分の割合が明確でない場合は<strong>均等と推定</strong>されます（250条）。各共有者は持分に応じて共有物の<strong>全部</strong>を使えます（249条）。「3分の1の持分だから3分の1だけ使える」ではありません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⚡ 最重要：行為の3段階を完璧に覚えよう</div><div class="info-box" style="background:#fce4ec"><strong>共有で一番大事なのは「何をするか」で必要な手続きが変わること</strong><br><br>共有物に対して何かをしたいとき、それが<strong>保存・管理・変更</strong>のどれにあたるかで、必要な要件が全く異なります。これが共有分野の最頻出テーマです。</div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #4caf50"><strong style="color:#2e7d32">🟢 保存行為 → 単独でOK（252条5項）</strong><br>共有物の「現状維持」のための行為です。<br>例：不法占拠者への明渡請求、不実の登記名義の抹消<br><br>💡 覚え方：「壊れかけたものを守るだけだから、一人でやっていい」</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">🟡 管理行為 → 持分の過半数で決定（252条1項）</strong><br>共有物の「利用・改良」のための行為です。<br>例：使用方法の決定、5年以下の土地賃貸借の設定<br><br>💡 2021年改正で、軽微な変更（形状・効用の著しい変更を伴わないもの）も管理行為に含まれるようになりました。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「過半数」は人数ではなく「持分の価格」の過半数です！</span></div><div class="info-box" style="background:#ffebee;border-left:4px solid #f44336"><strong style="color:#d32f2f">🔴 変更行為 → 全員の同意（251条1項）</strong><br>共有物の「性質・形状を大きく変える」行為です。<br>例：建物の大規模改築、5年を超える土地賃貸借の設定<br><br>💡 覚え方：「モノの姿が大きく変わるから、みんなの許可が必要」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 持分の処分・放棄・分割</div><div class="info-box" style="background:#e8f5e9"><strong>持分は「自分の権利」→ 自由に処分できる</strong><br>各共有者は自己の持分を自由に譲渡・担保設定できます。他の共有者の同意は不要です。<br><br>💡 共有物「そのもの」を変更するには全員の同意が要りますが、自分の「持分」の処分は自分だけの問題だから自由です。</div><div class="info-box" style="background:#f5f5f5"><strong>持分を放棄したら → 他の共有者に帰属（255条）</strong><br>持分を放棄した場合、その持分は<strong>国庫ではなく他の共有者</strong>に帰属します。<br>相続人がいない共有者が死亡した場合も同様です。<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 「放棄→国庫」は間違い！ 「放棄→他の共有者」が正解です。</span></div><div class="info-box" style="background:#fff3e0"><strong>共有物の分割 → いつでも請求できる（256条）</strong><br>共有者は、原則としていつでも分割を請求できます。<br>ただし、5年以内の不分割特約も認められています（更新可、ただし更新後も5年が上限）。<br>協議が調わないときは裁判所に分割を請求できます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">🆕 2021年改正：所在等不明共有者への対応</div><div class="info-box" style="background:#f3e5f5"><strong>所有者不明土地問題への対応として、2021年改正で新制度が創設されました。</strong><br><br>共有者の中に所在不明者がいると、全員の同意が得られず変更も管理もできない──この問題を解消するための制度です。</div><div class="info-box" style="background:#f5f5f5"><strong>裁判所を通じてできること：</strong><br>① 所在不明共有者の<strong>持分を取得</strong>する（262条の2）<br>② 所在不明共有者以外の共有者の過半数で<strong>管理行為を決定</strong>する（252条2項）<br>③ 所在不明共有者以外の共有者全員の同意で<strong>変更行為を決定</strong>する（251条2項）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 持分取得の場合の時価相当額支払請求権には、特別の短期消滅時効はありません。一般原則（5年/10年）が適用されます。</span></div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_249" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法249条〜（共有）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">共有クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>

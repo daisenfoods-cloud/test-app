@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 借地クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係 ＞ 借地借家法 ＞ 借地関係</div>
+    <div class="header-desc">借地権の存続期間・対抗力・定期借地権・建物買取請求権</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_shakuchi_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "建物の所有を目的とする土地の賃借権については、借地借家法が適用される。",
+    "a": true,
+    "ex": "正しい。借地借家法は「建物の所有を目的とする」地上権又は土地の賃借権（借地権）に適用されます（借地借家法2条1号）。資材置場など建物所有目的でない場合には民法のみが適用されます。",
+    "cat": "借地権の基本"
+  },
+  {
+    "q": "資材置場として土地を借りる場合にも、借地借家法が適用される。",
+    "a": false,
+    "ex": "誤り。資材置場は建物の所有を目的としていないため、借地借家法は適用されず、民法のみが適用されます（借地借家法2条1号）。借地借家法が適用されるかどうかの分かれ道は「建物所有目的かどうか」です。",
+    "cat": "借地権の基本"
+  },
+  {
+    "q": "普通借地権の存続期間は、最低30年である。",
+    "a": true,
+    "ex": "正しい。借地権の存続期間は30年です。契約でこれより長い期間を定めたときはその期間となりますが、30年より短い期間を定めても無効となり、30年となります（借地借家法3条）。",
+    "cat": "存続期間"
+  },
+  {
+    "q": "普通借地権について、当事者が存続期間を20年と定めた場合、その定めは有効であり、存続期間は20年となる。",
+    "a": false,
+    "ex": "誤り。30年より短い期間を定めた場合、その定めは借地権者に不利な特約として無効となり、存続期間は法定の30年となります（借地借家法3条、9条）。",
+    "cat": "存続期間"
+  },
+  {
+    "q": "民法上の土地の賃貸借（建物所有目的でないもの）の存続期間は、最長50年である。",
+    "a": true,
+    "ex": "正しい。民法上の賃貸借の存続期間は50年を超えることができません。これより長い期間を定めた場合、50年に短縮されます（民法604条）。2020年改正前は20年が上限でした。",
+    "cat": "存続期間"
+  },
+  {
+    "q": "借地権者は、借地上に自己名義で登記された建物を所有していれば、借地権の登記がなくても第三者に借地権を対抗することができる。",
+    "a": true,
+    "ex": "正しい。借地権は、その登記がなくても、土地の上に借地権者が登記されている建物を所有するときは、第三者に対抗できます（借地借家法10条1項）。借地権自体の登記は不要です。",
+    "cat": "対抗力"
+  },
+  {
+    "q": "借地上の建物について、表題部の登記（表示の登記）しかない場合、借地権の対抗力は認められない。",
+    "a": false,
+    "ex": "誤り。建物の表示の登記（表題部の登記）であっても、借地権の対抗力が認められます（借地借家法10条1項、判例）。所有権保存登記まで必要とされているわけではありません。",
+    "cat": "対抗力"
+  },
+  {
+    "q": "一般定期借地権を設定するためには、存続期間を50年以上とする必要がある。",
+    "a": true,
+    "ex": "正しい。存続期間を50年以上として借地権を設定する場合に、契約の更新や建物の築造による存続期間の延長がない旨等を定めることができます（借地借家法22条）。これが一般定期借地権です。",
+    "cat": "定期借地権"
+  },
+  {
+    "q": "一般定期借地権の特約は、公正証書によってしなければならない。",
+    "a": false,
+    "ex": "誤り。一般定期借地権の特約は、「公正証書による等書面又は電磁的記録」によってすれば足ります（借地借家法22条）。公正証書が「必須」なのは事業用定期借地権だけです。覚え方：「公正証書必須＝事業用だけ」。",
+    "cat": "定期借地権"
+  },
+  {
+    "q": "地代が経済事情の変動により不相当となったときは、当事者は将来に向かって地代の増減を請求することができる。",
+    "a": true,
+    "ex": "正しい。土地の租税の増減、土地価格の変動、近隣地代との比較等により地代が不相当となったときは、当事者は将来に向かって地代の増減を請求できます（借地借家法11条1項）。",
+    "cat": "地代等増減額請求"
+  },
+  {
+    "q": "一定の期間、地代を増額しない旨の特約は、有効である。",
+    "a": true,
+    "ex": "正しい。一定の期間地代等を増額しない旨の特約がある場合には、その定めに従います（借地借家法11条1項ただし書）。増額禁止特約は借地権者を保護する方向なので有効です。",
+    "cat": "地代等増減額請求"
+  },
+  {
+    "q": "一定の期間、地代を減額しない旨の特約を定めた場合、その期間中は借地権者から減額請求をすることはできない。",
+    "a": false,
+    "ex": "誤り。地代の減額を禁止する特約は、借地権者に不利であるため無効です（借地借家法11条、判例）。増額禁止特約は有効ですが、減額禁止特約は無効です。覚え方：「増額禁止OK、減額禁止NG」。",
+    "cat": "地代等増減額請求"
+  },
+  {
+    "q": "借地権の存続期間が満了し、契約の更新がないときは、借地権者は借地権設定者に対し、借地上の建物を時価で買い取るべきことを請求できる。",
+    "a": true,
+    "ex": "正しい。期間満了で更新がない場合、借地権者は建物買取請求権を行使できます（借地借家法13条1項）。この請求権を排除する特約を定めても、その特約は無効です。",
+    "cat": "建物買取請求権"
+  },
+  {
+    "q": "借地権の存続期間が満了する場合において、借地権者が契約の更新を請求したときは、建物がある場合に限り、従前と同一の条件で契約を更新したものとみなされる。",
+    "a": true,
+    "ex": "正しい。借地権者が更新請求したとき、建物がある場合に限り、従前の契約と同一の条件で更新したものとみなされます。ただし、借地権設定者が遅滞なく正当事由ある異議を述べた場合は更新されません（借地借家法5条、6条）。",
+    "cat": "更新"
+  },
+  {
+    "q": "事業用定期借地権は、居住用の建物を所有する目的であっても設定することができる。",
+    "a": false,
+    "ex": "誤り。事業用定期借地権は「専ら事業の用に供する建物」の所有を目的とするものに限られ、居住用の建物の所有を目的として設定することはできません（借地借家法23条）。覚え方：「事業用定期＝居住用は絶対NG」。",
+    "cat": "事業用定期借地権"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "借地上の建物が借地権者の配偶者の名義で登記されている場合でも、借地権者は借地権を第三者に対抗することができる。",
+    "a": false,
+    "ex": "誤り。借地権の対抗力が認められるためには、建物の登記が借地権者本人の名義であることが必要です。家族名義など借地権者以外の名義では対抗力は認められません（借地借家法10条、判例）。覚え方：「本人名義の登記（表示登記でもOK）」。",
+    "cat": "対抗力の応用"
+  },
+  {
+    "q": "借地権者が一筆の土地の上に複数の建物を所有している場合、そのうちの1棟にのみ登記があれば、借地権の対抗力はその土地全部に及ぶ。",
+    "a": true,
+    "ex": "正しい。借地権者が1筆の土地上に1棟の登記された建物を所有しているときは、同じ土地上に登記のない建物がある場合でも、その土地全部について借地権を第三者に対抗できます（借地借家法10条、判例）。",
+    "cat": "対抗力の応用"
+  },
+  {
+    "q": "土地の賃借人が対抗力を備えた借地権を有する場合、その賃借人から適法に土地の転貸を受けた転借人は、賃借人の借地権を援用して自己の転借権を第三者に対抗することができる。",
+    "a": true,
+    "ex": "正しい。転貸借が適法に成立し、賃借人の借地権が対抗力を備えている場合、転借人は賃借人の借地権を援用して、自己の転借権を第三者に対抗することができます（借地借家法10条、判例）。",
+    "cat": "対抗力の応用"
+  },
+  {
+    "q": "登記ある建物が火災で滅失した場合、借地権者がその建物の情報や滅失日等を土地上の見やすい場所に掲示すれば、建物滅失から2年を経過した後も引き続き借地権を第三者に対抗できる。",
+    "a": false,
+    "ex": "誤り。掲示による対抗力の維持は、建物の滅失があった日から2年を経過した後は、その前に建物を新たに築造し、かつ、その建物について登記をした場合に限られます（借地借家法10条2項）。掲示だけでは2年を超えて対抗力を維持できません。",
+    "cat": "対抗力の応用"
+  },
+  {
+    "q": "存続期間を50年として建物所有目的の土地賃貸借契約を締結する場合、事業用建物を所有する目的であっても、事業用定期借地権を設定することはできない。",
+    "a": true,
+    "ex": "正しい。事業用定期借地権の存続期間は10年以上50年未満です（借地借家法23条）。50年では事業用定期借地権の要件を満たさないため、事業用定期借地権は設定できません。ただし、50年以上であれば一般定期借地権として設定可能です。",
+    "cat": "定期借地権の比較"
+  },
+  {
+    "q": "事業用定期借地権を設定する契約は、公正証書によってしなければならない。",
+    "a": true,
+    "ex": "正しい。事業用定期借地権の設定契約は、公正証書によってしなければなりません（借地借家法23条3項）。一般定期借地権が「書面又は電磁的記録」で足りるのに対し、事業用定期借地権は公正証書が必須です。",
+    "cat": "定期借地権の比較"
+  },
+  {
+    "q": "一般定期借地権を設定するにあたり、賃貸人はあらかじめ賃借人に対して契約の更新がない旨を記載した書面を交付して説明する義務がある。",
+    "a": false,
+    "ex": "誤り。一般定期借地権には事前説明義務はありません。書面又は電磁的記録で特約すれば足ります（借地借家法22条）。事前説明が必要なのは定期建物賃貸借（借地借家法38条）であり、混同しないよう注意が必要です。",
+    "cat": "定期借地権の比較"
+  },
+  {
+    "q": "定期借地権が設定された場合であっても、地代が不相当となったときは、当事者は地代の減額を請求することができる。",
+    "a": true,
+    "ex": "正しい。定期借地権であっても、地代等増減額請求（借地借家法11条）の適用は排除されません。減額禁止特約は定期借地権においても無効であり、借地権者は地代の減額を請求できます（借地借家法11条、判例）。",
+    "cat": "地代等増減額請求の応用"
+  },
+  {
+    "q": "借地権者が借地上の建物を第三者に譲渡しようとする場合において、借地権設定者が賃借権の譲渡を承諾しないときは、その第三者が裁判所に対して承諾に代わる許可を申し立てることができる。",
+    "a": false,
+    "ex": "誤り。通常の譲渡の場合、裁判所に承諾に代わる許可を申し立てることができるのは「借地権者」です。第三者ではありません（借地借家法19条）。第三者が申し立てられるのは、競売・公売により取得した場合に限られます（同20条）。",
+    "cat": "裁判所の代諾許可"
+  },
+  {
+    "q": "第三者が競売によって借地上の建物を取得した場合において、借地権設定者が賃借権の譲渡を承諾しないときは、その建物を取得した第三者が裁判所に承諾に代わる許可を申し立てることができる。",
+    "a": true,
+    "ex": "正しい。競売又は公売により借地上の建物を取得した第三者は、借地権設定者が承諾しないときは、自ら裁判所に承諾に代わる許可を申し立てることができます（借地借家法20条）。通常の譲渡（借地権者が申立て）との違いに注意してください。",
+    "cat": "裁判所の代諾許可"
+  },
+  {
+    "q": "借地権の存続期間満了前に建物が滅失し、借地権者が残存期間を超えて存続する建物を新たに築造した場合、借地権設定者の承諾がなくても借地権の期間延長の効果が生じる。",
+    "a": false,
+    "ex": "誤り。借地権の存続期間満了前に建物が滅失し、借地権者が残存期間を超えて存続すべき建物を築造した場合、借地権の期間延長は、借地権設定者の承諾がある場合に限り認められます（借地借家法7条1項）。",
+    "cat": "建物再築と期間延長"
+  },
+  {
+    "q": "借地上の建物が滅失した場合において、借地権設定者が残存期間を超える建物を築造しない旨の特約を借地権者と結んだとしても、この特約は無効である。",
+    "a": true,
+    "ex": "正しい。この特約は、建物再築による期間延長に関する借地借家法7条の規定に反する借地権者に不利な特約として無効です（借地借家法9条、7条）。ただし、再築自体には承諾が必要という点は変わりません。",
+    "cat": "建物再築と期間延長"
+  },
+  {
+    "q": "借地権者の債務不履行（地代不払い等）により土地の賃貸借契約が解除された場合、借地権者は建物買取請求権を行使することができる。",
+    "a": false,
+    "ex": "誤り。建物買取請求権は、借地権の存続期間が満了し契約の更新がない場合に認められるものです。借地権者自身の債務不履行により解除された場合には、建物買取請求権は認められません（借地借家法13条、判例）。覚え方：「自分が悪いときは買取請求できない」。",
+    "cat": "建物買取請求権の応用"
+  },
+  {
+    "q": "建物所有目的ではなく資材置場として土地を賃借する場合において、存続期間を80年と定めたときは、その存続期間は50年に短縮される。",
+    "a": true,
+    "ex": "正しい。建物所有目的でない土地の賃貸借には民法のみが適用されます。民法上の賃貸借の存続期間は最長50年であり、これを超える期間を定めた場合は50年に短縮されます（民法604条）。",
+    "cat": "借地借家法と民法の比較"
+  },
+  {
+    "q": "建物所有目的の土地の賃貸借において、当事者が期間を定めなかったときは、存続期間のない契約として民法の規定に基づき賃貸人がいつでも解約申入れをすることができる。",
+    "a": false,
+    "ex": "誤り。建物所有目的の場合は借地借家法が適用され、期間の定めがないときは存続期間が30年となります（借地借家法3条）。賃貸人からの解約申入れは認められません。民法上の賃貸借（建物所有目的でないもの）とは異なるので注意が必要です。",
+    "cat": "借地借家法と民法の比較"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで借地関係の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・建物譲渡特約付き借地権の詳細（出題頻度が極めて低い）<br>・借地非訟手続の細かい手続論<br>・旧借地法の規定<br>・借地上の建物の賃貸借（借家関係は別アプリ）<br>・一時使用目的の借地権</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 借地権の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【借地権の全体像】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">土地所有者（借地権設定者）</span><br>│ 土地を貸す<br>↓<br><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">借地権者</span> → 土地の上に<span style="color:#d32f2f;font-weight:bold">建物を所有</span><br><br><span style="color:#1565c0;font-weight:bold">建物所有目的 → 借地借家法が適用</span><br><span style="color:#757575">建物所有目的でない → 民法のみ適用</span><br><br><span style="color:#d32f2f;font-weight:bold;font-size:12px">※「建物所有目的かどうか」が最初の分かれ道！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最頻出ひっかけ】「公正証書」と「書面」の混同</strong><br>公正証書が<strong>必須</strong>なのは<strong>事業用定期借地権だけ</strong>。一般定期借地権は「書面又は電磁的記録」でOK。過去問では「公正証書で合意しなければならない」という肢で何度もひっかけが出ます。覚え方：「<strong>公正証書必須＝事業用だけ</strong>」。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【最頻出ひっかけ】「増額禁止」と「減額禁止」の混同</strong><br>増額しない特約は<strong>有効</strong>（借地権者を保護する方向）。減額しない特約は<strong>無効</strong>（借地権者に不利）。定期借地権でも減額禁止特約は無効です。覚え方：「<strong>増額禁止OK、減額禁止NG</strong>」。</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【頻出】代諾許可の申立権者</strong><br>通常の建物譲渡 → <strong>借地権者</strong>が裁判所に申立て（19条）。競売で建物取得 → <strong>取得した第三者</strong>が裁判所に申立て（20条）。過去問では申立権者をすり替えるひっかけが出ます。覚え方：「<strong>競売＝買った人が申立て、普通の譲渡＝売る側が申立て</strong>」。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">一般定期借地権 vs 事業用定期借地権</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">項目</th><th style="border:1px solid #90caf9">一般定期借地権</th><th style="border:1px solid #90caf9">事業用定期借地権</th></tr><tr><td style="border:1px solid #e0e0e0">存続期間</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold">50年以上</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold">10年以上50年未満</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">用途</td><td style="border:1px solid #e0e0e0;text-align:center">制限なし</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">専ら事業用（居住用NG）</td></tr><tr><td style="border:1px solid #e0e0e0">契約方式</td><td style="border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold">書面又は電磁的記録</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">公正証書が必須</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">更新</td><td style="border:1px solid #e0e0e0;text-align:center">なし</td><td style="border:1px solid #e0e0e0;text-align:center">なし</td></tr><tr><td style="border:1px solid #e0e0e0">建物買取請求権</td><td style="border:1px solid #e0e0e0;text-align:center">排除可能</td><td style="border:1px solid #e0e0e0;text-align:center">排除可能</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">借地借家法 vs 民法（存続期間の比較）</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">項目</th><th style="border:1px solid #f48fb1">借地借家法（建物所有目的）</th><th style="border:1px solid #f48fb1">民法のみ（それ以外）</th></tr><tr><td style="border:1px solid #e0e0e0">最低期間</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold">30年</td><td style="border:1px solid #e0e0e0;text-align:center">定めなし</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">最長期間</td><td style="border:1px solid #e0e0e0;text-align:center">制限なし</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold">50年</td></tr><tr><td style="border:1px solid #e0e0e0">期間の定めなし</td><td style="border:1px solid #e0e0e0;text-align:center">30年になる</td><td style="border:1px solid #e0e0e0;text-align:center">解約申入れ可</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">短い期間を定めた場合</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">30年に引き上げ</td><td style="border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold">そのまま有効</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">地代の増減額請求と特約の有効性</div><table><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">特約の内容</th><th style="border:1px solid #a5d6a7">有効性</th><th style="border:1px solid #a5d6a7">理由</th></tr><tr><td style="border:1px solid #e0e0e0">一定期間、地代を増額しない</td><td style="border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold">⭕ 有効</td><td style="border:1px solid #e0e0e0">借地権者に有利</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">一定期間、地代を減額しない</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">❌ 無効</td><td style="border:1px solid #e0e0e0">借地権者に不利</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">建物買取請求権が認められる場面</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">契約終了の理由</th><th style="border:1px solid #9fa8da">買取請求</th></tr><tr><td style="border:1px solid #e0e0e0">期間満了で更新なし</td><td style="border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">債務不履行による解除</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">❌ できない</td></tr><tr><td style="border:1px solid #e0e0e0">排除特約</td><td style="border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold">特約は無効</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">代諾許可の申立権者</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">場面</th><th style="border:1px solid #ffcc80">申立権者</th><th style="border:1px solid #ffcc80">条文</th></tr><tr><td style="border:1px solid #e0e0e0">通常の建物譲渡</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold">借地権者</td><td style="border:1px solid #e0e0e0;text-align:center">19条</td></tr><tr style="background:#fafafa"><td style="border:1px solid #e0e0e0">競売・公売で取得</td><td style="border:1px solid #e0e0e0;text-align:center;font-weight:bold;color:#d32f2f">取得した第三者</td><td style="border:1px solid #e0e0e0;text-align:center">20条</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 借地権とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「<strong>建物を建てるために</strong>他人の土地を借りる権利」です（借地借家法2条1号）。<br>地上権と土地の賃借権の2種類がありますが、実務上は賃借権がほとんどです。</div><div class="info-box" style="background:#f5f5f5">借地借家法が適用されるかどうかの<strong>最初の分かれ道</strong>は「<strong>建物所有目的かどうか</strong>」です。<br>・建物所有目的 → 借地借家法＋民法<br>・それ以外（駐車場・資材置場など） → 民法のみ<br><br>💡 借地借家法は<strong>借地権者（借りる側）を手厚く保護</strong>する法律です。だから、借地権者に不利な特約は原則として無効になります（借地借家法9条）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⏱️ 存続期間のルール</div><div class="info-box" style="background:#fce4ec"><strong>普通借地権：最低30年</strong>（借地借家法3条）<br>30年より短い期間を定めても無効 → 30年になる<br>30年より長い期間を定めればその期間が有効<br>期間を定めなくても → 30年になる</div><div class="info-box" style="background:#f5f5f5"><strong>更新後の期間：</strong><br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">1回目の更新</span> → 20年<br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">2回目以降の更新</span> → 10年<br>いずれも当事者がこれより長い期間を定めれば、その期間が有効です。</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>民法の賃貸借（建物所有目的でないもの）と比較</strong><br>民法は最長50年（上限あり・下限なし）、借地借家法は最低30年（下限あり・上限なし）。この違いが試験で狙われます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 借地権の対抗力（10条）</div><div class="info-box" style="background:#e8f5e9"><strong>原則：借地権の登記がなくても対抗できる</strong><br>借地権者が、借地上に<strong>自分名義で登記された建物</strong>を所有していれば、土地の新しい所有者に「自分は借地権を持っている」と主張できます。</div><div class="info-box" style="background:#f5f5f5"><strong>対抗力のポイント：</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px">⭕ OK</span> 表示の登記（表題部のみ）でも対抗力あり<br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px">⭕ OK</span> 1筆の土地上に1棟だけ登記あれば土地全部に対抗力<br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px">❌ NG</span> 家族名義の登記では対抗力なし（本人名義が必要）</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">建物が滅失した場合の救済</strong><br>掲示をすれば対抗力を維持できますが、滅失から<strong>2年以内</strong>に建物を新築して<strong>登記</strong>する必要があります。掲示だけでは2年を超えて維持できません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📜 定期借地権の3種類</div><div class="info-box" style="background:#f3e5f5">普通借地権は「更新あり」が原則。<strong>定期借地権は「更新なし」の特別な借地権</strong>です。</div><div class="info-box" style="background:#f5f5f5"><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">① 一般定期借地権（22条）</span><br>・存続期間：<strong>50年以上</strong><br>・用途制限：なし（居住用も事業用もOK）<br>・契約方式：<strong>書面又は電磁的記録</strong><br><br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">② 事業用定期借地権（23条）</span><br>・存続期間：<strong>10年以上50年未満</strong><br>・用途制限：<strong>専ら事業用（居住用は不可）</strong><br>・契約方式：<strong>公正証書が必須</strong><br><br><span style="display:inline-block;background:#e0e0e0;padding:2px 8px;border-radius:4px;font-weight:bold">③ 建物譲渡特約付き借地権（24条）</span><br>・存続期間：30年以上<br>・30年以上経過時に建物を相当の対価で譲渡<br>・出題頻度が低いため、余裕があれば確認</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">最重要の区別：</strong>「公正証書必須＝事業用だけ」<br>一般定期借地権は書面又は電磁的記録で足りるのに、「公正証書で合意しなければならない」とする選択肢が過去問で繰り返し出題されています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">💰 地代等増減額請求（11条）</div><div class="info-box" style="background:#fff3e0"><strong>経済事情の変動</strong>等により地代が不相当になったとき、当事者は将来に向かって増額又は減額を請求できます。</div><div class="info-box" style="background:#f5f5f5"><strong>特約の有効性：</strong><br>・増額しない特約 → <strong style="color:#2e7d32">有効</strong>（借地権者に有利だから）<br>・減額しない特約 → <strong style="color:#d32f2f">無効</strong>（借地権者に不利だから）<br><br>💡 借地借家法は借地権者を保護する法律なので、「借地権者に不利な特約は無効」が基本原則です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🏗️ 建物買取請求権（13条）</div><div class="info-box" style="background:#e0f7fa">借地権の<strong>期間が満了</strong>し、更新がない場合、借地権者は借地権設定者に建物を<strong>時価で買い取るよう請求</strong>できます。</div><div class="info-box" style="background:#f5f5f5"><strong>ポイント：</strong><br>・排除する特約を定めても → その特約は<strong style="color:#d32f2f">無効</strong><br>・<strong>債務不履行で解除</strong>された場合 → 買取請求は<strong style="color:#d32f2f">できない</strong><br><br>💡 「特約で排除できない」のと「債務不履行解除では使えない」は矛盾しているように見えますが、「自分が悪いのに買い取ってもらおうとするのはおかしい」と考えれば納得できます。</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=403AC0000000090" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 借地借家法（e-Gov）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">借地クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>

@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 債務不履行・解除クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 債権 ＞ 債務不履行・解除</div>
+    <div class="header-desc">損害賠償・履行遅滞・契約解除・金銭債務</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_saimu_furikou_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "債務者がその債務の本旨に従った履行をしない場合、債権者は債務者に対して損害賠償を請求することができるが、その債務の不履行が債務者の責めに帰することができない事由によるものであるときは、損害賠償を請求できない。",
+    "a": true,
+    "ex": "正しい。損害賠償請求には債務者の帰責事由が必要です。債務の不履行が「契約その他の債務の発生原因及び取引上の社会通念に照らして」債務者の責めに帰することができない事由によるものであるときは、損害賠償を請求できません（民法415条1項ただし書）。",
+    "cat": "損害賠償の要件"
+  },
+  {
+    "q": "債務不履行を理由に契約を解除するには、債務者に帰責事由がなければならない。",
+    "a": false,
+    "ex": "誤り。2020年民法改正により、契約の解除に債務者の帰責事由は不要となりました（民法541条・542条）。解除は「契約の拘束力からの解放」が目的であるため、債務者に落ち度がなくても解除できます。",
+    "cat": "契約解除の要件"
+  },
+  {
+    "q": "確定期限のある債務については、債務者は期限が到来した時から履行遅滞の責任を負う。",
+    "a": true,
+    "ex": "正しい。確定期限のある債務は、期限が到来した時から履行遅滞となります（民法412条1項）。例えば「4月1日に引き渡す」と約束した場合、4月1日が来れば自動的に遅滞になります。",
+    "cat": "履行遅滞の起算点"
+  },
+  {
+    "q": "期限の定めのない債務については、債務者は債務の発生と同時に履行遅滞の責任を負う。",
+    "a": false,
+    "ex": "誤り。期限の定めのない債務は、債務者が履行の請求を受けた時から履行遅滞となります（民法412条3項）。請求を受けるまでは遅滞にはなりません。",
+    "cat": "履行遅滞の起算点"
+  },
+  {
+    "q": "金銭債務の不履行について、債務者は不可抗力をもって抗弁とすることができない。",
+    "a": true,
+    "ex": "正しい。金銭債務の特則として、債務者は不可抗力をもって損害賠償の責任を免れることができません（民法419条3項）。金銭は市場で調達できるため、「払えない」という言い訳は通用しないのです。",
+    "cat": "金銭債務の特則"
+  },
+  {
+    "q": "金銭債務の不履行による損害賠償の額は、法定利率によって定められるが、約定利率が法定利率を超えるときは、約定利率による。",
+    "a": true,
+    "ex": "正しい。金銭債務の損害賠償額は原則として法定利率（年3%）によりますが、約定利率が法定利率を超えるときは約定利率によります（民法419条1項）。",
+    "cat": "金銭債務の特則"
+  },
+  {
+    "q": "債務不履行による損害賠償の範囲には、通常生ずべき損害のみが含まれ、特別の事情によって生じた損害は含まれない。",
+    "a": false,
+    "ex": "誤り。損害賠償の範囲には、通常生ずべき損害に加えて、特別の事情によって生じた損害であっても、当事者がその事情を予見すべきであったときは、その賠償を請求できます（民法416条2項）。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "通常生ずべき損害（通常損害）については、債務者がその損害を予見していなくても、賠償の範囲に含まれる。",
+    "a": true,
+    "ex": "正しい。通常損害は予見の有無にかかわらず、常に賠償の範囲に含まれます（民法416条1項）。予見可能性が問題になるのは、特別損害の場合のみです。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "催告による解除の場合、相当の期間を定めてその履行を催告し、その期間内に履行がないときは、債権者は契約を解除することができる。",
+    "a": true,
+    "ex": "正しい。催告解除の要件は、①相当の期間を定めて催告し、②その期間内に履行がないことです（民法541条本文）。ただし、債務の不履行がその契約及び取引上の社会通念に照らして軽微であるときは解除できません。",
+    "cat": "契約解除の要件"
+  },
+  {
+    "q": "債務者の債務不履行がその契約及び取引上の社会通念に照らして軽微であるときは、債権者は催告による解除をすることができない。",
+    "a": true,
+    "ex": "正しい。催告解除には「軽微性の例外」があります。不履行が軽微である場合、契約全体の解除を認めると不均衡になるため、解除が制限されます（民法541条ただし書）。",
+    "cat": "契約解除の要件"
+  },
+  {
+    "q": "債務の全部の履行が不能であるときは、催告をすることなく直ちに契約を解除することができる。",
+    "a": true,
+    "ex": "正しい。債務の全部の履行が不能であるときは、催告をしても意味がないため、催告なしで直ちに解除できます（民法542条1項1号）。これを無催告解除といいます。",
+    "cat": "契約解除の要件"
+  },
+  {
+    "q": "現行民法における法定利率は年5分（5%）である。",
+    "a": false,
+    "ex": "誤り。2020年民法改正により、法定利率は年3%に引き下げられました（民法404条2項）。また、3年ごとに見直される変動制が導入されています。",
+    "cat": "法定利率"
+  },
+  {
+    "q": "損害賠償の請求をするには、債権者は自らに過失がないことを証明しなければならない。",
+    "a": false,
+    "ex": "誤り。損害賠償を請求する側（債権者）が自らの無過失を証明する必要はありません。帰責事由がないことの立証責任は債務者側にあります（民法415条1項ただし書）。",
+    "cat": "損害賠償の要件"
+  },
+  {
+    "q": "不確定期限のある債務については、債務者がその期限の到来を知った時から履行遅滞の責任を負う。",
+    "a": false,
+    "ex": "誤り。不確定期限のある債務は、債務者がその期限の到来を知った時、または履行の請求を受けた時のいずれか早い方から履行遅滞となります（民法412条2項）。「知った時から」だけではなく「請求を受けた時」も起算点になりえます。",
+    "cat": "履行遅滞の起算点"
+  },
+  {
+    "q": "債権者の責めに帰すべき事由によって債務の履行ができなくなったときは、債権者は契約を解除することができない。",
+    "a": true,
+    "ex": "正しい。債務の不履行が債権者の責めに帰すべき事由によるものであるときは、債権者は契約の解除をすることができません（民法543条）。自分のせいで履行できなくなったのに、解除まで認めるのは不当だからです。",
+    "cat": "契約解除の要件"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "AがBに対して建物を売却する契約を締結したが、Bの代金支払債務について、Bに帰責事由がない場合、Aは契約を解除することはできるが、Bに対して損害賠償を請求することはできない。",
+    "a": true,
+    "ex": "正しい。契約の解除には帰責事由は不要なので、Bに帰責事由がなくてもAは解除できます（民法541条・542条）。一方、損害賠償請求には帰責事由が必要なので、Bに帰責事由がなければ損害賠償は請求できません（民法415条1項ただし書）。",
+    "cat": "損害賠償と解除の比較"
+  },
+  {
+    "q": "AがBに対して100万円を貸し付けた場合において、Bの取引先Cが倒産してBに入金がなくなったため、BがAに対する返済ができなくなったとしても、Bは履行遅滞の責任を免れない。",
+    "a": true,
+    "ex": "正しい。金銭債務は不可抗力でも免責されません（民法419条3項）。取引先の倒産によりお金が入らなくなったとしても、金銭は市場で調達可能であるという前提から、Bは返済義務を免れません。",
+    "cat": "金銭債務の特則"
+  },
+  {
+    "q": "不法行為に基づく損害賠償債務は、被害者が加害者に対して損害賠償を請求した時から履行遅滞となる。",
+    "a": false,
+    "ex": "誤り。不法行為に基づく損害賠償債務は、損害の発生と同時に履行遅滞となります（判例）。被害者はすぐに救済が必要であるため、請求を待たずに遅滞となるのです。",
+    "cat": "履行遅滞の起算点"
+  },
+  {
+    "q": "債務不履行による損害賠償請求において、特別の事情によって生じた損害については、債務者がその事情を現に予見していたものに限り、賠償の範囲に含まれる。",
+    "a": false,
+    "ex": "誤り。特別損害については、「予見していた」ものだけでなく、「予見すべきであった」ものも賠償の範囲に含まれます（民法416条2項）。現実に予見していなくても、予見可能性があれば足ります。",
+    "cat": "損害賠償の範囲"
+  },
+  {
+    "q": "債務不履行による損害賠償請求において、債権者にも過失があった場合、裁判所は債務者からの主張がなくても、職権で過失相殺をすることができる。",
+    "a": true,
+    "ex": "正しい。債務不履行の過失相殺（民法418条）では、裁判所は債権者の過失を「必ず考慮」しなければなりません。債務者からの主張を待たずに、裁判所が職権で過失相殺を行います。",
+    "cat": "過失相殺"
+  },
+  {
+    "q": "金銭債務の不履行による損害賠償を請求するには、債権者は損害の発生及びその額を証明しなければならない。",
+    "a": false,
+    "ex": "誤り。金銭債務の不履行の場合、債権者は損害の証明をする必要がありません（民法419条2項）。損害賠償額は法定利率（またはそれを超える約定利率）によって自動的に算定されます。",
+    "cat": "金銭債務の特則"
+  },
+  {
+    "q": "AがBとの売買契約において、AがBに引き渡すべき目的物を第三者Cにも二重に売却し、Cに対して所有権移転登記を完了した場合、AのBに対する債務は履行不能となり、Bは損害賠償を請求できる。",
+    "a": true,
+    "ex": "正しい。AがCに登記を移転した結果、BへのAの引渡し債務は社会通念上の履行不能となります。これにより、BはAの債務不履行（履行不能）を理由に損害賠償を請求できます（民法415条）。",
+    "cat": "履行不能と損害賠償"
+  },
+  {
+    "q": "契約の締結に先立って当事者が負う信義則上の説明義務に違反があった場合、相手方は契約締結前の説明義務違反を理由に債務不履行責任を追及できる。",
+    "a": false,
+    "ex": "誤り。契約締結前の説明義務違反は、契約上の義務の違反ではないため、債務不履行責任の問題とはなりません。判例は、このような場合は不法行為責任のみが成立するとしています。",
+    "cat": "債務不履行の範囲"
+  },
+  {
+    "q": "不確定期限のある債務について、債務者がまだ期限の到来を知らない場合であっても、債権者が履行の請求をすれば、債務者はその時から履行遅滞の責任を負う。",
+    "a": true,
+    "ex": "正しい。不確定期限のある債務の履行遅滞は、「期限到来を知った時」または「請求を受けた時」のいずれか早い方から生じます（民法412条2項）。債務者がまだ期限の到来を知らなくても、請求を受ければ遅滞となります。",
+    "cat": "履行遅滞の起算点"
+  },
+  {
+    "q": "AがBに対して土地の売却代金1,000万円の支払いを求めたが、Bが支払わない場合の遅延損害金は、当事者間に特段の合意がなければ、年3%で計算される。",
+    "a": true,
+    "ex": "正しい。金銭債務の遅延損害金は法定利率によります（民法419条1項）。2020年改正後の法定利率は年3%です（民法404条2項）。当事者間に約定利率がなければ、この法定利率が適用されます。",
+    "cat": "法定利率"
+  },
+  {
+    "q": "催告解除において、催告期間を経過した時点での不履行が、その契約及び取引上の社会通念に照らして軽微であっても、債権者は常に契約を解除することができる。",
+    "a": false,
+    "ex": "誤り。催告期間を経過した時点での不履行が軽微であるときは、契約を解除することができません（民法541条ただし書）。解除は重大な不履行に対する最終手段であり、軽微な不履行では認められません。",
+    "cat": "契約解除の要件"
+  },
+  {
+    "q": "債務不履行に基づく損害賠償請求権の消滅時効は、債務不履行の時から進行する。",
+    "a": false,
+    "ex": "誤り。債務不履行に基づく損害賠償請求権の消滅時効は、本来の債務の履行を請求できる時（履行期）から進行します（判例・最判平成10年4月24日）。2020年改正後の民法166条1項のもとでは、①債権者が権利行使できることを知った時から5年（主観的起算点）、②権利行使できる時から10年（客観的起算点）のいずれか早い方で消滅します。いずれにしても「債務不履行の時から」ではなく「本来の履行期（権利行使できる時）から」が起算点です。",
+    "cat": "消滅時効"
+  },
+  {
+    "q": "債務者の帰責事由がない場合であっても、債務の全部の履行が不能であるときは、債権者は無催告で契約を解除することができる。",
+    "a": true,
+    "ex": "正しい。契約の解除には債務者の帰責事由は不要です（2020年改正の重要ポイント）。債務の全部が履行不能であれば、帰責事由の有無にかかわらず、催告なしで解除できます（民法542条1項1号）。",
+    "cat": "損害賠償と解除の比較"
+  },
+  {
+    "q": "不法行為の過失相殺（民法722条）では、裁判所は被害者の過失を考慮するかどうかを任意で判断できるが、債務不履行の過失相殺（民法418条）では、裁判所は債権者の過失を必ず考慮しなければならない。",
+    "a": true,
+    "ex": "正しい。不法行為の過失相殺は「過失相殺することができる」（任意的）ですが、債務不履行の過失相殺は「これを考慮して…定める」（必要的）と規定されています。債務不履行では裁判所は必ず過失を考慮しなければなりません。",
+    "cat": "過失相殺"
+  },
+  {
+    "q": "AがBに対して建物を売却する契約を締結したが、買主Bの責めに帰すべき事由によって建物の引渡しが不能となった場合、Bは契約を解除することができない。",
+    "a": true,
+    "ex": "正しい。債務の不履行が債権者の責めに帰すべき事由によるものであるときは、債権者は契約の解除をすることができません（民法543条）。買主Bの責めに帰すべき事由で引渡しが不能になった以上、B自身が解除を主張することは認められません。自分のせいで履行できなくなったのに、解除まで認めるのは不当だからです。",
+    "cat": "契約解除の要件"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで債務不履行・解除の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・契約不適合責任の詳細（別アプリで扱います）<br>・受領遅滞（413条）の詳細<br>・危険負担（536条）との関係<br>・代償請求権（422条の2）<br>・損害賠償額の予定（420条）の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 債務不履行の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【債務不履行が発生した場合の選択肢】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">債務不履行が発生！</span><br>　├── <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">損害賠償請求（415条）</span><br>　│　　← <span style="color:#d32f2f;font-weight:bold">帰責事由が必要 ★</span><br>　│<br>　└── <span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">契約解除（541条・542条）</span><br>　　　　← <span style="color:#2e7d32;font-weight:bold">帰責事由は不要 ★2020年改正</span></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 覚え方：「<strong>賠償は責任追及だから帰責事由がいる。解除は契約からの脱出だから帰責事由はいらない</strong>」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最頻出ひっかけ】損害賠償と解除の帰責事由を混同させる</strong><br>「売主に帰責事由がないので損害賠償を請求できない」→ ⭕正しい<br>「売主に帰責事由がないので解除できない」→ ❌誤り<br>この2つの違いが過去問で最も問われます。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【起算点のすり替え】不法行為の履行遅滞</strong><br>不法行為の損害賠償債務は「<strong>損害発生と同時に</strong>」遅滞になります。過去問では「請求を受けた時から遅滞」とすり替えてきます。覚え方：「<strong>被害者はすぐ困る。だから請求を待たずに即遅滞</strong>」</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【金銭債務は絶対逃げられない】</strong><br>金銭債務は不可抗力でも免責されません。過去問では「取引先が倒産して資金がなくなったから」という理由で免責されるかのような誤肢が出ます。覚え方：「<strong>お金は調達できるはず。言い訳は通用しない</strong>」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">損害賠償 vs 解除：帰責事由の要否（最重要！）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">制度</th><th style="border:1px solid #90caf9">帰責事由</th><th style="border:1px solid #90caf9">趣旨</th></tr><tr><td>損害賠償（415条）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">必要</td><td>責任追及</td></tr><tr style="background:#fafafa"><td>契約解除（541条・542条）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">不要 ★改正</td><td>契約からの脱出</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">履行遅滞の起算点（412条）</div><table><tr style="background:#fce4ec"><th style="border:1px solid #f48fb1;text-align:left">期限の種類</th><th style="border:1px solid #f48fb1">起算点</th></tr><tr><td>確定期限あり</td><td style="font-weight:bold">期限到来時</td></tr><tr style="background:#fafafa"><td>不確定期限あり</td><td style="font-weight:bold">「知った時」or「請求時」の早い方</td></tr><tr><td>期限の定めなし</td><td style="font-weight:bold">請求を受けた時</td></tr><tr style="background:#fafafa"><td style="color:#d32f2f;font-weight:bold">不法行為の損害賠償</td><td style="color:#d32f2f;font-weight:bold">損害発生と同時 ★例外！</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">金銭債務の3つの特則（419条）</div><table><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">特則</th><th style="border:1px solid #a5d6a7">内容</th></tr><tr><td>① 不可抗力の抗弁不可</td><td>不可抗力でも免責されない</td></tr><tr style="background:#fafafa"><td>② 損害の証明不要</td><td>法定利率で自動計算</td></tr><tr><td>③ 約定利率の優先</td><td>約定利率 ＞ 法定利率なら約定利率</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">通常損害 vs 特別損害（416条）</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">種類</th><th style="border:1px solid #9fa8da">予見の要否</th><th style="border:1px solid #9fa8da">ポイント</th></tr><tr><td>通常損害（1項）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">不要</td><td>常に賠償範囲に含まれる</td></tr><tr style="background:#fafafa"><td>特別損害（2項）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">予見可能性が必要</td><td>「予見すべき」でも足りる</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px">過失相殺の比較（418条 vs 722条）</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">場面</th><th style="border:1px solid #ffcc80">裁判所の扱い</th></tr><tr><td>債務不履行（418条）</td><td style="text-align:center;color:#d32f2f;font-weight:bold">必ず考慮（必要的）</td></tr><tr style="background:#fafafa"><td>不法行為（722条）</td><td style="text-align:center;color:#2e7d32;font-weight:bold">考慮できる（任意的）</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 債務不履行とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「約束を守らないこと」です。お金を払わない、モノを渡さない、期限に遅れる──これらが全て債務不履行です。</div><div class="info-box" style="background:#f5f5f5">債務不履行には大きく3つの類型があります。<br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> <strong>履行遅滞</strong>：約束の期限に遅れること<br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> <strong>履行不能</strong>：約束を果たすことが不可能になること<br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> <strong>不完全履行</strong>：約束は果たしたが、内容が不十分なこと</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⚖️ 損害賠償請求（415条）── 帰責事由が必要</div><div class="info-box" style="background:#fce4ec"><strong>損害賠償 ＝ お金で損害を埋め合わせてもらうこと</strong><br>債務者が約束を守らなかった場合、債権者は損害賠償を請求できます。ただし、債務者に<strong style="color:#d32f2f">帰責事由（責任を問える理由）</strong>がなければ請求できません。</div><div class="info-box" style="background:#f5f5f5">「帰責事由」は、「契約その他の債務の発生原因及び取引上の社会通念に照らして」判断されます（民法415条1項ただし書）。<br>覚え方：「<strong>損害賠償は相手を責めるもの。だから、責められる理由（帰責事由）がないなら請求できない</strong>」</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>立証責任は債務者側</strong><br>帰責事由がないことを証明するのは債務者の役割です。債権者は「債務者に落ち度がないこと」を証明する必要はありません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🔓 契約の解除（541条・542条）── 帰責事由は不要 ★2020年改正</div><div class="info-box" style="background:#e8f5e9"><strong>解除 ＝ 契約の拘束力から逃れること</strong><br>相手が約束を守らない場合、自分も契約に縛られ続けるのは不合理です。解除は「契約からの脱出」を目的としています。</div><div class="info-box" style="background:#f5f5f5"><strong>2020年改正の最重要ポイント：帰責事由は不要に</strong><br>旧法では解除にも帰責事由が必要でしたが、改正後は不要です。<br>覚え方：「<strong>脱出するのに、相手を責める理由はいらない</strong>」</div><div class="info-box" style="background:#f5f5f5"><strong>解除の2パターン：</strong><br><span style="display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold">催告解除（541条）</span>：相当の期間を定めて催告→期間内に履行なし→解除<br>※ただし不履行が「軽微」なときは解除不可<br><br><span style="display:inline-block;background:#fff9c4;padding:2px 8px;border-radius:4px;font-weight:bold">無催告解除（542条）</span>：催告しても意味がない場合→直ちに解除<br>例：債務の全部が履行不能、債務者が履行を明確に拒絶 など</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#d32f2f">例外：債権者に帰責事由がある場合は解除できない（543条）</strong><br>自分のせいで履行できなくなったのに、解除まで認めるのは不当です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⏰ 履行遅滞の起算点（412条）</div><div class="info-box" style="background:#f3e5f5">「いつから遅滞になるか」は期限の種類によって異なります。</div><div class="info-box" style="background:#f5f5f5"><span style="display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white">確定期限</span> 「4月1日に払う」→ <strong>期限到来時</strong>に遅滞<br><br><span style="display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white">不確定期限</span> 「父が死んだら払う」→ 「<strong>知った時</strong>」or「<strong>請求時</strong>」の<strong style="color:#d32f2f">早い方</strong><br><br><span style="display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white">期限の定めなし</span> 何も決めていない → <strong>請求を受けた時</strong></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">⚠️ <strong>不法行為だけ特別扱い</strong><br>不法行為の損害賠償債務は、<strong style="color:#d32f2f">損害発生と同時に履行遅滞</strong>です。被害者はすぐに困るため、請求を待ちません。過去問では「請求を受けた時から」とすり替えてくるので注意！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📐 損害賠償の範囲（416条）</div><div class="info-box" style="background:#fff3e0"><strong>通常損害と特別損害の2つに分かれます。</strong></div><div class="info-box" style="background:#f5f5f5"><span style="display:inline-block;background:#ffcc80;padding:2px 8px;border-radius:4px;font-weight:bold">通常損害（1項）</span>：債務不履行によって「普通に」生じる損害<br>→ 予見の有無は関係なし。<strong>常に賠償範囲に含まれる</strong><br><br><span style="display:inline-block;background:#ffcc80;padding:2px 8px;border-radius:4px;font-weight:bold">特別損害（2項）</span>：特別な事情によって生じた損害<br>→ 当事者が「予見すべきであった」場合に賠償範囲に含まれる<br><br>覚え方：「<strong>通常損害は予見不要（当然の損害だから）。特別損害は予見可能性で判断</strong>」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">💰 金銭債務の特則（419条）</div><div class="info-box" style="background:#e0f7fa"><strong>お金の支払い義務には、普通の債務不履行より厳しいルールがあります。</strong></div><div class="info-box" style="background:#f5f5f5"><strong>3つの特則：</strong><br><span style="display:inline-block;background:#80deea;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> <strong style="color:#d32f2f">不可抗力でも免責されない</strong>（419条3項）<br>お金は市場で調達可能→言い訳は通用しない<br><br><span style="display:inline-block;background:#80deea;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> <strong>損害の証明は不要</strong>（419条2項）<br>法定利率で自動計算される<br><br><span style="display:inline-block;background:#80deea;padding:2px 8px;border-radius:4px;font-weight:bold">③</span> <strong>約定利率が法定利率を超えるときは約定利率</strong>（419条1項）<br>年3%の法定利率より高い約束があればそちら</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">📊 法定利率（404条）</div><div class="info-box" style="background:#eceff1"><strong>2020年改正で年5% → 年3%に変更</strong><br>さらに3年ごとに見直す変動制が導入されました。試験では「年3%」という数字を覚えておけば十分です。</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_412" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法412条〜（履行遅滞・損害賠償）</a><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_541" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法541条〜（契約の解除）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">債務不履行・解除クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>

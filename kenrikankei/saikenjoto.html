@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 債権譲渡クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">権利関係（民法）＞ 債権 ＞ 債権譲渡</div>
+    <div class="header-desc">譲渡制限・対抗要件・転得者・二重譲渡</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_saikenjoto_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "債権は、原則として自由に第三者に譲渡することができる。",
+    "a": true,
+    "ex": "正しい。債権は、譲り渡すことができます（民法466条1項本文）。これが債権譲渡の大原則です。",
+    "cat": "譲渡の基本"
+  },
+  {
+    "q": "当事者間で債権の譲渡を制限する旨の意思表示（譲渡制限の意思表示）をした場合、その債権の譲渡は無効となる。",
+    "a": false,
+    "ex": "誤り。譲渡制限の意思表示がされた場合であっても、債権の譲渡は有効です（民法466条2項）。2020年改正で明文化された重要ポイントです。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権が譲渡された場合、その債権譲渡は有効であるが、債務者は譲渡制限の意思表示について悪意または重過失の譲受人に対しては、その債務の履行を拒むことができる。",
+    "a": true,
+    "ex": "正しい。譲渡は有効ですが、債務者は悪意または重過失の譲受人に対して履行を拒絶できます（民法466条3項）。譲渡の有効性と履行拒絶権は別の話です。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権を譲り受けた者が、その意思表示について善意かつ無重過失であるときは、債務者はその譲受人に対して履行を拒むことができない。",
+    "a": true,
+    "ex": "正しい。譲受人が譲渡制限の意思表示について善意かつ無重過失であれば、債務者は履行を拒絶できません（民法466条3項の反対解釈）。知らなかった人には払わなければなりません。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "債権の譲渡は、譲渡人が債務者に通知をし、または債務者がこれを承諾しなければ、債務者に対抗することができない。",
+    "a": true,
+    "ex": "正しい。債権譲渡の債務者対抗要件は、譲渡人からの通知または債務者の承諾です（民法467条1項）。どちらか一方でよい点に注意してください。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "債権譲渡の通知は、譲受人から債務者に対して行わなければならない。",
+    "a": false,
+    "ex": "誤り。債権譲渡の通知は、譲渡人（元の債権者）が行わなければなりません（民法467条1項）。譲受人からの通知では債務者対抗要件を満たしません。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "債権譲渡について債務者の承諾があれば、譲渡人からの通知がなくても、債務者に対抗することができる。",
+    "a": true,
+    "ex": "正しい。対抗要件は「通知 OR 承諾」であり、どちらか一方で足ります（民法467条1項）。承諾があれば通知は不要です。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "債権譲渡を債務者以外の第三者に対抗するためには、確定日付のある証書による通知または承諾が必要である。",
+    "a": true,
+    "ex": "正しい。第三者対抗要件として、確定日付のある証書による通知または承諾が必要です（民法467条2項）。内容証明郵便が典型例です。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権が譲渡された場合、債務者は悪意の譲受人に対して、譲渡人への弁済をもって対抗することができる。",
+    "a": true,
+    "ex": "正しい。債務者は、譲渡制限の意思表示をもって悪意または重過失の譲受人に対抗でき、譲渡人に対する弁済その他の債務消滅行為をもって対抗できます（民法466条3項）。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "債権の譲渡を禁止する旨の特約は、当事者間の合意であるため、当事者間でのみ効力を有し、第三者には一切の影響を及ぼさない。",
+    "a": false,
+    "ex": "誤り。譲渡制限の意思表示は、悪意または重過失の第三者（譲受人）に対しては対抗できます（民法466条3項）。当事者間の合意にとどまらず、悪意等の第三者にも影響を及ぼします。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "将来発生する債権であっても、その債権が特定されていれば、譲渡することができる。",
+    "a": true,
+    "ex": "正しい。将来債権も、発生する期間や発生原因等で特定されていれば、譲渡することができます（民法466条の6第1項）。2020年改正で明文化されました。",
+    "cat": "将来債権の譲渡"
+  },
+  {
+    "q": "将来債権の譲渡について対抗要件が具備された後に、譲渡制限の意思表示がされた場合、債務者はその意思表示を譲受人に対抗することができない。",
+    "a": true,
+    "ex": "正しい。対抗要件具備後に譲渡制限の意思表示がされた場合、債務者はその意思表示を譲受人に対抗できません。一方、対抗要件具備時までに譲渡制限の意思表示がされた場合は、譲受人はその意思表示を「知っていたものとみなされ」（民法466条の6第3項）、466条3項が適用されるため債務者は対抗できます。基準は「対抗要件具備時」です。",
+    "cat": "将来債権の譲渡"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた金銭債権が譲渡された場合、債務者は譲受人の善意・悪意を問わず供託をすることができる。",
+    "a": true,
+    "ex": "正しい。譲渡制限の意思表示がされた金銭債権が譲渡されたとき、債務者は譲受人の善意・悪意にかかわらず、債務の履行地の供託所に供託することができます（民法466条の2第1項）。債務者が「誰に払えばいいかわからない」場合の保護です。",
+    "cat": "供託"
+  },
+  {
+    "q": "債権譲渡の対抗要件である通知と承諾は、両方を満たす必要がある。",
+    "a": false,
+    "ex": "誤り。通知と承諾は、いずれか一方を満たせば足ります（民法467条1項）。「通知 AND 承諾」ではなく「通知 OR 承諾」です。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権の譲渡について、譲受人が善意であれば、重過失があっても保護される。",
+    "a": false,
+    "ex": "誤り。善意であっても重過失がある場合は保護されません。保護されるためには善意かつ無重過失であることが必要です（民法466条3項）。",
+    "cat": "譲渡制限の意思表示"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "譲渡制限の意思表示がされた債権について、悪意の譲受人Cからさらに転得したDが、その意思表示について善意かつ無重過失である場合、債務者Bは、Dに対して履行を拒むことができない。",
+    "a": true,
+    "ex": "正しい。転得者Dが善意かつ無重過失であれば、たとえ前の譲受人Cが悪意であっても、債務者はDに対して履行を拒むことはできません。転得者の保護は、転得者自身の主観で判断されます。",
+    "cat": "転得者の保護"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権を悪意で譲り受けたCから、さらにDが転得した場合、Dの善意・無重過失にかかわらず、Cが悪意であるため債務者はDに対して履行を拒むことができる。",
+    "a": false,
+    "ex": "誤り。転得者Dの保護は、D自身が善意かつ無重過失であるかで判断されます。前の譲受人Cの悪意は、Dの保護に影響しません。「転得者の運命は転得者自身の主観で決まる」と覚えましょう。",
+    "cat": "転得者の保護"
+  },
+  {
+    "q": "AがBに対する債権をCとDに二重に譲渡し、いずれも確定日付のある証書によりBに通知がされた場合、CとDの優劣は、確定日付の日付の先後で決まる。",
+    "a": false,
+    "ex": "誤り。二重譲渡の優劣は、確定日付の「日付」の先後ではなく、通知の「到達」の先後で決まります（到達時説、判例）。先にBのもとに届いた方が優先します。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "AがBに対する債権をCとDに二重に譲渡し、確定日付のある通知が同時にBに到達した場合、CとDはそれぞれBに対して債権全額の支払いを請求することができる。",
+    "a": true,
+    "ex": "正しい。確定日付のある通知が同時に到達した場合、各譲受人はそれぞれ全額の弁済を請求できます（判例）。按分して請求するのではない点に注意してください。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "債務者Bが、債権譲渡の対抗要件が具備される前に譲渡人Aに対して取得した反対債権をもって、譲受人Cに対し相殺を主張する場合、BはCに対してその相殺をもって対抗することができる。",
+    "a": true,
+    "ex": "正しい。債務者は、対抗要件具備時より前の原因に基づいて生じた債権による相殺をもって譲受人に対抗できます（民法469条1項）。債務者が持っていた相殺の期待は保護されます。",
+    "cat": "相殺の抗弁"
+  },
+  {
+    "q": "債務者Bが譲渡人Aに対して反対債権を有していた場合でも、その債権の取得が対抗要件具備後であれば、Bは譲受人Cに対して相殺をもって対抗することができない。",
+    "a": true,
+    "ex": "正しい。相殺で対抗できるのは、対抗要件具備時より前の原因に基づいて生じた債権に限られます（民法469条1項）。対抗要件具備後に取得した債権では相殺で対抗できません。",
+    "cat": "相殺の抗弁"
+  },
+  {
+    "q": "債務者Bが対抗要件具備前に取得した反対債権について、譲渡通知の到達後に相殺の意思表示をした場合、Bは譲受人Cに対して相殺をもって対抗することができない。",
+    "a": false,
+    "ex": "誤り。相殺で対抗できるかは、債権の「取得時期」で判断されます。対抗要件具備前に取得した債権であれば、相殺の「意思表示」が譲渡通知後であっても対抗できます（民法469条）。",
+    "cat": "相殺の抗弁"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた金銭債権が譲渡された場合、債務者は供託をすることができるが、この供託は債務の履行地の供託所にしなければならない。",
+    "a": true,
+    "ex": "正しい。譲渡制限の意思表示がされた金銭債権が譲渡されたとき、債務者は譲受人の善意・悪意にかかわらず、債務の履行地の供託所に供託できます（民法466条の2第1項）。",
+    "cat": "供託"
+  },
+  {
+    "q": "AがBに対する債権をCに譲渡した旨の通知がBに到達した場合、Bがその通知を受ける前にAに弁済していたときは、Bはその弁済をCに対抗することができる。",
+    "a": true,
+    "ex": "正しい。対抗要件具備前に債務者が譲渡人に弁済した場合、その弁済は有効であり、債務者はその弁済をもって譲受人に対抗できます（民法468条1項参照）。",
+    "cat": "債務者の抗弁"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権について、悪意の譲受人Cは、相当の期間を定めて債務者Bに対し、譲渡人Aへの履行を催告することができる。",
+    "a": true,
+    "ex": "正しい。悪意または重過失の譲受人は、債務者に対し相当の期間を定めて譲渡人への履行を催告でき、その期間内に履行がないときは、債務者は譲受人に対して履行を拒むことができなくなります（民法466条4項）。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "AがBに対する債権をCに譲渡し、確定日付のある証書によりBに通知した後、AがさらにDに同一債権を譲渡し、確定日付のある証書によりBに通知したが、Dへの通知がBに先に到達した場合、DがCに優先する。",
+    "a": true,
+    "ex": "正しい。二重譲渡の優劣は通知の到達の先後で決まるため（到達時説）、Dへの譲渡通知が先にBに到達していれば、DがCに優先します。確定日付の日付の先後ではありません。",
+    "cat": "二重譲渡"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた金銭債権について、悪意の譲受人が債務者に対して相当の期間を定めて催告し、その期間内に債務者が履行も供託もしないときは、譲受人は債務者に対して直接の支払いを請求することができる。",
+    "a": true,
+    "ex": "正しい。悪意の譲受人が相当の期間を定めて債務者に譲渡人への履行を催告し、その期間内に履行がないときは、466条3項（履行拒絶権）が適用されなくなり、譲受人は債務者に直接支払いを請求できるようになります（民法466条4項）。",
+    "cat": "譲渡制限の意思表示"
+  },
+  {
+    "q": "債権譲渡において、譲渡人が債務者に対して確定日付のある証書による通知をした場合、譲受人が債務者に通知を到達させなくても第三者対抗要件を備えたことになる。",
+    "a": false,
+    "ex": "誤り。通知は債務者に「到達」することが必要です。発信しただけでは足りず、債務者のもとに届いて初めて対抗要件を備えたことになります。",
+    "cat": "対抗要件"
+  },
+  {
+    "q": "譲渡制限の意思表示がされた債権に質権を設定した場合、質権の設定は譲渡制限の意思表示の影響を受けない。",
+    "a": false,
+    "ex": "誤り。譲渡制限の意思表示は、債権の質権設定にも適用されると解されています。質権設定は債権の処分の一態様であり、466条3項の「譲受人その他の第三者」には質権者も含まれるため、悪意・重過失の質権者に対しては債務者は履行を拒絶できます。",
+    "cat": "質権設定"
+  },
+  {
+    "q": "AがBに対する将来の賃料債権を一括してCに譲渡した場合、その譲渡は発生期間や発生原因が特定されていれば有効である。",
+    "a": true,
+    "ex": "正しい。将来債権であっても、発生する期間や発生原因等で特定されていれば、譲渡は有効です（民法466条の6第1項）。将来の賃料債権の一括譲渡は実務上も広く行われています。",
+    "cat": "将来債権の譲渡"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで債権譲渡の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・債権譲渡と債務引受の関係<br>・預貯金債権の譲渡制限の特則（466条の5）<br>・債権譲渡登記制度の詳細<br>・異議をとどめない承諾（旧法の論点）<br>・指名債権以外の債権譲渡</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 債権譲渡の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【基本の登場人物】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">A（譲渡人＝元の債権者）</span><br>── 債権譲渡 ──→<br><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">C（譲受人＝新しい債権者）</span><br><br><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">A</span> が <span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">B（債務者）</span> に通知<br>または <span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">B</span> が承諾<br>↓<br><span style="color:#d32f2f;font-weight:bold">Cは Bに対して支払いを請求できる</span></div><div class="info-box" style="background:#f3e5f5;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【二重譲渡の場合】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">A</span> ──→ <span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">C</span>（第1譲渡）<br><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">A</span> ──→ <span style="background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold">D</span>（第2譲渡）<br><br>優劣の決め手 ＝ <strong style="color:#d32f2f">通知の「到達」の先後</strong><br><span style="font-size:12px">（確定日付の日付の先後ではない！）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【最頻出ひっかけ】転得者は「自分自身」で判断される</strong><br>悪意の譲受人Cから転得したDが善意・無重過失なら、Dは保護されます。「前の人が悪意だからダメ」は間違いです。<br>覚え方：<strong>「転得者の運命は、転得者自身の善意・無重過失で決まる」</strong></div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【到達 vs 日付】二重譲渡の優劣</strong><br>確定日付のある通知が両方ある場合、「日付が先の方が勝つ」は間違いです。<br>覚え方：<strong>「確定日付の先後ではなく、届いた順番」</strong></div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【相殺は取得時期で決まる】</strong><br>債務者が譲渡通知後に相殺の意思表示をしても、対抗要件具備前に取得した債権なら相殺できます。<br>覚え方：<strong>「相殺できるかは、債権をいつ手に入れたかで決まる」</strong></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #d32f2f"><strong style="color:#c62828">【同時到達は按分ではない】</strong><br>二重譲渡で通知が同時到達したら、各譲受人は<strong>全額</strong>請求できます。「半分ずつ」ではありません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">対抗要件の整理（467条）</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">対抗する相手</th><th style="border:1px solid #90caf9">必要な要件</th></tr><tr><td>債務者</td><td>譲渡人からの通知 OR 債務者の承諾</td></tr><tr style="background:#fafafa"><td>第三者</td><td><span style="color:#d32f2f;font-weight:bold">確定日付のある証書</span>による通知 OR 承諾</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">譲渡制限の意思表示と譲受人の主観（466条）</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">譲受人の主観</th><th style="border:1px solid #9fa8da">譲渡の効力</th><th style="border:1px solid #9fa8da">履行拒絶</th></tr><tr><td>善意かつ無重過失</td><td style="text-align:center;color:#2e7d32;font-weight:bold">有効</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ できない</td></tr><tr style="background:#fafafa"><td>悪意 or 重過失</td><td style="text-align:center;color:#2e7d32;font-weight:bold">有効</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ できる</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">二重譲渡の優劣基準</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">判断基準</th><th style="border:1px solid #ffcc80">正誤</th></tr><tr><td>確定日付の「日付」の先後</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ 誤り</td></tr><tr style="background:#fafafa"><td>通知の「到達」の先後</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ 正しい（到達時説）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:12px">同時到達の場合</div><table><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">処理</th><th style="border:1px solid #a5d6a7">正誤</th></tr><tr><td>按分して請求</td><td style="text-align:center;color:#d32f2f;font-weight:bold">❌ 誤り</td></tr><tr style="background:#fafafa"><td>各自が全額請求</td><td style="text-align:center;color:#2e7d32;font-weight:bold">⭕ 正しい</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 債権譲渡とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「AがBに対して持っている債権（お金を払ってもらう権利など）を、Cに譲り渡すこと」です（民法466条〜469条）。<br>例：AがBに100万円を貸している場合、その「100万円を返してもらう権利」をCに売ること。</div><div class="info-box" style="background:#f5f5f5">債権は<strong>原則として自由に譲渡できます</strong>（466条1項）。<br>ただし、当事者間で「譲渡を制限する意思表示」をすることは可能です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔒 譲渡制限の意思表示（466条2項〜3項）</div><div class="info-box" style="background:#fce4ec"><strong>最重要ポイント：譲渡制限があっても譲渡は「有効」</strong><br>2020年改正で明確化されました。譲渡を止める力はありません。</div><div class="info-box" style="background:#f5f5f5"><strong>では何ができるのか？</strong><br><span style="display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold">履行拒絶</span>：債務者は、悪意または重過失の譲受人に対して<strong>支払いを拒むことができる</strong><br><br>つまり「譲渡制限」とは：<br>・譲渡を無効にする力 → <span style="color:#d32f2f;font-weight:bold">ない</span><br>・悪意の譲受人への支払いを拒む力 → <span style="color:#2e7d32;font-weight:bold">ある</span></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>なぜこんな仕組み？</strong><br>債務者の保護（「いきなり知らない人に払えと言われても困る」）と、取引の安全（「債権は自由に流通させたい」）のバランスをとっているのです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">📬 対抗要件（467条）</div><div class="info-box" style="background:#e8f5e9"><strong>対抗要件 ＝ 「この債権は私のものですよ」と主張するための条件</strong><br><br>債権を譲渡しただけでは、債務者や第三者に「私が新しい債権者です」とは主張できません。きちんとした手続きが必要です。</div><div class="info-box" style="background:#f5f5f5"><strong>2つのレベルの対抗要件：</strong><br><span style="display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold">①</span> <strong>債務者対抗要件</strong>：譲渡人からの<strong>通知</strong>、または債務者の<strong>承諾</strong><br><span style="display:inline-block;background:#ffccbc;padding:2px 8px;border-radius:4px;font-weight:bold">②</span> <strong>第三者対抗要件</strong>：<strong>確定日付のある証書</strong>による通知 or 承諾<br><br><span style="color:#d32f2f;font-weight:bold;font-size:12px">⚠️ 通知は「譲渡人」から！ 譲受人からの通知ではダメ</span></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>「確定日付のある証書」とは？</strong><br>典型例は<strong>内容証明郵便</strong>です。公証人の確定日付印でもOK。いつその通知がされたかを公的に証明できる書面のことです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⚔️ 二重譲渡と到達時説</div><div class="info-box" style="background:#f3e5f5"><strong>二重譲渡 ＝ 同じ債権を2人に譲ってしまった場合</strong><br><br>AがBに対する債権をCにもDにも譲渡した場合、CとDのどちらが優先するか？</div><div class="info-box" style="background:#f5f5f5"><strong>優劣の判断基準（到達時説）：</strong><br>確定日付のある通知の<strong>「到達」の先後</strong>で決まります。<br><br>✅ <span style="color:#2e7d32">正しい判断</span>：先にBに届いた通知の譲受人が勝ち<br>❌ <span style="color:#d32f2f">よくある間違い</span>：確定日付の「日付」が先の方が勝ち</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">🛡️ 債務者の相殺の抗弁（469条）</div><div class="info-box" style="background:#e0f7fa"><strong>債務者Bが譲渡人Aに対して反対債権を持っていた場合</strong><br><br>対抗要件具備時<strong>より前の原因</strong>に基づいて生じた債権であれば、Bは譲受人Cに対しても相殺で対抗できます。</div><div class="info-box" style="background:#f5f5f5"><strong>ポイント：</strong><br>・判断基準は債権の<strong>「取得時期」</strong>（意思表示の時期ではない）<br>・対抗要件具備前に取得した債権 → <span style="color:#2e7d32;font-weight:bold">相殺OK</span><br>・対抗要件具備後に取得した債権 → <span style="color:#d32f2f;font-weight:bold">相殺NG</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">🔮 将来債権の譲渡（466条の6）</div><div class="info-box" style="background:#eceff1"><strong>まだ発生していない債権でも譲渡できる</strong><br><br>将来発生する債権であっても、発生する<strong>期間</strong>や<strong>発生原因</strong>等で特定されていれば有効に譲渡できます。2020年改正で明文化されました。<br><br>💡 例：「来年4月〜再来年3月までの毎月の賃料債権」のように特定すればOK。</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=129AC0000000089#Mp-At_466" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 民法466条〜（債権の譲渡）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">債権譲渡クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
