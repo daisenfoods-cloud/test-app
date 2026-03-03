@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建学習アプリ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f0f2f5;
+      min-height: 100vh;
+    }
+    .header {
+      background: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .section-title {
+      font-size: 13px;
+      color: #7f8c8d;
+      font-weight: bold;
+      margin-bottom: 12px;
+      letter-spacing: 1px;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      overflow: hidden;
+      text-decoration: none;
+      display: block;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    .card-inner {
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .card-icon {
+      font-size: 36px;
+      width: 56px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .card-text h2 {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 4px;
+    }
+    .card-text p {
+      font-size: 13px;
+      color: #7f8c8d;
+    }
+    .card-arrow {
+      margin-left: auto;
+      color: #bdc3c7;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .card.kenrikankei { border-left: 5px solid #2980b9; }
+    .card.takkengyoho { border-left: 5px solid #27ae60; }
+    .card.horeijoseigen { border-left: 5px solid #e67e22; opacity: 0.5; pointer-events: none; }
+    .coming-soon {
+      font-size: 11px;
+      background: #f39c12;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+    .info-box {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      font-size: 14px;
+      color: #555;
+      line-height: 1.8;
+    }
+    .info-box h3 {
+      color: #2c3e50;
+      margin-bottom: 10px;
+      font-size: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>📚 宅建学習アプリ</h1>
+    <p>基礎を固めて、過去問学習へ</p>
+  </div>
+
+  <div class="container">
+
+    <div class="info-box">
+      <h2>このアプリについて</h2>
+      <p>
+        宅建試験に合格するための本番は、<strong>過去問を繰り返し解くこと</strong>です。
+      </p>
+      <p>
+        しかし初めて学習する方にとって、過去問はいきなり取り組むには難しい。文章が長く、法律用語が多く、「何を聞かれているのかすらわからない」という状態になりがちです。
+      </p>
+      <p>
+        このアプリ群は、その<strong>最初の壁を越えるための足がかり</strong>です。過去問でよく問われるポイントを、原則・図解・比較表でわかりやすく整理しています。これを先に頭に入れておくことで、<strong>過去問に初めて向き合ったときの手がかりがつかみやすくなります</strong>。
+      </p>
+      <p>
+        ただし、<strong>過去問に出るすべての論点を網羅しているわけではありません</strong>。主要な論点は押さえていますが、過去問を解いていて「このアプリに載っていない」という場面も出てきます。それは想定内のことです。
+      </p>
+      <p>
+        あくまでも<strong>「過去問学習への足がかり」</strong>として使ってください。本番は過去問を何周も回すことです。
+      </p>
+    </div>
+
+    <div class="section-title">分野を選んでください</div>
+
+    <a href="kenrikankei/index.html" class="card kenrikankei">
+      <div class="card-inner">
+        <div class="card-icon">⚖️</div>
+        <div class="card-text">
+          <h2>権利関係</h2>
+          <p>民法・借地借家法・区分所有法・不動産登記法</p>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+    </a>
+
+    <a href="takkengyoho/index.html" class="card takkengyoho">
+      <div class="card-inner">
+        <div class="card-icon">🏢</div>
+        <div class="card-text">
+          <h2>宅建業法</h2>
+          <p>免許制度・取引士・営業保証金・業務規制</p>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+    </a>
+
+    <a href="#" class="card horeijoseigen">
+      <div class="card-inner">
+        <div class="card-icon">📋</div>
+        <div class="card-text">
+          <h2>法令上の制限 <span class="coming-soon">準備中</span></h2>
+          <p>都市計画法・建築基準法・農地法など</p>
+        </div>
+        <div class="card-arrow">›</div>
+      </div>
+    </a>
+
+  </div>
+</body>
+</html>
