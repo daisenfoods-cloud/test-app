@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 業務上の制限（その他）クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 業務上の制限（その他）</div>
+    <div class="header-desc">37条書面・禁止行為・守秘義務・帳簿・標識・案内所</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_gyomu_seigen_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業者は、売買契約が成立したときは、遅滞なく37条書面を作成し、契約の各当事者に交付しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者は売買・交換・貸借の契約が成立した場合、遅滞なく37条書面（契約書面）を作成し、契約の各当事者に交付しなければなりません（宅建業法37条1項）。「遅滞なく」であって、契約前ではありません。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "37条書面には宅地建物取引士の記名が必要である。",
+    "a": true,
+    "ex": "正しい。37条書面には宅地建物取引士の記名が必要です（宅建業法37条3項）。なお、2022年の法改正により押印は不要となりました。35条書面（重要事項説明書）と同様に、宅建士の記名が求められます。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "売買契約における37条書面には、代金の額、代金の支払時期および方法を必ず記載しなければならない。",
+    "a": true,
+    "ex": "正しい。売買契約の37条書面では、代金の額・支払時期・支払方法はいずれも必要的記載事項です（宅建業法37条1項3号）。定めの有無にかかわらず必ず記載しなければなりません。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "貸借契約における37条書面にも、移転登記の申請時期を記載しなければならない。",
+    "a": false,
+    "ex": "誤り。移転登記の申請時期は売買・交換の37条書面における必要的記載事項ですが、貸借契約では不要です（宅建業法37条1項5号）。賃貸借では所有権移転がないため、移転登記の申請時期を記載する必要がありません。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "37条書面において、天災その他不可抗力による損害の負担（危険負担）に関する定めがないときは、その旨を記載しなければならない。",
+    "a": false,
+    "ex": "誤り。天災等による損害負担（危険負担）は任意的記載事項であり、当事者間で定めがある場合にのみ記載すれば足ります（宅建業法37条1項10号）。定めがなければ記載は不要です。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "宅建業者は、取引の相手方に対して、故意に重要な事実を告げず、または不実のことを告げる行為をしてはならない。",
+    "a": true,
+    "ex": "正しい。宅建業法47条1号により、宅建業者は重要事項について故意に事実を告げなかったり、虚偽の事実を告げたりすることが禁止されています。取引の判断に影響する重要事項はすべて正確に伝える義務があります。",
+    "cat": "禁止行為（47条）"
+  },
+  {
+    "q": "宅建業者が「この土地は将来必ず値上がりします」と断定的に述べて取引の勧誘をすることは、宅建業法47条に違反する。",
+    "a": true,
+    "ex": "正しい。将来の利益について断定的な判断を提供して勧誘することは、宅建業法47条1号の2により禁止されています。「必ず値上がりする」のような確実性のない事項を断定することは典型的な違反行為です。",
+    "cat": "禁止行為（47条）"
+  },
+  {
+    "q": "宅建業法47条の2による不当勧誘の禁止は、宅建業者本人のみに適用され、その従業者には適用されない。",
+    "a": false,
+    "ex": "誤り。宅建業法47条の2の不当勧誘禁止規定は、宅建業者本人だけでなく、その代理人・使用人・従業者にも適用されます。従業者が相手方を威迫して契約させた場合も宅建業法違反となります。",
+    "cat": "禁止行為（47条の2）"
+  },
+  {
+    "q": "取引の相手方が「契約するつもりはない」と明確に断った場合でも、宅建業者はその場で引き続き勧誘を続けることができる。",
+    "a": false,
+    "ex": "誤り。相手方が契約を締結しない旨の意思を表示した場合、宅建業者は勧誘を継続してはならず、再度の勧誘も禁止されています（宅建業法47条の2第3項、施行規則16条の12第1号の2）。",
+    "cat": "禁止行為（47条の2）"
+  },
+  {
+    "q": "宅建業者およびその従業者は、業務上知り得た秘密を正当な理由なく他に漏らしてはならない。",
+    "a": true,
+    "ex": "正しい。宅建業法45条・75条の3（守秘義務）により、宅建業者およびその使用人・従業者は、正当な理由なく業務上知り得た秘密を漏らしてはなりません。この守秘義務は宅建業を廃業した後も継続します。",
+    "cat": "守秘義務"
+  },
+  {
+    "q": "宅建業者が宅建業を廃業した場合、業務上知り得た秘密に関する守秘義務は消滅する。",
+    "a": false,
+    "ex": "誤り。守秘義務は宅建業を廃業した後も引き続き存続します（宅建業法45条）。退職・廃業後であっても、業務上知り得た秘密を正当な理由なく漏らすことは禁止されています。",
+    "cat": "守秘義務"
+  },
+  {
+    "q": "宅建業者は、事務所ごとに業務に関する帳簿を備え付け、取引のあったつど所定の事項を記載しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者は各事務所ごとに帳簿を備え付け、取引に関する事項を記載する義務があります（宅建業法49条）。帳簿は各取引年度末に閉鎖し、閉鎖後一定期間保存しなければなりません。",
+    "cat": "帳簿"
+  },
+  {
+    "q": "宅建業者が備え付ける帳簿の保存期間は、閉鎖後10年間である。",
+    "a": false,
+    "ex": "誤り。帳簿の保存期間は原則として閉鎖後5年間です（宅建業法施行規則18条3項）。ただし、新築住宅の売主となる宅建業者の場合は10年間保存しなければなりません。「原則5年、新築住宅売主は10年」と正確に覚えましょう。",
+    "cat": "帳簿"
+  },
+  {
+    "q": "宅建業者は、事務所ごとに従業者名簿を備え付け、取引の関係者から請求があったときは閲覧させなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者は各事務所ごとに従業者名簿を備え付け、取引の関係者から請求があった場合には閲覧に供しなければなりません（宅建業法48条3項・4項）。従業者名簿の保存期間は最終記載日から10年間です。",
+    "cat": "従業者名簿"
+  },
+  {
+    "q": "宅建業者は、事務所や案内所など業務を行う場所には標識を掲示しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者は事務所のほか、案内所・展示会場など業務を行うすべての場所に、国土交通省令で定める標識を掲示しなければなりません（宅建業法50条1項）。標識には免許証番号や商号等が記載されます。",
+    "cat": "標識"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "売買契約の37条書面において、損害賠償額の予定または違約金に関する定めがある場合はその内容を記載しなければならないが、定めがない場合には記載する必要はない。",
+    "a": true,
+    "ex": "正しい。損害賠償額の予定・違約金は37条書面の任意的記載事項です（宅建業法37条1項8号）。当事者間で定めがある場合にのみ記載すればよく、定めがなければ記載は不要です。天災等の損害負担・契約解除に関する事項も同様に任意的記載事項です。",
+    "cat": "37条書面（任意的記載事項）"
+  },
+  {
+    "q": "代金の額は35条書面（重要事項説明書）の説明事項であるため、35条書面に記載していれば37条書面には記載しなくてよい。",
+    "a": false,
+    "ex": "誤り。代金の額は35条書面の説明事項ではなく、37条書面の必要的記載事項です（宅建業法37条1項3号）。35条書面と37条書面は記載事項が異なるため、それぞれ独立して記載が必要です。「代金の額は37条書面に記載」と覚えましょう。",
+    "cat": "35条と37条の比較"
+  },
+  {
+    "q": "37条書面の交付は、相手方の承諾があれば電磁的方法（電子書面）で提供することもできる。",
+    "a": true,
+    "ex": "正しい。2022年の宅建業法改正により、相手方の承諾を得た場合には、37条書面を電磁的方法により提供することが認められています（宅建業法37条4項）。ただし、承諾がない場合は従来どおり書面での交付が必要です。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "貸借契約の37条書面において、契約不適合責任の内容に関する定めがある場合にはその内容を記載しなければならない。",
+    "a": false,
+    "ex": "誤り。契約不適合責任（担保責任）の内容・履行確保措置は、売買・交換の37条書面における任意的記載事項であり、貸借の37条書面では不要です（宅建業法37条1項11号・12号）。貸借では所有権移転がないため、売主の担保責任は問題になりません。",
+    "cat": "37条書面（売買vs貸借）"
+  },
+  {
+    "q": "宅建業者A社が自ら売主として建物の売買契約を締結した場合、37条書面には引渡しの時期を記載しなければならないが、買主が宅建業者B社であるときは37条書面の交付義務自体が免除される。",
+    "a": false,
+    "ex": "誤り。37条書面の交付義務は、相手方が宅建業者であっても免除されません（宅建業法37条1項）。35条の重要事項説明は相手方が宅建業者の場合に説明義務は免除されますが（書面の交付は必要）、37条書面の交付義務は例外なく適用されます。",
+    "cat": "37条書面"
+  },
+  {
+    "q": "宅建業者が利益になる事実のみを告げ、不利益な事実を故意に告げなかった場合は、宅建業法47条に違反する。",
+    "a": true,
+    "ex": "正しい。宅建業法47条1号は、故意に重要な事実を告げないこと（不告知）を禁止しています。利益になることだけを強調し、不利益な事実を隠す行為は典型的な違反です。買主の判断に影響を及ぼす重要事項は、有利不利を問わず正確に伝えなければなりません。",
+    "cat": "禁止行為（47条）"
+  },
+  {
+    "q": "宅建業者の従業者が、深夜に電話をかけて長時間にわたり購入を迫る行為は、宅建業法47条の2に違反する。",
+    "a": true,
+    "ex": "正しい。深夜・早朝など相手方が迷惑を覚える時間帯に勧誘すること、また長時間にわたる勧誘で相手方を困惑させることは、宅建業法47条の2（施行規則16条の12）に違反します。従業者の行為も規制対象です。",
+    "cat": "禁止行為（47条の2）"
+  },
+  {
+    "q": "宅建業者の従業者Aが、相手方に対し「今日中に契約しなければ大損する」と不確実な事実をあたかも確実であるかのように告げて契約を急がせた場合、宅建業法に違反するおそれがある。",
+    "a": true,
+    "ex": "正しい。将来の不確実な事項について断定的判断を提供する行為は宅建業法47条1号の2に違反します。さらに、相手方を困惑させて急がせる行為は47条の2にも抵触する可能性があります。従業者の行為であっても同様に禁止されています。",
+    "cat": "禁止行為（47条・47条の2）"
+  },
+  {
+    "q": "帳簿の保存期間は原則5年間であるが、宅建業者が新築住宅の売主となった場合の帳簿は10年間保存しなければならない。",
+    "a": true,
+    "ex": "正しい。帳簿の保存期間は原則として閉鎖後5年間ですが、宅建業者が新築住宅の売主となった場合には10年間保存が必要です（宅建業法施行規則18条3項）。住宅瑕疵担保履行法との関係で、新築住宅の取引記録を長期間保存する必要があるためです。",
+    "cat": "帳簿"
+  },
+  {
+    "q": "従業者名簿の保存期間は、帳簿と同様に原則5年間である。",
+    "a": false,
+    "ex": "誤り。従業者名簿の保存期間は最終の記載をした日から10年間です（宅建業法施行規則17条の2第4項）。帳簿の保存期間（原則5年）とは異なるため、混同しないよう注意が必要です。",
+    "cat": "従業者名簿"
+  },
+  {
+    "q": "宅建業者が事務所以外の場所（案内所）で契約の申込みを受ける場合、届出は免許権者にのみ行えばよい。",
+    "a": false,
+    "ex": "誤り。案内所等で契約締結または申込みの受付を行う場合、①免許権者（国土交通大臣または都道府県知事）と②案内所所在地の都道府県知事の両方に届出が必要です（宅建業法50条2項）。どちらか一方だけでは足りません。",
+    "cat": "案内所"
+  },
+  {
+    "q": "宅建業者が案内所を設置して契約の申込みを受ける場合、届出は業務開始の10日前までに行わなければならない。",
+    "a": true,
+    "ex": "正しい。案内所等の届出は、当該業務を開始する日の10日前までに行う必要があります（宅建業法50条2項）。届出先は免許権者と案内所所在地の知事の2か所です。",
+    "cat": "案内所"
+  },
+  {
+    "q": "契約の申込みを受ける案内所には、専任の宅地建物取引士を複数名配置しなければならない。",
+    "a": false,
+    "ex": "誤り。契約締結または申込みを受ける案内所には、専任の宅地建物取引士を1名以上置けば足ります（宅建業法31条の3第1項、施行規則15条の5の2）。「複数名」は不要であり、1名以上で要件を満たします。",
+    "cat": "案内所"
+  },
+  {
+    "q": "単に案内や物件見学のみを行う場所（申込みや契約締結を行わない場所）には、専任の宅地建物取引士を置く義務はない。",
+    "a": true,
+    "ex": "正しい。専任の宅建士の設置義務が生じるのは、契約の締結または申込みの受付を行う案内所等です。単なる案内・見学のみの場所には専任宅建士の設置義務はありません。ただし、標識の掲示義務は適用されます。",
+    "cat": "案内所"
+  },
+  {
+    "q": "守秘義務に関して、裁判所からの命令がある場合でも、宅建業者は業務上知り得た秘密を開示することはできない。",
+    "a": false,
+    "ex": "誤り。守秘義務は「正当な理由」がある場合には解除されます。裁判所の命令や本人の同意がある場合は、正当な理由に該当するため秘密の開示が認められます（宅建業法45条）。守秘義務は絶対的なものではなく、正当な理由の有無で判断されます。",
+    "cat": "守秘義務"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで業務上の制限（その他）の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・宅建業法全体の罰則規定（65条以下）の詳細<br>・監督処分（指示・業務停止・免許取消し）の手続き<br>・弁済業務保証金制度との関係<br>・電子取引（IT重説等）の最新実務<br>・35条書面（重要事項説明書）の詳細な記載事項</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 業務上の制限の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【宅建業者が守るべき義務】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">契約段階</span><br>↓<br><span style="background:#c8e6c9;padding:3px 10px;border-radius:4px">37条書面の交付（契約後、遅滞なく）</span><br><br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">勧誘段階</span><br>↓<br><span style="background:#ffcdd2;padding:3px 10px;border-radius:4px">47条・47条の2（嘘・強引な勧誘の禁止）</span><br><br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">事務所管理</span><br>↓<br><span style="background:#e1bee7;padding:3px 10px;border-radius:4px">帳簿（49条）・標識・名簿（50条）・守秘義務（45条）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 35条書面と37条書面の記載事項の違い</strong><br>試験では「この事項は35条書面に記載するか、37条書面に記載するか」を問う問題が頻出！<br><table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0"><tr style="background:#ffecb3"><th style="border:1px solid #ffca28;padding:4px">事項</th><th style="border:1px solid #ffca28;padding:4px">35条書面</th><th style="border:1px solid #ffca28;padding:4px">37条書面</th></tr><tr><td style="border:1px solid #ffca28;padding:4px;font-weight:bold;color:#d32f2f">代金の額</td><td style="border:1px solid #ffca28;padding:4px">記載なし ⚠️</td><td style="border:1px solid #ffca28;padding:4px;font-weight:bold">必要的記載事項</td></tr><tr style="background:#fffde7"><td style="border:1px solid #ffca28;padding:4px">引渡しの時期</td><td style="border:1px solid #ffca28;padding:4px">記載なし</td><td style="border:1px solid #ffca28;padding:4px;font-weight:bold">必要的記載事項</td></tr><tr><td style="border:1px solid #ffca28;padding:4px">移転登記申請時期</td><td style="border:1px solid #ffca28;padding:4px">記載なし</td><td style="border:1px solid #ffca28;padding:4px;font-weight:bold">必要的（売買のみ）</td></tr></table><span style="font-size:12px;color:#d32f2f;font-weight:bold">⚠️「代金の額は35条書面に記載」は誤り！37条書面の必要的記載事項！</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 任意的記載事項を正確に覚える</strong><br>「定めがなければ記載不要」の項目：<br>・天災等による損害負担（危険負担）<br>・契約解除に関する事項<br>・損害賠償額の予定・違約金<br>・住宅ローン等のあっせん<br><span style="font-size:12px;color:#d32f2f;font-weight:bold">⚠️「定めがないときはその旨を記載する」は誤り！定めがなければ記載自体が不要！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 保存期間の数字を正確に</strong><br><table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0"><tr style="background:#c8e6c9"><th style="border:1px solid #a5d6a7;padding:4px">項目</th><th style="border:1px solid #a5d6a7;padding:4px">保存期間</th><th style="border:1px solid #a5d6a7;padding:4px">注意点</th></tr><tr><td style="border:1px solid #a5d6a7;padding:4px">帳簿（原則）</td><td style="border:1px solid #a5d6a7;padding:4px;font-weight:bold">5年間</td><td style="border:1px solid #a5d6a7;padding:4px">閉鎖後から起算</td></tr><tr style="background:#f1f8e9"><td style="border:1px solid #a5d6a7;padding:4px">帳簿（新築住宅売主）</td><td style="border:1px solid #a5d6a7;padding:4px;font-weight:bold;color:#d32f2f">10年間 ⚠️</td><td style="border:1px solid #a5d6a7;padding:4px">閉鎖後から起算</td></tr><tr><td style="border:1px solid #a5d6a7;padding:4px">従業者名簿</td><td style="border:1px solid #a5d6a7;padding:4px;font-weight:bold">10年間</td><td style="border:1px solid #a5d6a7;padding:4px">最終記載日から起算</td></tr></table></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 案内所の届出の数字</strong><br>・届出先：免許権者 ＋ 案内所所在地の知事（<strong>2か所</strong>に届出）<br>・届出期限：業務開始の<strong>10日前</strong>まで<br>・専任宅建士：<strong>1名以上</strong>（契約申込みを受ける場合のみ）<br><span style="font-size:12px;color:#d32f2f">⚠️「免許権者のみに届出」は誤り！所在地の知事にも必要！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 暗記表：37条書面の記載事項一覧</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：37条書面の必要的記載事項 vs 任意的記載事項（宅建業法37条）</div><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="background:#e1bee7"><th style="border:1px solid #ce93d8;padding:4px">記載事項</th><th style="border:1px solid #ce93d8;padding:4px">売買・交換</th><th style="border:1px solid #ce93d8;padding:4px">貸借</th></tr><tr><td style="border:1px solid #ce93d8;padding:4px">当事者の氏名・住所</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td></tr><tr style="background:#f3e5f5"><td style="border:1px solid #ce93d8;padding:4px">物件の特定事項</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td></tr><tr><td style="border:1px solid #ce93d8;padding:4px">代金・借賃の額</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td></tr><tr style="background:#f3e5f5"><td style="border:1px solid #ce93d8;padding:4px">支払時期・方法</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td></tr><tr><td style="border:1px solid #ce93d8;padding:4px">引渡し時期</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td></tr><tr style="background:#f3e5f5"><td style="border:1px solid #ce93d8;padding:4px;color:#d32f2f;font-weight:bold">移転登記申請時期 ⚠️</td><td style="border:1px solid #ce93d8;padding:4px;font-weight:bold">必要的</td><td style="border:1px solid #ce93d8;padding:4px;color:#d32f2f;font-weight:bold">不要 ⚠️</td></tr><tr><td style="border:1px solid #ce93d8;padding:4px">天災等の損害負担</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td></tr><tr style="background:#f3e5f5"><td style="border:1px solid #ce93d8;padding:4px">契約解除に関する事項</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td></tr><tr><td style="border:1px solid #ce93d8;padding:4px">損害賠償額の予定・違約金</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td></tr><tr style="background:#f3e5f5"><td style="border:1px solid #ce93d8;padding:4px;color:#d32f2f;font-weight:bold">契約不適合責任 ⚠️</td><td style="border:1px solid #ce93d8;padding:4px">定めあれば</td><td style="border:1px solid #ce93d8;padding:4px;color:#d32f2f;font-weight:bold">不要 ⚠️</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 貸借で不要な項目は2つ！</strong><br>①移転登記申請時期 ②契約不適合責任 → 貸借では所有権移転がないため不要</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 業務上の制限（その他）とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>宅建業者が取引のプロとして守るべき義務のまとめです。契約書面の交付（37条）・禁止行為（47条等）・事務所の管理義務（帳簿・標識・名簿）など、取引の相手方を保護するための重要なルールが集まっています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📄 37条書面（契約書面）の交付義務</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「契約が成立したら、契約内容を書面にして両当事者に渡す義務」です（宅建業法37条）。</div><div class="info-box" style="background:#fff3e0"><strong>37条書面のポイント：</strong><br>① 売買・交換・貸借の契約成立後に、<strong>遅滞なく</strong>交付<br>② <strong>宅建士の記名</strong>が必要（押印は不要・2022年改正）<br>③ 契約の<strong>各当事者</strong>に交付（売主・買主の両方）<br>④ 相手方の承諾があれば<strong>電磁的方法</strong>での提供も可</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ここが試験のひっかけ！ 35条書面と37条書面を混同させる</strong><br>35条書面（重要事項説明書）＝ <strong>契約前</strong>に説明<br>37条書面（契約書面）＝ <strong>契約後</strong>に交付<br><span style="font-size:12px">記載事項も異なるので要注意！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「35条＝契約<strong>前</strong>の説明書、37条＝契約<strong>後</strong>の書面」</div><div class="info-box" style="background:#f5f5f5"><strong>必要的記載事項（必ず記載）：</strong><br>✅ 当事者の氏名・住所<br>✅ 物件を特定するために必要な事項<br>✅ 代金（借賃）の額・支払時期・支払方法<br>✅ 引渡しの時期<br>✅ 移転登記の申請時期（<strong>売買・交換のみ</strong>。貸借は不要）</div><div class="info-box" style="background:#fce4ec"><strong>任意的記載事項（定めがあれば記載）：</strong><br>・天災等による損害負担（危険負担）<br>・契約解除に関する事項<br>・損害賠償額の予定・違約金<br>・住宅ローン等のあっせん<br>・契約不適合責任の内容・履行措置（<strong>売買・交換のみ</strong>。貸借は不要）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「任意＝定めがなければ書かなくてOK。定めてないことは書きようがない！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🚫 47条・47条の2：禁止行為</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「嘘をつくな・大げさに言うな（47条）」「強引に勧誘するな（47条の2）」の2本柱です。</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">47条で禁止される行為：</strong><br>❌ 重要事項について<strong>故意に事実を告げない</strong>（不告知）<br>❌ 重要事項について<strong>不実のことを告げる</strong>（虚偽告知）<br>❌ 将来の利益について<strong>断定的判断を提供</strong>する<br><span style="font-size:12px;color:#555">例：「この土地は必ず値上がりします」→ 断定的判断＝違反！</span></div><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">47条の2で禁止される行為：</strong><br>❌ 相手方を<strong>威迫</strong>する行為<br>❌ 深夜・早朝・長時間の<strong>迷惑な勧誘</strong><br>❌ 相手方が「いらない」と言った後の<strong>勧誘継続・再勧誘</strong><br>❌ 利益のみを告げ、<strong>不利益を故意に隠す</strong>行為</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 重要ポイント：適用対象は「宅建業者等」全員！</strong><br>47条の2の禁止規定は、宅建業者本人だけでなく<strong>代理人・使用人・従業者</strong>にも適用されます。<br>「従業者だから関係ない」は誤り！</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「47条＝嘘ダメ、47条の2＝しつこいのダメ」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🔒 守秘義務（宅建業法45条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「仕事で知った秘密は、正当な理由がない限り漏らしてはダメ。辞めた後も同じ」です。</div><div class="info-box" style="background:#e8f5e9"><strong>守秘義務のポイント：</strong><br>① 対象者：宅建業者本人・代理人・使用人・従業者<br>② <strong>廃業・退職後も守秘義務は継続</strong><br>③ 正当な理由（裁判所の命令・本人の同意等）があれば開示可能</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ここが試験のひっかけ！</strong><br>「廃業・退職後は守秘義務がなくなる」→ <strong>誤り！</strong>退職後も守秘義務は続く！</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「辞めても秘密は墓場まで持っていく！（正当な理由がない限り）」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📒 帳簿の備付け・保存（宅建業法49条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「取引の記録をきちんと帳簿に残し、一定期間保存する義務」です。</div><div class="info-box" style="background:#fff3e0"><strong>帳簿のポイント：</strong><br>① <strong>各事務所ごと</strong>に備付け義務<br>② 取引があったつど所定の事項を記載<br>③ 各取引年度末に閉鎖し、<strong>閉鎖後に保存</strong></div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最重要：保存期間の使い分け</strong><br><span style="font-size:16px;font-weight:bold;color:#e65100">原則：5年間 ／ 新築住宅売主：10年間</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「帳簿は5年。新築売主だけ倍の10年！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🏢 標識・従業者名簿・案内所の届出（宅建業法50条等）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「事務所の見える場所に標識を掲げ、従業者名簿を置き、案内所を作るなら届出を出す」義務です。</div><div class="info-box" style="background:#f3e5f5"><strong>① 標識の掲示（50条1項）：</strong><br>事務所・案内所・展示会場など業務を行う<strong>すべての場所</strong>に掲示</div><div class="info-box" style="background:#ede7f6"><strong>② 従業者名簿（48条3項・4項）：</strong><br>・各<strong>事務所ごと</strong>に備付け<br>・取引関係者から請求があれば<strong>閲覧</strong>させる義務<br>・保存期間：<strong>最終記載日から10年間</strong></div><div class="info-box" style="background:#e8eaf6"><strong>③ 案内所等の届出（50条2項）：</strong><br>契約締結・申込みを受ける案内所等を設置する場合：<br>・届出先：<strong>①免許権者 ＋ ②所在地の知事</strong>の2か所<br>・届出期限：業務開始の<strong>10日前</strong>まで<br>・専任宅建士：<strong>1名以上</strong>設置</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ ひっかけ注意ポイント</strong><br>① 届出先は「免許権者のみ」ではない → <strong>所在地の知事にも必要</strong><br>② 単なる案内・見学のみの場所 → 専任宅建士の設置義務は<strong>なし</strong><br>③ 複数業者が同一案内所で業務 → <strong>いずれか1社</strong>が宅建士設置でOK</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「従業者名簿＝10年保存、案内所届出＝10日前。どちらも『10』！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>特に37条・45条・47条・47条の2・48条・49条・50条を確認してみましょう。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">業務上の制限（その他）クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
