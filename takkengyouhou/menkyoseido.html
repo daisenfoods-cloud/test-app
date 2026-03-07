@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 免許制度クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 免許制度</div>
+    <div class="header-desc">免許の要否・欠格事由・有効期間・免許換え・廃業届出</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_menkyoseido_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅地建物取引業とは、宅地または建物について、自ら売買・交換を行うこと、または売買・交換・貸借の媒介・代理を業として行うことをいう。",
+    "a": true,
+    "ex": "正しい。宅建業法2条2号の定義どおりです。「業として」とは不特定多数を相手に反復継続して行うことを意味します。",
+    "cat": "宅建業の定義"
+  },
+  {
+    "q": "Aが自己所有のマンションを複数の入居者に直接貸し出す場合（自ら賃貸人）、宅建業の免許は不要である。",
+    "a": true,
+    "ex": "正しい。「自ら貸借（賃貸人として直接貸す）」は宅建業の定義に含まれないため、免許は不要です（宅建業法2条2号）。自分が大家として直接賃貸するだけであれば第三者への損害リスクが低く、規制対象から外れています。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "Bが複数の売主と買主の間に立って宅地の売買を繰り返し仲介する場合、Bは宅建業の免許が必要である。",
+    "a": true,
+    "ex": "正しい。売買の「媒介（仲介）」を業として行う場合は宅建業に該当し、免許が必要です（宅建業法2条2号、3条1項）。自ら当事者にならなくても、媒介・代理を業として行えば免許が必要となります。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "C社が1つの都道府県内だけに事務所を設けて宅建業を行う場合、国土交通大臣の免許が必要である。",
+    "a": false,
+    "ex": "誤り。1つの都道府県内にのみ事務所がある場合は、当該都道府県知事の免許で足ります（宅建業法3条1項）。国土交通大臣免許が必要なのは、2以上の都道府県に事務所を設けて宅建業を行う場合です。",
+    "cat": "免許の種類"
+  },
+  {
+    "q": "D社が東京都と神奈川県に事務所をそれぞれ1か所ずつ置いて宅建業を行う場合、国土交通大臣免許を1つ取得すれば足りる。",
+    "a": true,
+    "ex": "正しい。2以上の都道府県に事務所を設ける場合は、国土交通大臣の免許を1つ受ければ足ります（宅建業法3条1項）。都道府県ごとに知事免許を複数取得する必要はありません。",
+    "cat": "免許の種類"
+  },
+  {
+    "q": "宅建業の免許の有効期間は5年であり、期間満了後も引き続き業を営む場合は更新申請が必要である。",
+    "a": true,
+    "ex": "正しい。免許の有効期間は5年です（宅建業法3条2項）。有効期間内に更新申請をしなければ、満了をもって免許は失効します。",
+    "cat": "有効期間・更新"
+  },
+  {
+    "q": "免許の更新申請は、有効期間満了の90日前から30日前までの間に行わなければならない。",
+    "a": true,
+    "ex": "正しい。更新申請の期間は「満了日の90日前から30日前まで」です（宅建業法3条3項）。「30日前までに出せばいい」という誤った理解が多いため注意が必要です。",
+    "cat": "有効期間・更新"
+  },
+  {
+    "q": "拘禁刑以上の刑に処せられ、その刑の執行が終わった日から3年しか経過していない者は、宅建業の免許を受けることができない。",
+    "a": true,
+    "ex": "正しい。拘禁刑以上の刑に処せられた者は、刑の執行終了から5年間は欠格事由に該当し免許を受けられません（宅建業法5条1項5号）。3年経過時点ではまだ欠格期間中です。",
+    "cat": "欠格事由"
+  },
+  {
+    "q": "宅建業法違反を理由に罰金刑に処せられた者は、刑の執行終了後5年を経過しなければ宅建業の免許を受けることができない。",
+    "a": true,
+    "ex": "正しい。宅建業法違反・傷害罪・暴行罪・背任罪等による罰金刑も欠格事由に該当し、刑の執行終了後5年間は免許を受けられません（宅建業法5条1項6号）。拘禁刑以上の刑だけでなく一定の罰金刑も欠格対象です。",
+    "cat": "欠格事由"
+  },
+  {
+    "q": "執行猶予付き拘禁刑の判決を受けた者は、執行猶予期間中は宅建業の免許を受けることができない。",
+    "a": true,
+    "ex": "正しい。執行猶予期間中は欠格事由に該当し、免許を受けることができません（宅建業法5条1項5号）。ただし、執行猶予期間が満了すれば、刑の言渡しがなかったものとみなされ（刑法27条）、ただちに欠格は解消されます。",
+    "cat": "欠格事由"
+  },
+  {
+    "q": "個人の宅建業者が死亡した場合、相続人は死亡の日から30日以内に免許権者へ廃業等の届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。個人業者が死亡した場合の起算点は「死亡を知った日から30日以内」です（宅建業法11条1項1号）。「死亡の日から」ではなく「知った日から」が正しい起算点であることが最頻出のひっかけパターンです。",
+    "cat": "廃業等の届出"
+  },
+  {
+    "q": "個人の宅建業者が廃業した場合、本人が廃業の日から30日以内に免許権者へ届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。個人業者が自ら廃業した場合、本人が廃業の日から30日以内に届出をする義務があります（宅建業法11条1項5号）。死亡の場合（相続人が届出・起算点は知った日）とは届出義務者と起算点の両方が異なります。",
+    "cat": "廃業等の届出"
+  },
+  {
+    "q": "国および地方公共団体は宅建業法の適用除外であり、免許を取得せずに宅地・建物の売買を行うことができる。",
+    "a": true,
+    "ex": "正しい。国および地方公共団体は宅建業法の適用が除外されており、免許なしに宅建業を営むことができます（宅建業法78条1項）。公的機関としての性質上、消費者保護の観点から規制対象外とされています。",
+    "cat": "免許不要主体"
+  },
+  {
+    "q": "宅建業者A社（知事免許）が新たに他の都道府県に事務所を設置した場合、知事免許を継続したまま追加した都道府県の知事から別途免許を取得すればよい。",
+    "a": false,
+    "ex": "誤り。2以上の都道府県に事務所を置く場合は、国土交通大臣免許への免許換えが必要です（宅建業法7条）。複数の知事免許を取得するという制度は存在せず、大臣免許1つに切り替えます。",
+    "cat": "免許換え"
+  },
+  {
+    "q": "宅建業者が免許の有効期間満了前に更新申請を行い、処理が満了日までに完了しなかった場合でも、処分があるまでの間は従前の免許が有効とみなされる。",
+    "a": true,
+    "ex": "正しい。更新申請中に有効期間が満了しても、申請に対する処分がなされるまでの間は従前の免許が有効とみなされます（宅建業法3条4項）。申請中の業者保護のための規定です。",
+    "cat": "有効期間・更新"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "Aが自己所有のビルを賃貸するにあたり、みずから入居者を募集して契約締結まで行う場合（自ら賃貸人）、この媒介行為について免許が必要である。",
+    "a": false,
+    "ex": "誤り。「自ら貸借」は宅建業に含まれません（宅建業法2条2号）。自分の物件を自分で貸す場合、途中で入居者を探す行為を自ら行ったとしても、賃貸人として貸すことそのものは免許不要です。他者の物件の媒介を行う場合とは異なります。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "Bが知人C1名からだけ宅地売買の仲介を1度依頼された場合、これは不特定多数・反復継続の要件を満たさないため宅建業に該当しない。",
+    "a": true,
+    "ex": "正しい。宅建業とは「業として」すなわち不特定多数・反復継続して行うことが要件です（宅建業法2条2号）。特定1名から1回だけ依頼を受けた場合はいずれの要件も満たさず、宅建業には該当しません。",
+    "cat": "宅建業の定義"
+  },
+  {
+    "q": "信託業法上の免許を受けた信託会社が宅地の売買を反復継続して行う場合、宅建業の免許を別途取得する必要がある。",
+    "a": false,
+    "ex": "誤り。信託業法上の免許・認可を受けた信託会社は、宅建業の免許を取得しなくても宅建業を営むことができます（宅建業法77条）。ただし、宅建業法の一部規定は準用されます。",
+    "cat": "免許不要主体"
+  },
+  {
+    "q": "D社（知事免許）が他の都道府県に支店を新設して大臣免許への免許換えを行った場合、免許換え後の有効期間は旧免許の残余期間を引き継がず、新たに5年となる。",
+    "a": true,
+    "ex": "正しい。免許換えにより新たな免許が付与されるため、有効期間は免許換え後の免許日から新たに5年となります（宅建業法3条2項、7条）。残余期間の引継ぎは行われません。",
+    "cat": "免許換え"
+  },
+  {
+    "q": "E社が免許換えの申請中に現在の免許の有効期間が満了した場合、免許換えの処分がなされるまでの間、従前の免許が有効とみなされる。",
+    "a": true,
+    "ex": "正しい。免許換えの申請中に有効期間が満了した場合も、処分がなされるまでの間は従前の免許が有効とみなされます（宅建業法3条4項、7条2項）。宅建業法7条2項が3条4項を準用しているため、更新申請中と同様に業者が保護されます。",
+    "cat": "免許換え"
+  },
+  {
+    "q": "法人の役員の1人が傷害罪で罰金刑に処せられ、刑の執行終了後2年しか経過していない場合、その役員を解任すれば当該法人は直ちに免許申請が可能となる。",
+    "a": false,
+    "ex": "誤り。役員が欠格事由に該当する場合、その役員を解任しても欠格期間（5年）が経過するまで、その法人全体が免許を申請できません（宅建業法5条1項5号・12号）。解任だけでは欠格は解消されず、期間の経過が必要です。",
+    "cat": "欠格事由（法人）"
+  },
+  {
+    "q": "法人F社の政令使用人（支店長）が宅建業法違反により罰金刑に処せられた場合、F社全体も欠格事由に該当する可能性がある。",
+    "a": true,
+    "ex": "正しい。法人においては役員だけでなく、政令使用人（支店長等の相当権限を持つ使用人）も欠格事由の判定対象に含まれます（宅建業法5条1項12号）。政令使用人が欠格に該当すると、法人全体として免許申請ができなくなります。",
+    "cat": "欠格事由（法人）"
+  },
+  {
+    "q": "宅建業法違反を理由に免許を取り消された法人の役員で、その取消処分に相当の理由があった者は、取消日から5年間は個人としても欠格事由に該当する。",
+    "a": true,
+    "ex": "正しい。宅建業法違反等を理由に免許を取り消された法人の役員で、取消しに係る聴聞公示日前60日以内に役員であった者は、役員個人も取消日から5年間欠格事由に該当します（宅建業法5条1項2号）。法人の取消処分が関係役員個人にも波及する点が重要です。",
+    "cat": "欠格事由（法人）"
+  },
+  {
+    "q": "執行猶予付き拘禁刑を受けたGが、執行猶予期間の満了後に宅建業の免許申請をしようとする場合、刑の言渡しから5年を経過していないと申請できない。",
+    "a": false,
+    "ex": "誤り。執行猶予期間が満了すると、刑の言渡しがなかったものとみなされ（刑法27条）、5年間の欠格期間を待たずにただちに免許申請が可能となります（宅建業法5条1項5号）。「刑を受けた後5年」とは異なるルールであることが最重要ひっかけです。",
+    "cat": "欠格事由"
+  },
+  {
+    "q": "宅建業者H社が業務停止処分を受け、その処分に違反したことを理由に免許を取り消された場合、取消日から5年間は再免許を受けることができない。",
+    "a": true,
+    "ex": "正しい。業務停止処分違反を理由とした免許取消の場合、取消日から5年間は再度免許を受けられません（宅建業法5条1項2号）。不正手段による免許取得や情状特に重い場合も同様の5年欠格が適用されます。",
+    "cat": "欠格事由"
+  },
+  {
+    "q": "個人宅建業者Iが死亡し、その相続人が宅建業を引き継ごうとする場合、亡Iの免許を相続によって承継することができる。",
+    "a": false,
+    "ex": "誤り。免許は個人に属するものであり、相続によって承継されません（宅建業法3条1項）。相続人が宅建業を継続するには、新たに免許申請をして自らの免許を取得しなければなりません。",
+    "cat": "廃業等の届出"
+  },
+  {
+    "q": "宅建業者である法人が合併によって消滅した場合、消滅した法人の代表役員（消滅前の役員）が合併の日から30日以内に届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。法人の合併消滅の場合は、消滅会社の代表役員が「合併の日から30日以内」に届出をします（宅建業法11条1項2号）。個人業者の死亡（相続人が「知った日から30日以内」）とは届出義務者も起算点も異なります。",
+    "cat": "廃業等の届出"
+  },
+  {
+    "q": "宅建業者J（個人）が廃業届出をする前に死亡した場合、廃業の届出は「死亡の日から30日以内」に相続人が行わなければならない。",
+    "a": false,
+    "ex": "誤り。個人業者の死亡による廃業届出の起算点は「死亡を知った日から30日以内」です（宅建業法11条1項1号）。「死亡の日から」ではなく「死亡を知った日から」が正確であり、この起算点の違いが繰り返し出題される最頻出ひっかけです。",
+    "cat": "廃業等の届出"
+  },
+  {
+    "q": "Kが自己所有の農地に農地法上の転用許可を得たうえで宅地に転換し、不特定多数に向けて反復継続して分譲販売する場合、宅建業の免許は不要である。",
+    "a": false,
+    "ex": "誤り。農地法の転用許可と宅建業の免許は全く別の制度です。農地転用許可を取得したとしても、宅建業（自ら売買を業として行う）に該当すれば宅建業の免許が別途必要です（宅建業法3条1項）。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "大臣免許を持つL社が事業を縮小し、事務所を1つの都道府県のみに集約した場合、当該都道府県の知事免許への免許換えが必要である。",
+    "a": true,
+    "ex": "正しい。国土交通大臣免許業者が1つの都道府県内のみに事務所を持つこととなった場合は、当該都道府県知事免許への免許換えが必要です（宅建業法7条）。事務所の設置状況が変わるたびに適切な免許区分に変更しなければなりません。",
+    "cat": "免許換え"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで免許制度の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・みなし宅建業者（信託会社・信託銀行の詳細な規定）<br>・免許の変更届出（商号・役員変更等の届出）<br>・宅建士（取引士）の登録に関する欠格事由<br>・営業保証金・弁済業務保証金の制度<br>・標識掲示義務・帳簿備付義務等の業務上の規制</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 免許制度の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【宅建業をするには？】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">不特定多数の人を相手に</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">反復継続して</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">宅地・建物の 売買・交換・媒介・代理</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">免許が必要！</span><br><br><span style="color:#2e7d32;font-weight:bold;font-family:sans-serif">✅ 例外：「自ら貸借（賃貸人として直接貸す）」は免許不要</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">（自分の物件を直接貸すだけでは免許不要）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 「執行猶予満了」= ただちに欠格解消</strong><br>執行猶予<strong>期間中</strong> → 欠格（免許不可）<br>執行猶予<strong>期間満了</strong> → ただちに欠格解消（5年待たない！）<br><span style="font-size:12px;color:#555">根拠：刑の言渡しがなかったものとみなされる（刑法27条）</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 廃業届出の起算点に注意</strong><br><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:4px">事由</th><th style="border:1px solid #ef9a9a;padding:4px">届出義務者</th><th style="border:1px solid #ef9a9a;padding:4px">起算点</th></tr><tr><td style="border:1px solid #ef9a9a;padding:4px">個人業者の死亡</td><td style="border:1px solid #ef9a9a;padding:4px">相続人</td><td style="border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold">死亡を<u>知った日</u>から ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:4px">法人の合併消滅</td><td style="border:1px solid #ef9a9a;padding:4px">消滅会社の代表役員</td><td style="border:1px solid #ef9a9a;padding:4px">合併の日から</td></tr><tr><td style="border:1px solid #ef9a9a;padding:4px">個人の廃業</td><td style="border:1px solid #ef9a9a;padding:4px">本人</td><td style="border:1px solid #ef9a9a;padding:4px">廃業の日から</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:4px">法人の廃業</td><td style="border:1px solid #ef9a9a;padding:4px">代表役員</td><td style="border:1px solid #ef9a9a;padding:4px">廃業の日から</td></tr></table><span style="font-size:12px;color:#d32f2f">⚠️ 死亡だけ「知った日から」！他は全て「その日から」</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 法人役員の欠格は法人全体に波及</strong><br>役員または政令使用人が欠格事由に該当<br>→ 解任しても欠格期間が終わるまで<strong>法人全体</strong>が免許申請不可<br><span style="font-size:12px;color:#555">「解任すれば直ちにOK」という誤りに注意</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 更新申請の期間</strong><br>有効期間満了の「90日前 〜 30日前」の間に申請<br><span style="font-size:12px;color:#d32f2f">⚠️「30日前まで」は誤り！「90日前〜30日前の間」が正しい</span></div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 宅建業免許制度とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「不動産取引を業として行うには国・都道府県の許可（免許）が必要」という制度です（宅建業法3条）。悪質業者から消費者を守るため、業者の質を担保する仕組みです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 宅建業の定義：「業として」の2要件</div><div class="info-box" style="background:#fff3e0"><strong>「業として」とは何か（宅建業法2条2号）</strong><br>① <strong>不特定多数</strong>の者を相手にすること<br>② <strong>反復継続</strong>して行うこと<br><br>この2つがそろって初めて「宅建業」に該当します。知人1人への1回きりの売却は「業」ではありません。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「不（特定）・反（復継続）がそろったら業！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🗂️ 免許が必要な取引・不要な取引</div><div class="info-box" style="background:#fce4ec"><strong>免許が必要な取引（業として行う場合）：</strong><br>✅ 自ら売買<br>✅ 自ら交換<br>✅ 売買・交換・貸借の<strong>媒介（仲介）</strong><br>✅ 売買・交換・貸借の<strong>代理</strong></div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">免許が不要な取引：</strong><br>✅ <strong>自ら貸借</strong>（自分が大家として直接貸す）<br>✅ 国・地方公共団体の行為（宅建業法78条1項）<br>✅ 信託業法上の免許を持つ信託会社（宅建業法77条）<br><br><span style="font-size:12px;color:#555">「自ら貸借」が免許不要な理由：消費者への損害リスクが低いため</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🗺️ 免許の種類</div><div class="info-box" style="background:#e8f5e9"><strong>事務所の場所で決まる（宅建業法3条1項）：</strong><table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:13px"><tr style="background:#c8e6c9"><th style="border:1px solid #a5d6a7;padding:4px">事務所の状況</th><th style="border:1px solid #a5d6a7;padding:4px">必要な免許</th></tr><tr><td style="border:1px solid #a5d6a7;padding:4px">1つの都道府県のみ</td><td style="border:1px solid #a5d6a7;padding:4px;font-weight:bold">都道府県知事免許</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #a5d6a7;padding:4px">2以上の都道府県</td><td style="border:1px solid #a5d6a7;padding:4px;font-weight:bold">国土交通大臣免許</td></tr></table><span style="font-size:12px;color:#555">大臣免許は1つ取ればOK。都道府県ごとに複数取得は不要</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">⏱️ 有効期間と更新</div><div class="info-box" style="background:#f3e5f5"><strong>有効期間：5年（宅建業法3条2項）</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「免許は5年ごとの点検！」</div><div class="info-box" style="background:#f5f5f5"><strong>更新申請の期間：</strong><br><span style="font-size:15px;font-weight:bold;color:#7b1fa2">満了の 90日前 〜 30日前 の間</span>（宅建業法3条3項）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！「30日前まで」は誤り。「90日前から」が始まりの期限</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「申請は早め（90日前）から始めて、遅くとも30日前！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">⛔ 欠格事由</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「こういう人には免許を与えない」という要件です（宅建業法5条）。</div><div class="info-box" style="background:#ffebee"><strong>5年間欠格（主なもの）：</strong><br>① 拘禁刑以上の刑の執行終了から5年未満<br>② 宅建業法違反・傷害罪等の<strong>罰金刑</strong>の執行終了から5年未満<br>③ 不正取得・業停違反等による免許取消から5年未満<br>④ 執行猶予期間中（期間中は欠格）</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最重要ひっかけ：執行猶予満了の扱い</strong><br>執行猶予期間<strong>中</strong>：欠格（免許不可）<br>執行猶予期間<strong>満了後</strong>：<span style="color:#d32f2f;font-weight:bold">ただちに欠格解消！5年待たない！</span><br><span style="font-size:12px">根拠：刑法27条「刑の言渡しがなかったものとみなす」</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「猶予が終われば即OK。刑そのものを受けた場合は5年待つ」</div><div class="info-box" style="background:#fce4ec"><strong>法人の欠格事由（波及に注意）：</strong><br>役員または政令使用人が欠格事由に該当すると<strong>法人全体</strong>も欠格<br>→ その役員を解任しても、欠格期間が終わるまで法人は申請不可</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📄 廃業等の届出</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者でなくなるときは、必ず届け出る」義務です（宅建業法11条）。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">事由</th><th style="border:1px solid #ffb74d;padding:5px">届出義務者</th><th style="border:1px solid #ffb74d;padding:5px">期限（起算点）</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">個人業者の死亡</td><td style="border:1px solid #ffb74d;padding:5px">相続人</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">死亡を知った日から30日 ⚠️</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">法人の合併消滅</td><td style="border:1px solid #ffb74d;padding:5px">消滅会社の代表役員</td><td style="border:1px solid #ffb74d;padding:5px">消滅の日から30日</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">個人の廃業</td><td style="border:1px solid #ffb74d;padding:5px">本人</td><td style="border:1px solid #ffb74d;padding:5px">廃業の日から30日</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">法人の廃業</td><td style="border:1px solid #ffb74d;padding:5px">代表役員</td><td style="border:1px solid #ffb74d;padding:5px">廃業の日から30日</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ここだけ「知った日から」！他は全て「その日から」</strong><br>死亡のみ、起算点が「知った日から」になる。他の事由はすべて「事由が生じた日から」。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「死亡は知らなければ届けられない。だから知った日が起算点」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🔄 免許換え</div><div class="info-box" style="background:#e0f2f1"><strong style="color:#00695c">一言で言うと：</strong>「事務所の場所が変わったら、適切な免許区分に切り替える手続き」です（宅建業法7条）。</div><div class="info-box" style="background:#f5f5f5"><strong>免許換えが必要なケース：</strong><br>① 知事免許 → 他都道府県に事務所追加 → <strong>大臣免許に換える</strong><br>② 大臣免許 → 1都道府県のみに集約 → <strong>知事免許に換える</strong></div><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">⚠️ 免許換え後の有効期間：</strong><br>旧免許の残余期間を引き継がず、<strong>新たに5年</strong>が付与される。<br>「残余期間を引き継ぐ」は誤りです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">免許制度クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>

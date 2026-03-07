@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 クーリング・オフ クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ クーリング・オフ</div>
+    <div class="header-desc">8種制限・申込み場所の判定・8日間の起算・発信主義・消滅事由</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_cooling_off_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "クーリング・オフの制度は、宅建業者が自ら売主となり、宅建業者でない者が買主となる売買契約に適用される。",
+    "a": true,
+    "ex": "正しい。クーリング・オフは宅建業法37条の2に定められた「自ら売主の8種制限」の一つであり、売主が宅建業者、買主が宅建業者でない者（一般消費者）の場合に適用されます。宅建業者同士の取引には適用されません（宅建業法78条2項）。",
+    "cat": "適用要件"
+  },
+  {
+    "q": "宅建業者同士の宅地の売買契約において、事務所等以外の場所で買受けの申込みがされた場合でも、クーリング・オフの規定は適用される。",
+    "a": false,
+    "ex": "誤り。クーリング・オフを含む自ら売主の8種制限は、宅建業者相互間の取引には適用されません（宅建業法78条2項）。買主も宅建業者であれば、不動産取引の専門家として保護する必要性が低いためです。",
+    "cat": "適用要件"
+  },
+  {
+    "q": "宅建業者A（売主）の本店事務所で買受けの申込みをした買主Bは、クーリング・オフにより申込みを撤回することができない。",
+    "a": true,
+    "ex": "正しい。売主である宅建業者の事務所（本店・支店）は「事務所等」に該当するため、そこで買受けの申込みをした場合はクーリング・オフできません（宅建業法37条の2第1項、施行規則16条の5）。事務所は買主が冷静に判断できる場所と考えられるためです。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "宅建業者A（売主）が分譲マンションの販売のために設置した仮設テント張りの案内所で、買主Bが買受けの申込みをした場合、Bはクーリング・オフをすることができる。",
+    "a": true,
+    "ex": "正しい。仮設テント張りの案内所は「土地に定着する建物」ではないため、事務所等に該当しません。したがって、そこで申込みをした買主はクーリング・オフが可能です（宅建業法37条の2第1項、施行規則16条の5）。「土地に定着」しているかどうかが判断基準となります。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "喫茶店で宅建業者A（売主）から勧誘を受けて買受けの申込みをした買主Bは、クーリング・オフにより申込みを撤回することができる。",
+    "a": true,
+    "ex": "正しい。喫茶店は「事務所等」に該当しないため、そこで買受けの申込みをした買主はクーリング・オフが可能です（宅建業法37条の2第1項）。ホテルのロビーやレストランなども同様に、事務所等に該当しない場所です。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "クーリング・オフについて書面で告げられた日から起算して8日以内であれば、買主は申込みの撤回を行うことができる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフができる期間は、書面（または電磁的方法）で告げられた日から起算して8日以内です（宅建業法37条の2第1項1号）。告知日を1日目として数えます（初日算入）。",
+    "cat": "8日間の起算"
+  },
+  {
+    "q": "クーリング・オフについて書面で告げられていない場合、買受けの申込みの日から8日を経過すると、買主はクーリング・オフをすることができなくなる。",
+    "a": false,
+    "ex": "誤り。8日間の起算点は「告知日」であり、「申込みの日」や「契約の日」ではありません。クーリング・オフについて書面で告げられていなければ、8日間の期間は進行せず、いつまでもクーリング・オフが可能です（宅建業法37条の2第1項1号）。",
+    "cat": "8日間の起算"
+  },
+  {
+    "q": "クーリング・オフによる申込みの撤回は、買主が書面を発した時にその効力が生じる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフの意思表示は、書面を発した時に効力が生じます（宅建業法37条の2第2項）。これを「発信主義」といい、相手方（宅建業者）に届く前でも効力が発生します。買主保護のための規定です。",
+    "cat": "方法と効力"
+  },
+  {
+    "q": "令和4年の宅建業法改正により、クーリング・オフに関する告知は書面だけでなく電磁的方法でも行うことができるようになった。",
+    "a": false,
+    "ex": "誤り。令和4年の宅建業法改正により、重要事項説明書（35条書面）や契約書面（37条書面）などは電磁的方法で提供可能となりましたが、クーリング・オフに関する告知や撤回の意思表示については電磁的方法は認められておらず、書面で行う必要があります（宅建業法37条の2第1項・2項）。",
+    "cat": "方法と効力"
+  },
+  {
+    "q": "クーリング・オフにより売買契約が解除された場合、宅建業者は買主に対して損害賠償や違約金の支払いを請求することができる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフが行われた場合、宅建業者は申込みの撤回等に伴う損害賠償または違約金の支払いを請求することができません（宅建業法37条の2第1項後段）。また、受領した手付金等は速やかに返還しなければなりません（同条3項）。",
+    "cat": "効果と特約"
+  },
+  {
+    "q": "宅建業者A（売主）が分譲住宅の販売のために設置した、土地に定着する建物内の案内所で、買主Bが買受けの申込みをした場合、Bはクーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。土地に定着する建物内の案内所は「事務所等」に該当するため、そこで申込みをした買主はクーリング・オフができません（施行規則16条の5第1号ロ）。仮設テント張りの案内所（土地に定着しない）であればクーリング・オフ可能ですが、建物内の案内所は不可です。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "クーリング・オフにより売買契約が解除された場合、宅建業者は受領していた手付金等を速やかに返還しなければならない。",
+    "a": true,
+    "ex": "正しい。クーリング・オフが行われた場合、宅建業者は受領していた手付金その他の金銭を速やかに返還しなければなりません（宅建業法37条の2第3項）。損害賠償や違約金の請求もできません。",
+    "cat": "効果と特約"
+  },
+  {
+    "q": "宅建業者でない買主が、宅建業者である売主の媒介をしている宅建業者の事務所で買受けの申込みをした場合、クーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。媒介（仲介）や代理を行う宅建業者の事務所も「事務所等」に該当します（施行規則16条の5第1号ハ）。売主の事務所でなくても、媒介業者の事務所で申込みをした場合はクーリング・オフできません。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "クーリング・オフの可否は、買受けの申込みをした場所ではなく、売買契約を締結した場所で判断される。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの可否は「申込みの場所」で判断し、契約締結の場所は関係ありません（宅建業法37条の2第1項かっこ書）。例えば、喫茶店で申込みをして事務所で契約した場合、クーリング・オフは可能です。",
+    "cat": "場所の判定"
+  },
+  {
+    "q": "買主が事務所等以外の場所で買受けの申込みをしたが、宅建業者からクーリング・オフについての告知を受けていない場合、買主はいつまでもクーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの告知がなければ8日間の期間は進行しないため、原則としていつまでもクーリング・オフが可能です。しかし、宅地建物の引渡しを受け、かつ代金の全額を支払った場合は、告知がなくてもクーリング・オフができなくなります（宅建業法37条の2第1項2号）。「いつまでも」は誤りです。",
+    "cat": "8日間の起算"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "買主Aが喫茶店（事務所等以外の場所）で宅建業者B（売主）に対して買受けの申込みをし、後日B社の事務所で売買契約を締結した場合、Aはクーリング・オフをすることができない。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの可否は「申込みの場所」で判断します。Aが喫茶店（事務所等以外）で申込みをしている以上、その後の契約締結がB社の事務所であっても、クーリング・オフは可能です（宅建業法37条の2第1項）。「契約場所」ではなく「申込み場所」がポイントです。",
+    "cat": "申込み場所と契約場所"
+  },
+  {
+    "q": "買主Cが宅建業者D（売主）の事務所で買受けの申込みをし、後日、近隣のレストランで売買契約を締結した場合、Cはクーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの可否は「申込みの場所」で判断します（宅建業法37条の2第1項かっこ書）。CはD社の事務所（事務所等）で申込みをしているため、契約締結がレストランであってもクーリング・オフはできません。",
+    "cat": "申込み場所と契約場所"
+  },
+  {
+    "q": "宅建業者E（売主）の媒介（仲介）をする宅建業者Fの事務所で、買主Gが買受けの申込みをした場合、F社の事務所は売主の事務所ではないため、Gはクーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。媒介（仲介）や代理を行う宅建業者の事務所も「事務所等」に該当します（施行規則16条の5第1号ロ）。売主の事務所に限らず、媒介業者・代理業者の事務所で申込みをした場合もクーリング・オフはできません。",
+    "cat": "場所の判定（複合）"
+  },
+  {
+    "q": "宅建業者H（売主）から催告（訪問の申出）を受けて、買主Iが自宅で買受けの申込みをした場合、Iはクーリング・オフをすることができる。",
+    "a": true,
+    "ex": "正しい。買主の自宅は、買主が「自ら申し出た」場合にのみ事務所等に該当します（施行規則16条の5第2号）。この場合は業者H側から催告して訪問しており、買主Iが自ら申し出たわけではないため、Iの自宅は事務所等に該当せず、クーリング・オフが可能です。",
+    "cat": "買主の自宅・勤務先"
+  },
+  {
+    "q": "買主Jが自ら「自宅に来てほしい」と宅建業者K（売主）に申し出て、自宅で買受けの申込みをした場合、Jはクーリング・オフをすることができない。",
+    "a": true,
+    "ex": "正しい。買主が自ら申し出た場合の買主の自宅または勤務先は「事務所等」に該当するため、クーリング・オフはできません（施行規則16条の5第2号）。買主が自発的に場所を選んだ場合は、冷静に判断できる環境にあったとみなされます。",
+    "cat": "買主の自宅・勤務先"
+  },
+  {
+    "q": "買主Lがホテルのロビーで宅建業者M（売主）に買受けの申込みをし、クーリング・オフについて書面で告知を受けた。告知日が月曜日の場合、翌週の月曜日（8日目）にクーリング・オフの書面を発すれば、期間内の撤回として有効である。",
+    "a": true,
+    "ex": "正しい。告知日（月曜日）を1日目として起算し、8日目は翌週の月曜日です。8日以内に書面を「発した」時点で効力が生じるため（宅建業法37条の2第1項1号・2項）、8日目に発していれば有効です。翌日起算ではなく初日算入で数える点に注意してください。",
+    "cat": "期間計算"
+  },
+  {
+    "q": "買主Nは事務所等以外の場所で買受けの申込みをし、クーリング・オフについて書面による告知を受けていない。この場合であっても、宅地の引渡しを受け、かつ代金の全額を支払った後は、Nはクーリング・オフをすることができない。",
+    "a": true,
+    "ex": "正しい。告知がなければ8日間の期間は進行しないため、通常はいつまでもクーリング・オフ可能です。しかし、宅地の引渡しを受け「かつ」代金の全額を支払った場合は、告知の有無にかかわらずクーリング・オフができなくなります（宅建業法37条の2第1項2号）。",
+    "cat": "消滅事由"
+  },
+  {
+    "q": "買主Oが事務所等以外の場所で買受けの申込みをし、宅地の引渡しは受けたが代金はまだ一部しか支払っていない場合、Oはクーリング・オフをすることができなくなる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフができなくなるのは、「引渡し」と「代金の全額支払い」の両方が揃った場合です（宅建業法37条の2第1項2号）。引渡しを受けただけで代金全額を支払っていなければ、まだクーリング・オフは可能です。片方だけでは消滅しません。",
+    "cat": "消滅事由"
+  },
+  {
+    "q": "宅建業者P（売主）と買主Qが、「事務所等以外の場所で申込みをした場合であっても、契約締結後はクーリング・オフによる解除はできない」とする特約を定めた場合、この特約は有効である。",
+    "a": false,
+    "ex": "誤り。クーリング・オフに関する規定に反する特約で、買主（申込者等）に不利なものは無効です（宅建業法37条の2第4項）。「契約締結後はクーリング・オフ不可」とする特約は買主に不利であるため、無効となります。",
+    "cat": "不利特約"
+  },
+  {
+    "q": "一団の宅地の分譲を行うために宅建業者R（売主）が設置した、土地に定着する建物内の案内所で買主Sが買受けの申込みをした場合、Sはクーリング・オフをすることができる。",
+    "a": false,
+    "ex": "誤り。一団の宅地建物の分譲を行う案内所で、土地に定着する建物内にあるものは「事務所等」に該当します（施行規則16条の5第1号ハ）。したがって、その場所で申込みをした買主Sはクーリング・オフができません。仮設テント張りの案内所（土地に定着しない）とは異なる点に注意してください。",
+    "cat": "場所の判定（複合）"
+  },
+  {
+    "q": "宅建業者A（売主）が、買主B（宅建業者でない）に対し、喫茶店でクーリング・オフについて口頭で説明した場合、その説明の日から8日間のクーリング・オフ期間が進行する。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの期間が進行するためには、書面で告知する必要があります（宅建業法37条の2第1項1号）。口頭での説明では8日間の期間は進行せず、クーリング・オフが可能な状態が続きます。",
+    "cat": "告知方法"
+  },
+  {
+    "q": "宅建業者A（売主）と買主B（宅建業者でない）が、「クーリング・オフの期間を告知日から5日間に短縮する」旨の特約を定めた場合、この特約は有効である。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの期間を法定の8日間から5日間に短縮する特約は、買主に不利な特約であるため無効です（宅建業法37条の2第4項）。逆に、10日間に延長するなど買主に有利な特約は有効です。",
+    "cat": "不利特約"
+  },
+  {
+    "q": "買主Tが自ら宅建業者U（売主）に電話して「勤務先に来てほしい」と申し出た結果、勤務先で買受けの申込みをした場合、Tはクーリング・オフをすることができない。",
+    "a": true,
+    "ex": "正しい。買主が自ら申し出た場合の勤務先は「事務所等」に該当するため、クーリング・オフはできません（施行規則16条の5第2号）。自宅だけでなく勤務先も同様の扱いです。買主自身が場所を選んだ場合は冷静な判断ができたとみなされます。",
+    "cat": "買主の自宅・勤務先"
+  },
+  {
+    "q": "クーリング・オフにより契約が解除された場合、宅建業者は契約解除に要した費用を買主に請求することができる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフが行われた場合、宅建業者は損害賠償や違約金の支払いを請求することができません（宅建業法37条の2第1項後段）。契約解除に要した費用も同様に請求できず、受領済みの手付金等は速やかに返還しなければなりません（同条3項）。",
+    "cat": "効果と特約"
+  },
+  {
+    "q": "買主Vはホテルのロビーで宅建業者W（売主）から買受けの申込みをし、書面でクーリング・オフの告知を受けた。Vが告知日から7日目にクーリング・オフの書面を郵送し、9日目にW社に届いた場合、このクーリング・オフは有効である。",
+    "a": true,
+    "ex": "正しい。クーリング・オフは書面を「発した時」に効力が生じます（宅建業法37条の2第2項、発信主義）。Vは告知日から7日目（8日以内）に書面を発しているため、W社に届いたのが9日目であっても有効にクーリング・オフできます。",
+    "cat": "期間計算"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリでクーリング・オフの基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・他の8種制限（手付の額等の制限、損害賠償額の予定等の制限、自己の所有に属しない物件の売買制限など）<br>・クーリング・オフと手付解除の関係・優先順位<br>・告知書面の具体的な記載事項（商号・免許証番号等）の細部<br>・割賦販売契約のクーリング・オフとの関係</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ クーリング・オフの判定フロー</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【クーリング・オフできるか？】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 売主が宅建業者か？</span><br>↓ Yes<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 買主が宅建業者でないか？</span><br>↓ Yes<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 申込み場所は事務所等「以外」か？</span><br>↓ Yes<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④ 告知日から8日以内か？</span><br>↓ Yes<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">⑤ 引渡し＋代金全額支払い済みでないか？</span><br>↓ Yes<br><span style="background:#81c784;padding:4px 14px;border-radius:4px;font-weight:bold;color:#1b5e20">クーリング・オフ可能！</span><br><br><span style="font-size:12px;color:#555;font-family:sans-serif">※ ④について：告知されていなければ期間は進行しない（いつまでもクーリング・オフ可能）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 「申込み場所」で判断！契約場所は関係ない</strong><br>喫茶店で<strong>申込み</strong> → 事務所で<strong>契約</strong> → クーリング・オフ<strong>できる</strong><br>事務所で<strong>申込み</strong> → 喫茶店で<strong>契約</strong> → クーリング・オフ<strong>できない</strong><br><span style="font-size:12px;color:#555">「契約を事務所でしたからクーリング・オフ不可」は誤り！</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 8日間の起算は「告知日」から</strong><br>起算点は<strong>告知日</strong>（告知日を1日目として数える＝初日算入）<br><span style="color:#d32f2f;font-weight:bold">⚠️「申込みの日から8日」は誤り！「告知日から8日」が正しい</span><br>告知がなければ → <strong>8日間の期間は進行しない</strong>（いつまでもクーリング・オフ可能）</div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">★最重要③ 消滅事由：「引渡し」＋「代金全額支払い」の両方が必要</strong><br>引渡しだけ → まだクーリング・オフ<strong>できる</strong><br>代金全額支払いだけ → まだクーリング・オフ<strong>できる</strong><br>引渡し＋代金全額支払い → クーリング・オフ<strong>できない</strong><br><span style="font-size:12px;color:#555">「引渡しを受けたのでクーリング・オフ不可」は誤り！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 発信主義（買主保護）</strong><br>クーリング・オフの書面を<strong>発した時</strong>に効力発生<br><span style="color:#d32f2f;font-weight:bold">⚠️「届いた時に効力発生」は誤り！発した時＝発信主義</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ クーリング・オフの告知・撤回は書面のみ</strong><br>令和4年改正で35条書面・37条書面は電子化が可能になりましたが、<br><span style="color:#d32f2f;font-weight:bold">⚠️ クーリング・オフの告知・撤回の意思表示は書面のみ（電磁的方法は不可）</span><br><span style="font-size:12px;color:#555">「令和4年改正で電磁的方法も可」は誤り！ひっかけ注意</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：クーリング・オフの可否 ─ 場所による判定</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;padding:5px">場所</th><th style="border:1px solid #80cbc4;padding:5px">可否</th><th style="border:1px solid #80cbc4;padding:5px">理由</th></tr><tr><td style="border:1px solid #80cbc4;padding:5px">売主の事務所（本店・支店）</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">事務所等</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">継続的業務施設（土地に定着）</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">事務所等</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px">案内所（土地に定着するもの）</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">事務所等</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">媒介・代理業者の事務所</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">事務所等</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px">買主の自宅（買主が自ら申出）</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">自発的申出</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">買主の勤務先（買主が自ら申出）</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">✕ できない</td><td style="border:1px solid #80cbc4;padding:5px">自発的申出</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">仮設テント張りの案内所</td><td style="border:1px solid #80cbc4;padding:5px;color:#2e7d32;font-weight:bold;background:#e8f5e9">○ できる</td><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">土地に定着していない</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">喫茶店・レストラン</td><td style="border:1px solid #80cbc4;padding:5px;color:#2e7d32;font-weight:bold;background:#e8f5e9">○ できる</td><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">事務所等に該当しない</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">ホテルのロビー</td><td style="border:1px solid #80cbc4;padding:5px;color:#2e7d32;font-weight:bold;background:#e8f5e9">○ できる</td><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">事務所等に該当しない</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">買主の自宅（業者が申し出）</td><td style="border:1px solid #80cbc4;padding:5px;color:#2e7d32;font-weight:bold;background:#e8f5e9">○ できる</td><td style="border:1px solid #80cbc4;padding:5px;background:#e8f5e9">買主の自発的申出でない</td></tr></table><br><div style="font-size:13px;font-weight:bold;margin-bottom:8px">重要：クーリング・オフの重要数字・キーワード</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">内容</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">対象取引</td><td style="border:1px solid #90caf9;padding:5px">宅建業者が自ら売主 → 宅建業者でない買主</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">期間</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">書面で告げられた日から8日以内</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">起算日</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">告知日を1日目として数える（初日算入）⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">効力発生</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">書面を発した時（発信主義）⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">消滅事由①</td><td style="border:1px solid #90caf9;padding:5px">告知日から8日経過</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">消滅事由②</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">引渡し ＋ 代金全額支払い（両方必要）⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">不利特約</td><td style="border:1px solid #90caf9;padding:5px">買主に不利な特約は無効</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">根拠条文</td><td style="border:1px solid #90caf9;padding:5px">宅建業法37条の2、施行規則16条の5・16条の6</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 クーリング・オフとは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「不動産取引で冷静に判断できなかった買主を救済する制度」です。事務所等以外の場所（喫茶店やホテルなど）で申込みをした場合、一定期間内なら無条件で撤回・解除できます（宅建業法37条の2）。</div><div class="info-box" style="background:#fff3e0"><strong>なぜこの制度があるの？</strong><br>不動産は高額な買い物です。事務所ではなく喫茶店やホテルのロビーなどで営業を受けると、雰囲気に流されて冷静な判断ができないことがあります。そこで、一定期間「頭を冷やす（クーリング・オフ）」機会を買主に与え、保護しています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 適用される取引（大前提）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者が売主、一般消費者が買主」の場合だけ適用される制度です。</div><div class="info-box" style="background:#ffebee"><strong>クーリング・オフが適用される条件：</strong><br>✅ 売主が<strong>宅建業者</strong>であること（「自ら売主」）<br>✅ 買主が<strong>宅建業者でない者</strong>であること<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 宅建業者同士の取引には適用されません（宅建業法78条2項）</span><br><span style="font-size:12px;color:#555">プロ同士の取引は対等な立場なので、保護の必要がないためです</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📍 「申込みの場所」が全てを決める！</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>クーリング・オフできるかどうかは「どこで申込みをしたか」で決まります。契約した場所は関係ありません。</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ ここが試験の最大のひっかけ！</strong><br><table style="width:100%;border-collapse:collapse;font-size:13px;margin:6px 0"><tr style="background:#fff9c4"><th style="border:1px solid #f9a825;padding:4px">申込み場所</th><th style="border:1px solid #f9a825;padding:4px">契約場所</th><th style="border:1px solid #f9a825;padding:4px">結論</th></tr><tr><td style="border:1px solid #f9a825;padding:4px">喫茶店</td><td style="border:1px solid #f9a825;padding:4px">事務所</td><td style="border:1px solid #f9a825;padding:4px;color:#2e7d32;font-weight:bold">クーリング・オフできる</td></tr><tr style="background:#fafafa"><td style="border:1px solid #f9a825;padding:4px">事務所</td><td style="border:1px solid #f9a825;padding:4px">喫茶店</td><td style="border:1px solid #f9a825;padding:4px;color:#d32f2f;font-weight:bold">クーリング・オフできない</td></tr></table></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「申込み場所がすべて！契約場所にダマされるな！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏢 事務所等（クーリング・オフできない場所）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「買主が冷静に判断できる場所」で申込みをした場合は、保護の必要がないのでクーリング・オフできません。</div><div class="info-box" style="background:#ffebee"><strong>クーリング・オフできない場所（事務所等）：</strong><br>① 売主の事務所（本店・支店）<br>② 継続的に業務を行える施設がある場所（<strong>土地に定着</strong>するもの）<br>③ 一団の宅地建物の分譲を行う案内所（<strong>土地に定着</strong>するもの）<br>④ 媒介・代理業者の①〜③に該当する場所<br>⑤ 買主が<strong>自ら申し出た</strong>場合の買主の自宅・勤務先</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">クーリング・オフできる場所（事務所等以外）：</strong><br>✅ 仮設テント張りの案内所（土地に定着していない）<br>✅ 喫茶店・レストラン<br>✅ ホテルのロビー<br>✅ 買主の自宅（<strong>業者側が申し出た</strong>場合）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「土地に定着＝クーリング・オフ不可。テント・ホテル・喫茶店は定着してない＝クーリング・オフ可能」</div><div class="info-box" style="background:#fce4ec"><span style="color:#d32f2f;font-weight:bold">⚠️ 媒介業者の事務所も「事務所等」に含まれる！</span><br>「売主の事務所じゃないからクーリング・オフできる」は誤り（施行規則16条の5第1号ロ）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">⏱️ 8日間のルール</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「告知日を含めて8日以内」にクーリング・オフの書面を出せばOKです。</div><div class="info-box" style="background:#f3e5f5"><strong>起算点：</strong>書面で<strong>告げられた日から起算</strong>（宅建業法37条の2第1項1号）<br><br><span style="font-size:15px;font-weight:bold;color:#7b1fa2">告知日を1日目として数える（初日算入）</span></div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ここが試験のひっかけ！</strong><br>「申込みの日から8日」→ <strong>誤り</strong>（起算点は告知日）<br>「契約の日から8日」→ <strong>誤り</strong>（起算点は告知日）<br>告知がなければ → 8日間は進行せず、<strong>いつまでもクーリング・オフ可能</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「8日のカウントは告知がスタートの合図。告知がなければカウントは始まらない！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📤 方法と効力発生</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「書面を出した瞬間に効力が生じる」のがクーリング・オフの特徴です。</div><div class="info-box" style="background:#e0f2f1"><strong>方法：</strong>書面で行う（クーリング・オフの告知・撤回は書面のみ。電磁的方法は不可）<br><strong>効力発生：</strong>書面を<strong>発した時</strong>（発信主義）＝相手に届く前でもOK<br><br><span style="font-size:12px;color:#555">通常の意思表示は「到達主義」（届いた時に効力発生）ですが、クーリング・オフは買主保護のため「発信主義」が採用されています</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「発信主義＝ポストに入れた瞬間に効力発生。届くのを待たなくてよい！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">⛔ クーリング・オフができなくなる場合</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「告知から8日経過」または「引渡し＋代金全額支払い」で消滅します。</div><div class="info-box" style="background:#ffebee"><strong>消滅事由①：</strong>書面で告げられた日から<strong>8日を経過</strong>した場合<br><strong>消滅事由②：</strong>宅地建物の<strong>引渡し</strong>を受け、<strong>かつ</strong>、代金の<strong>全額を支払った</strong>場合</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 消滅事由②は「両方揃って初めて消滅」がポイント</strong><br>引渡し<strong>だけ</strong> → まだクーリング・オフ<strong>できる</strong><br>代金全額支払い<strong>だけ</strong> → まだクーリング・オフ<strong>できる</strong><br>引渡し ＋ 代金全額支払い → クーリング・オフ<strong>できない</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「カギとお金の両方が揃わないと鍵は閉まらない＝クーリング・オフの扉は閉まらない」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">🛡️ 買主保護の特約ルール</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「クーリング・オフの規定に反する、買主に不利な特約は無効」です。</div><div class="info-box" style="background:#fff3e0"><strong>具体例：</strong><br>✕「クーリング・オフしても手付金は返還しない」→ <strong>無効</strong><br>✕「契約後はクーリング・オフできない」→ <strong>無効</strong><br>✕「クーリング・オフの場合、違約金を支払う」→ <strong>無効</strong><br><br>これらはすべて買主に不利な特約であり、宅建業法37条の2第4項により無効となります。業者は損害賠償・違約金を一切請求できません（同条1項後段）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>クーリング・オフの規定は<strong>第37条の2</strong>です。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">クーリング・オフ クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
