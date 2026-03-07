@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 37条書面クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 37条書面</div>
+    <div class="header-desc">契約締結時書面・必要的記載事項・任意的記載事項・35条書面との違い</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_article37_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業者は、宅地・建物の売買契約を締結したとき、遅滞なく、契約の当事者に対して一定の事項を記載した書面（37条書面）を交付しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法37条1項は、宅建業者が売買・交換の契約を締結したとき、遅滞なく一定の事項を記載した書面を交付する義務を定めています。この書面が「37条書面」と呼ばれます。",
+    "cat": "37条書面の基本"
+  },
+  {
+    "q": "37条書面は、契約締結前に交付しなければならない。",
+    "a": false,
+    "ex": "誤り。37条書面は「契約締結後」に遅滞なく交付するものです（宅建業法37条1項）。契約締結「前」に交付するのは35条書面（重要事項説明書）です。35条＝契約前、37条＝契約後、と整理しましょう。",
+    "cat": "37条書面の基本"
+  },
+  {
+    "q": "37条書面には、宅地建物取引士の記名が必要である。",
+    "a": true,
+    "ex": "正しい。宅建業者は37条書面を作成したとき、宅地建物取引士に記名させなければなりません（宅建業法37条3項）。ただし、35条書面と異なり、宅建士による口頭での説明義務はありません。",
+    "cat": "37条書面の基本"
+  },
+  {
+    "q": "当事者の氏名（法人にあっては名称）および住所は、37条書面の必要的記載事項である。",
+    "a": true,
+    "ex": "正しい。当事者の氏名・住所は37条書面に必ず記載しなければならない事項です（宅建業法37条1項1号）。定めの有無に関係なく、常に記載が必要です。",
+    "cat": "必要的記載事項"
+  },
+  {
+    "q": "代金の額ならびにその支払時期および方法は、37条書面の必要的記載事項である。",
+    "a": true,
+    "ex": "正しい。売買の場合、代金（または交換差金）の額・支払時期・支払方法は必ず記載しなければなりません（宅建業法37条1項3号）。お金に関する基本事項は常に記載が必要です。",
+    "cat": "必要的記載事項"
+  },
+  {
+    "q": "宅地または建物の引渡しの時期は、37条書面の必要的記載事項である。",
+    "a": true,
+    "ex": "正しい。引渡しの時期は必要的記載事項です（宅建業法37条1項4号）。代金の額・引渡し時期・移転登記の申請時期の3つは、売買における37条書面の必要的記載事項の中核です。",
+    "cat": "必要的記載事項"
+  },
+  {
+    "q": "移転登記の申請の時期は、37条書面の必要的記載事項である。",
+    "a": true,
+    "ex": "正しい。移転登記の申請時期は、売買・交換における37条書面の必要的記載事項です（宅建業法37条1項5号）。なお、この事項は35条書面（重要事項説明書）には記載事項として定められていない点に注意してください。",
+    "cat": "必要的記載事項"
+  },
+  {
+    "q": "契約の解除に関する定めがあるときは、その内容を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。契約の解除に関する事項は「定めがあるとき」に記載する任意的記載事項です（宅建業法37条1項7号）。定めがなければ記載は不要です。",
+    "cat": "任意的記載事項"
+  },
+  {
+    "q": "損害賠償額の予定または違約金に関する定めがあるときは、その内容を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。損害賠償額の予定・違約金に関する事項は、定めがある場合に記載が必要な任意的記載事項です（宅建業法37条1項8号）。定めがなければ記載は不要です。",
+    "cat": "任意的記載事項"
+  },
+  {
+    "q": "損害賠償額の予定に関する定めがない場合であっても、37条書面には「定めなし」と記載しなければならない。",
+    "a": false,
+    "ex": "誤り。損害賠償額の予定・違約金は任意的記載事項であり、「定めがあるとき」のみ記載が必要です（宅建業法37条1項8号）。定めがなければ記載する義務はありません。",
+    "cat": "任意的記載事項"
+  },
+  {
+    "q": "代金以外の金銭（手付金・敷金など）の授受に関する定めがあるときは、その額・授受の時期・目的を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。代金・交換差金以外の金銭（手付金・敷金等）の授受について定めがあるときは、その額・授受の時期・目的を記載します（宅建業法37条1項6号）。これも「定めがあるとき」の任意的記載事項です。",
+    "cat": "任意的記載事項"
+  },
+  {
+    "q": "37条書面は、35条書面（重要事項説明書）と同様に、宅地建物取引士が相手方に口頭で説明しなければならない。",
+    "a": false,
+    "ex": "誤り。37条書面は宅建士の「記名」のみが必要であり、口頭での説明義務はありません（宅建業法37条3項）。口頭説明が必要なのは35条書面（重要事項説明書）の方です（宅建業法35条1項）。",
+    "cat": "35条書面との違い"
+  },
+  {
+    "q": "代金の額は、35条書面（重要事項説明書）の記載事項である。",
+    "a": false,
+    "ex": "誤り。代金の額は37条書面の必要的記載事項ですが、35条書面（重要事項説明書）の記載事項ではありません。重要事項説明の段階では代金が確定していないこともあるためです。代金の額は37条書面でのみ記載が求められます。",
+    "cat": "35条書面との違い"
+  },
+  {
+    "q": "宅建業者が媒介によって売買契約を成立させた場合、37条書面は売主・買主の両当事者に交付しなければならない。",
+    "a": true,
+    "ex": "正しい。媒介により契約が成立したときは、契約の「各当事者」（売主・買主の双方）に37条書面を交付しなければなりません（宅建業法37条1項）。一方のみへの交付では足りません。",
+    "cat": "交付義務"
+  },
+  {
+    "q": "宅建業者が自ら売主として売買契約を締結した場合、37条書面を相手方（買主）に交付しなければならない。",
+    "a": true,
+    "ex": "正しい。自ら当事者として契約を締結したときは、その相手方に37条書面を交付しなければなりません（宅建業法37条1項）。宅建業者が売主であっても、37条書面の交付義務は免除されません。",
+    "cat": "交付義務"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "移転登記の申請の時期は、35条書面（重要事項説明書）にも37条書面にも、いずれにも記載が求められている。",
+    "a": false,
+    "ex": "誤り。移転登記の申請時期は37条書面の必要的記載事項ですが（宅建業法37条1項5号）、35条書面（重要事項説明書）の記載事項には含まれていません。移転登記の時期＝37条書面のみ、と覚えましょう。これは頻出のひっかけポイントです。",
+    "cat": "35条書面との違い"
+  },
+  {
+    "q": "契約の解除に関する事項は、37条書面では任意的記載事項であるが、35条書面（重要事項説明書）では必要的記載事項である。",
+    "a": true,
+    "ex": "正しい。契約解除に関する事項は、37条書面では「定めがあるとき」に記載する任意的記載事項（同法37条1項7号）ですが、35条書面では必ず説明すべき必要的記載事項（同法35条1項8号）です。同じ事項でも35条と37条で扱いが異なる点に注意しましょう。",
+    "cat": "35条書面との違い"
+  },
+  {
+    "q": "売主側の宅建業者A社と買主側の媒介業者B社が関与する取引では、A社が37条書面を交付すればB社は交付する必要はない。",
+    "a": false,
+    "ex": "誤り。37条書面の交付義務は、取引に関与した全ての宅建業者が負います。売主業者A社と媒介業者B社がそれぞれ独自に交付義務を負うのが原則です（宅建業法37条1項）。ただし、共同で1通を作成し、双方の宅建士が記名する方法も認められています。",
+    "cat": "複数業者の交付義務"
+  },
+  {
+    "q": "宅建業者C社が売主・買主双方の媒介を行った場合、37条書面は買主のみに交付すれば足りる。",
+    "a": false,
+    "ex": "誤り。媒介により契約が成立した場合、37条書面は契約の「各当事者」すなわち売主・買主の双方に交付する必要があります（宅建業法37条1項）。買主だけでなく売主にも交付しなければなりません。",
+    "cat": "複数業者の交付義務"
+  },
+  {
+    "q": "37条書面に記名する宅建士は、必ず専任の宅地建物取引士でなければならない。",
+    "a": false,
+    "ex": "誤り。37条書面への記名は、専任の宅建士に限られず、宅建士であれば記名することができます（宅建業法37条3項）。また、35条書面の重要事項説明を行った宅建士と同一人物である必要もありません。",
+    "cat": "宅建士の関与"
+  },
+  {
+    "q": "37条書面に記名する宅建士は、35条書面で重要事項説明を行った宅建士と同一の者でなければならない。",
+    "a": false,
+    "ex": "誤り。37条書面に記名する宅建士は、35条書面で説明を行った宅建士と同一である必要はありません（宅建業法37条3項）。それぞれ別の宅建士が担当することも認められています。",
+    "cat": "宅建士の関与"
+  },
+  {
+    "q": "代金についての金銭の貸借のあっせん（ローンあっせん）に関する定めがある場合、当該あっせんに係る貸借が成立しないときの措置を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。ローンあっせんに関する定めがある場合、あっせんに係る金銭の貸借が成立しないときの措置（いわゆるローン特約）を37条書面に記載しなければなりません（宅建業法37条1項9号）。これは「定めがある場合」に記載する任意的記載事項です。",
+    "cat": "任意的記載事項（応用）"
+  },
+  {
+    "q": "ローンあっせんに関する定めがない場合であっても、「ローン特約なし」と37条書面に記載しなければならない。",
+    "a": false,
+    "ex": "誤り。ローンあっせんに関する事項は任意的記載事項であり、定めがない場合は記載する必要がありません（宅建業法37条1項9号）。任意的記載事項は「定めがあるとき」のみ記載が求められます。",
+    "cat": "任意的記載事項（応用）"
+  },
+  {
+    "q": "天災その他不可抗力による損害の負担（危険負担）に関する定めがあるときは、その内容を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。危険負担に関する事項は、定めがある場合に記載が必要な任意的記載事項です（宅建業法37条1項10号）。当事者間で天災時の損害負担について取り決めがあれば、37条書面に記載します。",
+    "cat": "任意的記載事項（応用）"
+  },
+  {
+    "q": "既存（中古）建物の売買において、建物の構造耐力上主要な部分等の状況について当事者双方が確認した事項は、37条書面の任意的記載事項である。",
+    "a": false,
+    "ex": "誤り。既存建物における建物の構造耐力上主要な部分等の状況について当事者双方が確認した事項は、37条書面の「必要的記載事項」です（宅建業法37条1項2号の2）。任意的記載事項ではないので注意しましょう。",
+    "cat": "既存建物・インスペクション"
+  },
+  {
+    "q": "宅地・建物の売買において、契約不適合責任についての定めがあるときは、その内容を37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。宅地・建物が種類・品質に関して契約内容に適合しない場合の担保責任（契約不適合責任）について定めがあるときは、37条書面への記載が必要です（宅建業法37条1項11号）。これは「定めがあるとき」の任意的記載事項です。",
+    "cat": "任意的記載事項（応用）"
+  },
+  {
+    "q": "宅地・建物の賃貸借の37条書面には、移転登記の申請の時期を記載しなければならない。",
+    "a": false,
+    "ex": "誤り。移転登記の申請時期は、売買・交換における37条書面の必要的記載事項ですが（宅建業法37条1項5号）、賃貸借の37条書面には含まれていません（同条2項参照）。賃貸借では所有権移転がないため、登記の時期は不要です。",
+    "cat": "賃貸借の記載事項"
+  },
+  {
+    "q": "宅地・建物の賃貸借の37条書面には、借賃の額・支払時期・支払方法を記載しなければならない。",
+    "a": true,
+    "ex": "正しい。賃貸借の37条書面では、借賃の額ならびにその支払時期および方法が必要的記載事項です（宅建業法37条2項2号）。売買における「代金の額」に対応する事項です。",
+    "cat": "賃貸借の記載事項"
+  },
+  {
+    "q": "37条書面の交付に代えて、相手方の承諾を得ずに電磁的方法（電子メール等）により提供することができる。",
+    "a": false,
+    "ex": "誤り。37条書面を電磁的方法で提供するには、相手方の承諾が必要です（宅建業法37条4項）。2022年の法改正により電磁的提供が可能になりましたが、相手方の承諾なしには書面に代えることはできません。",
+    "cat": "電磁的提供"
+  },
+  {
+    "q": "租税その他の公課の負担（固定資産税の負担割合など）に関する定めがあるときは、37条書面に記載しなければならない。",
+    "a": true,
+    "ex": "正しい。租税公課の負担に関する事項は、定めがある場合に記載が必要な任意的記載事項です（宅建業法37条1項12号）。固定資産税の日割り精算の取り決めなどがあれば記載します。",
+    "cat": "任意的記載事項（応用）"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで37条書面の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・37条書面と34条書面（媒介契約書）との詳細な比較<br>・37条書面違反に対するペナルティの詳細（指示処分・業務停止処分等）<br>・宅建業保証協会との関連<br>・35条書面の記載事項の全体像（35条書面アプリで扱います）<br>これらは過去問集で必ず確認してください。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 37条書面の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【不動産取引の書面の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 媒介契約書（34条書面）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 重要事項説明書（35条書面）←契約前</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">【契約締結】</span><br>↓<br><span style="background:#c8e6c9;padding:4px 14px;border-radius:4px;font-weight:bold;color:#1b5e20">③ 37条書面の交付 ←契約後・遅滞なく</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「35条は契約『前』、37条は契約『後』。条文番号が大きい方が後！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 必要的 vs 任意的の区別</strong><br>37条書面には「必ず記載する事項」と「定めがあれば記載する事項」がある。<br>「どっちに分類されるか」を正確に覚えることが最重要！<br><span style="font-size:12px;color:#d32f2f">⚠️ 任意的記載事項は「定めがないとき」は記載不要。「定めなし」と書く必要もない。</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 35条書面との混同に注意</strong><br><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:4px">事項</th><th style="border:1px solid #ef9a9a;padding:4px">35条書面</th><th style="border:1px solid #ef9a9a;padding:4px">37条書面</th></tr><tr><td style="border:1px solid #ef9a9a;padding:4px">代金の額</td><td style="border:1px solid #ef9a9a;padding:4px">なし</td><td style="border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold">必要的 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:4px">移転登記の申請時期</td><td style="border:1px solid #ef9a9a;padding:4px">なし</td><td style="border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold">必要的 ⚠️</td></tr><tr><td style="border:1px solid #ef9a9a;padding:4px">契約解除に関する事項</td><td style="border:1px solid #ef9a9a;padding:4px;color:#1565c0;font-weight:bold">必要的</td><td style="border:1px solid #ef9a9a;padding:4px">任意的</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:4px">宅建士の口頭説明</td><td style="border:1px solid #ef9a9a;padding:4px;color:#1565c0;font-weight:bold">必要</td><td style="border:1px solid #ef9a9a;padding:4px">不要（記名のみ）</td></tr></table></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 複数業者が関与する場合</strong><br>取引に関与した宅建業者は「全て」交付義務を負う。<br>「売主業者が交付すれば媒介業者は不要」→ <strong style="color:#d32f2f">誤り</strong><br>「媒介業者だけが交付すればよい」→ <strong style="color:#d32f2f">誤り</strong></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 宅建士の記名のルール</strong><br>・37条書面は宅建士の「記名」のみ。口頭説明は不要。<br>・記名は専任の宅建士でなくてもOK。<br>・35条で説明した宅建士と同一でなくてもOK。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 表で暗記：必要的記載事項 vs 任意的記載事項</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：37条書面の記載事項一覧（宅建業法37条）</div><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">記載事項</th><th style="border:1px solid #90caf9;padding:5px;width:60px">必要的</th><th style="border:1px solid #90caf9;padding:5px;width:60px">任意的</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">当事者の氏名・住所</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">物件の特定に必要な表示</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr><td style="border:1px solid #90caf9;padding:5px">代金（借賃）の額・支払時期・方法</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">引渡しの時期</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr><td style="border:1px solid #90caf9;padding:5px">移転登記の申請時期 <span style="color:#d32f2f">※売買・交換のみ</span></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">既存建物の構造耐力上主要な部分等の確認事項</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#1565c0">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td></tr><tr><td style="border:1px solid #90caf9;padding:5px;background:#fff3e0">代金以外の金銭（手付金・敷金等）</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff3e0">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;background:#fff8e1">契約解除に関する事項</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff8e1">○</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;background:#fff3e0">損害賠償額の予定・違約金</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff3e0">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;background:#fff8e1">ローン特約（あっせん不成立の措置）</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff8e1">○</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;background:#fff3e0">危険負担（天災等）</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff3e0">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;background:#fff8e1">契約不適合責任の特約</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff8e1">○</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;background:#fff3e0">租税公課の負担</td><td style="border:1px solid #90caf9;padding:5px;text-align:center"></td><td style="border:1px solid #90caf9;padding:5px;text-align:center;font-weight:bold;color:#ff6f00;background:#fff3e0">○</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「必要的 = お金・引渡し・登記の基本3点セット＋当事者＋物件。任意的 = 特約・オプション系」</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 37条書面（契約締結時書面）とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「不動産の契約を締結したとき、宅建業者が当事者に交付しなければならない書面」です（宅建業法37条）。契約内容を書面で明確にし、後のトラブルを防ぐための制度です。</div><div class="info-box" style="background:#f5f5f5"><strong>交付のルール：</strong><br>・<strong>誰が交付？</strong>→ 取引に関与した宅建業者（全業者）<br>・<strong>誰に交付？</strong>→ 契約の当事者（売主・買主の双方、又は貸主・借主の双方）<br>・<strong>いつ交付？</strong>→ 契約締結後、遅滞なく<br>・<strong>宅建士の関与</strong>→ 記名のみ（口頭説明は不要）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「35条＝契約前に説明。37条＝契約後に交付。条文番号が大きい方が後！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📝 必要的記載事項（必ず記載する事項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「定めがあるかどうかに関係なく、37条書面に常に記載しなければならない事項」です。契約の基本事項がこれに当たります。</div><div class="info-box" style="background:#ffebee"><strong>売買・交換の必要的記載事項（宅建業法37条1項1号〜5号、2号の2）：</strong><br>① 当事者の氏名（法人は名称）・住所<br>② 物件の特定に必要な表示（所在・地番等）<br>③ <strong>代金（交換差金）の額・支払時期・支払方法</strong><br>④ <strong>引渡しの時期</strong><br>⑤ <strong>移転登記の申請時期</strong>（売買・交換のみ）<br>⑥ 既存建物の場合：構造耐力上主要な部分等の状況で当事者双方が確認した事項</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「お金（代金）・引渡し・登記の3点セットは絶対に書く！」</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ ひっかけ注意：移転登記の申請時期</strong><br>移転登記の申請時期は<strong>37条書面の必要的記載事項</strong>だが、<strong>35条書面には記載事項として定められていない</strong>。<br><span style="color:#d32f2f;font-weight:bold">「移転登記の申請時期は35条書面にもある」→ 誤り！ 37条書面のみ！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📋 任意的記載事項（定めがあれば記載する事項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「当事者間で取り決めた場合にだけ記載が必要な事項」です。定めがなければ記載する義務はありません。</div><div class="info-box" style="background:#fff3e0"><strong>任意的記載事項の一覧（宅建業法37条1項6号〜12号）：</strong><br>⑥ 代金以外の金銭の授受（手付金・敷金等の額・時期・目的）<br>⑦ 契約解除に関する事項<br>⑧ 損害賠償額の予定・違約金<br>⑨ ローン特約（あっせんに係る貸借が成立しないときの措置）<br>⑩ 危険負担（天災等による損害の負担）<br>⑪ 契約不適合責任の特約<br>⑫ 租税公課の負担（固定資産税等）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「任意的＝特約・オプション系。決めてなければ書かなくてOK」</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ ひっかけ注意：契約解除に関する事項</strong><br>・<strong>37条書面</strong>では「定めがあれば記載」→ <strong>任意的</strong>記載事項<br>・<strong>35条書面</strong>では必ず説明 → <strong>必要的</strong>記載事項<br><span style="color:#d32f2f;font-weight:bold">同じ事項でも、35条と37条で扱いが違う！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🔄 35条書面との違い（超頻出！）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「35条書面は契約前の説明義務、37条書面は契約後の交付義務。似ているが全く別の制度」です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#c8e6c9"><th style="border:1px solid #a5d6a7;padding:5px">比較項目</th><th style="border:1px solid #a5d6a7;padding:5px">35条書面（重説）</th><th style="border:1px solid #a5d6a7;padding:5px">37条書面</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold">交付時期</td><td style="border:1px solid #a5d6a7;padding:5px">契約締結<strong>前</strong></td><td style="border:1px solid #a5d6a7;padding:5px">契約締結<strong>後</strong></td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold">宅建士の関与</td><td style="border:1px solid #a5d6a7;padding:5px">記名＋<strong>口頭説明</strong></td><td style="border:1px solid #a5d6a7;padding:5px">記名のみ（説明不要）</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold">代金の額</td><td style="border:1px solid #a5d6a7;padding:5px">記載事項でない</td><td style="border:1px solid #a5d6a7;padding:5px;color:#d32f2f;font-weight:bold">必要的記載事項</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold">移転登記の申請時期</td><td style="border:1px solid #a5d6a7;padding:5px">記載事項でない</td><td style="border:1px solid #a5d6a7;padding:5px;color:#d32f2f;font-weight:bold">必要的記載事項</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold">契約解除の事項</td><td style="border:1px solid #a5d6a7;padding:5px;color:#1565c0;font-weight:bold">必要的記載事項</td><td style="border:1px solid #a5d6a7;padding:5px">任意的記載事項</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 「代金の額」と「登記の時期」は37条書面にあって35条書面にない！</strong><br>この2つは試験で最も出題されるポイントです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🏢 賃貸借の37条書面</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「賃貸借の37条書面は、売買とは記載事項が一部異なる」ということです（宅建業法37条2項）。</div><div class="info-box" style="background:#f3e5f5"><strong>売買と賃貸借で異なる点：</strong><br>・賃貸借には「移転登記の申請時期」の記載は<strong>不要</strong>（所有権移転がないため）<br>・賃貸借には「ローン特約」「契約不適合責任」「租税公課の負担」の記載は<strong>不要</strong><br>・代金ではなく「借賃」の額・支払時期・方法を記載</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「賃貸借は所有権が動かない。だから登記の時期もローン特約も不要」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">💻 電磁的方法による提供（2022年改正）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「相手方の承諾があれば、紙の書面ではなく電子データで37条書面を提供できる」という制度です（宅建業法37条4項・5項）。</div><div class="info-box" style="background:#e0f2f1"><strong>ポイント：</strong><br>・<strong>相手方の承諾</strong>が必要（承諾なしの電磁的提供は不可）<br>・電子署名等の措置が必要<br>・2022年の法改正で追加された比較的新しいルール</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">37条書面クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
