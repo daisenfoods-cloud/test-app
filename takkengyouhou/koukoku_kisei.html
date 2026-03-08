@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 広告等の規制クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 広告等の規制</div>
+    <div class="header-desc">誇大広告の禁止・広告開始時期の制限・取引態様の明示</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_koukoku_kisei_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業者が広告において、物件の所在や規模について著しく事実と異なる表示をすることは、宅建業法32条により禁止されている。",
+    "a": true,
+    "ex": "正しい。宅建業法32条は、広告において宅地・建物の所在、規模、形質、利用の制限、環境、交通その他の利便、対価の額等について、著しく事実に相違する表示や、著しく優良・有利であると誤認させる表示を禁止しています。",
+    "cat": "誇大広告の禁止（32条）"
+  },
+  {
+    "q": "宅建業者が、実際には売却する意思がない物件を広告に掲載して顧客を集める行為（いわゆるおとり広告）は、宅建業法32条の規制対象である。",
+    "a": true,
+    "ex": "正しい。おとり広告とは、売る意思のない条件の良い物件を広告して顧客を集め、実際には別の物件を販売しようとする手法です。国土交通省の解釈により、おとり広告も宅建業法32条の誇大広告等の禁止の適用対象とされています。",
+    "cat": "誇大広告の禁止（32条）"
+  },
+  {
+    "q": "宅建業法32条の誇大広告の禁止は、新聞やチラシには適用されるが、インターネット上の広告には適用されない。",
+    "a": false,
+    "ex": "誤り。宅建業法32条の誇大広告の禁止は、広告の媒体を問わず適用されます。新聞折込チラシ、配布用チラシ、雑誌、テレビ、ラジオはもちろん、インターネットのホームページ等にも適用されます（国土交通省「宅建業法の解釈・運用の考え方」第32条関係）。",
+    "cat": "誇大広告の禁止（32条）"
+  },
+  {
+    "q": "宅建業者は、建物の建築に関する工事の完了前においては、建築基準法に基づく建築確認を受けた後でなければ、当該建物の売買に関する広告をしてはならない。",
+    "a": true,
+    "ex": "正しい。宅建業法33条により、工事完了前の物件については、建築確認など法令に基づく許可等の処分があった後でなければ広告をすることができません。許可申請中や確認申請中の段階では広告は出せません。",
+    "cat": "広告開始時期の制限（33条）"
+  },
+  {
+    "q": "宅地の造成工事が完了する前に、開発許可の申請を提出している段階であれば、当該宅地の売買に関する広告をすることができる。",
+    "a": false,
+    "ex": "誤り。宅建業法33条は、開発許可などの許可等の処分があった「後」でなければ広告できないと規定しています。許可の「申請中」はまだ許可が下りていないため、広告をすることはできません。",
+    "cat": "広告開始時期の制限（33条）"
+  },
+  {
+    "q": "宅建業法33条の広告開始時期の制限は、宅地・建物の売買に関する広告だけでなく、貸借に関する広告にも適用される。",
+    "a": true,
+    "ex": "正しい。宅建業法33条は「売買その他の業務に関する広告」と規定しており、売買だけでなく貸借の代理・媒介に関する広告にも適用されます。未完成物件の貸借広告であっても、許可等の処分後でなければ広告できません。",
+    "cat": "広告開始時期の制限（33条）"
+  },
+  {
+    "q": "宅建業者が宅地・建物の売買に関する広告をするときは、自己が売主か、代理か、媒介かの取引態様の別を明示しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法34条1項により、宅建業者は広告をするときに取引態様の別（自ら当事者として売買・交換を成立させるか、代理か、媒介か）を明示しなければなりません。",
+    "cat": "取引態様の明示（34条）"
+  },
+  {
+    "q": "宅建業者は、宅地・建物の売買に関する注文を受けたときも、遅滞なく取引態様の別を明らかにしなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法34条2項により、宅建業者は注文を受けたときにも、遅滞なく注文者に対して取引態様の別を明らかにする義務があります。広告時だけでなく注文を受けた時にも必要です。",
+    "cat": "取引態様の明示（34条）"
+  },
+  {
+    "q": "取引態様の明示として、宅建業者は「媒介」と明示すれば足り、専任媒介か一般媒介かの種類まで明示する必要はない。",
+    "a": true,
+    "ex": "正しい。宅建業法34条が求める取引態様の明示は、「当事者（売主等）」「代理」「媒介」の別です。媒介の場合、専任媒介か一般媒介かといった媒介契約の種類までは明示する必要がありません。",
+    "cat": "取引態様の明示（34条）"
+  },
+  {
+    "q": "宅建業法の広告に関する規制（32条〜34条）は、宅建業者が自ら売主として行う売買の広告にのみ適用され、代理や媒介の広告には適用されない。",
+    "a": false,
+    "ex": "誤り。宅建業法の広告規制は、宅建業者がその業務に関して行う広告すべてに適用されます。自ら売主の場合だけでなく、代理や媒介の場合の広告にも適用されます。また、売買だけでなく交換や貸借の広告にも適用されます。",
+    "cat": "広告規制の適用範囲"
+  },
+  {
+    "q": "宅建業法32条の誇大広告の禁止に違反した場合、実際に顧客が誤認して契約したかどうかにかかわらず、違反が成立する。",
+    "a": true,
+    "ex": "正しい。宅建業法32条は広告そのものを規制する規定であり、実際に顧客が誤認したか、損害が発生したかは問いません。著しく事実に相違する表示や、著しく優良・有利であると誤認させるような表示をした時点で違反が成立します。",
+    "cat": "誇大広告の禁止（32条）"
+  },
+  {
+    "q": "宅建業法33条の広告開始時期の制限は、宅地の造成工事に関しては適用されるが、建物の建築工事には適用されない。",
+    "a": false,
+    "ex": "誤り。宅建業法33条は「宅地の造成又は建物の建築に関する工事の完了前」と規定しており、宅地の造成工事だけでなく建物の建築工事にも適用されます。どちらの場合も、必要な許可等の処分後でなければ広告できません。",
+    "cat": "広告開始時期の制限（33条）"
+  },
+  {
+    "q": "宅建業者が取引態様の明示として「売主」と広告に記載した場合、その後に顧客から注文を受けた際にも改めて取引態様を明らかにしなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法34条1項により広告時に、同条2項により注文を受けた時にも、それぞれ取引態様の別を明示・明らかにする義務があります。広告で明示していても、注文時には改めて明らかにする必要があります。",
+    "cat": "取引態様の明示（34条）"
+  },
+  {
+    "q": "宅建業法32条は、宅建業者が代金の支払方法や金銭の貸借のあっせんについて誇大な表示をすることも禁止している。",
+    "a": true,
+    "ex": "正しい。宅建業法32条は、物件の所在・規模・形質だけでなく、「代金、借賃等の対価の額若しくはその支払方法若しくは代金若しくは交換差金に関する金銭の貸借のあっせん」についても、誇大広告を禁止しています。",
+    "cat": "誇大広告の禁止（32条）"
+  },
+  {
+    "q": "宅建業法32条の誇大広告の禁止に違反した場合の制裁は、監督処分のみであり、罰則（拘禁刑や罰金）の対象にはならない。",
+    "a": false,
+    "ex": "誤り。宅建業法32条に違反した場合、監督処分（指示処分・業務停止処分等）の対象となるほか、宅建業法81条1号により6月以下の拘禁刑若しくは100万円以下の罰金、又はこれの併科という罰則の対象にもなります。",
+    "cat": "誇大広告の禁止（32条）"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "宅建業者A社がインターネットに掲載していた物件が売却済みとなったが、そのまま広告を掲載し続けた場合、宅建業法32条に違反する可能性がある。",
+    "a": true,
+    "ex": "正しい。売却済みの物件を広告に掲載し続けることは、実際には取引できない物件で顧客を誘引する「おとり広告」に該当し、宅建業法32条違反となる可能性があります。インターネット広告にも32条は適用されます。",
+    "cat": "誇大広告・おとり広告"
+  },
+  {
+    "q": "宅建業者B社が広告において、物件の最寄り駅までの距離を直線距離で「1km」と表示したが、実際の道のりでは4kmある場合、宅建業法32条の誇大広告に該当しうる。",
+    "a": true,
+    "ex": "正しい。直線距離では1km程度であっても実際の道のりが4kmある場合、駅まで1kmであると一般購入者を誤認させるような表示に該当するため、誇大広告として宅建業法32条違反となりえます（国土交通省「解釈・運用の考え方」第32条関係）。",
+    "cat": "誇大広告・おとり広告"
+  },
+  {
+    "q": "宅建業者C社が物件の広告において、市街化調整区域に所在する土地を市街化区域と表示した場合、これは宅建業法32条の「著しく事実に相違する表示」に該当する。",
+    "a": true,
+    "ex": "正しい。市街化調整区域の物件を市街化区域と表示することは虚偽広告に該当し、宅建業法32条の「著しく事実に相違する表示」の禁止に違反します（国土交通省「解釈・運用の考え方」第32条関係）。",
+    "cat": "誇大広告・おとり広告"
+  },
+  {
+    "q": "宅建業者D社が、建築確認の申請書を建築主事に提出した段階で、当該建物の売買に関する広告を出した場合、宅建業法33条に違反する。",
+    "a": true,
+    "ex": "正しい。宅建業法33条は、建築確認などの許可等の処分があった「後」でなければ広告できないと規定しています。確認の「申請中」の段階では、まだ確認処分が下りていないため広告をすることは33条違反です。",
+    "cat": "広告開始時期の制限（応用）"
+  },
+  {
+    "q": "宅建業者E社が、未完成マンションの貸借の媒介に関する広告を建築確認前に出した場合、宅建業法33条には違反しない。",
+    "a": false,
+    "ex": "誤り。宅建業法33条の広告開始時期の制限は「売買その他の業務に関する広告」に適用されるため、貸借の媒介に関する広告にも適用されます。建築確認前に未完成物件の貸借広告を出すことは33条違反です。",
+    "cat": "広告開始時期の制限（応用）"
+  },
+  {
+    "q": "建築確認を受けた後に計画変更が生じ、変更の確認を申請中の場合、当初の確認の内容で広告を継続することは差し支えない。",
+    "a": true,
+    "ex": "正しい。当初の建築確認を受けた後、変更の確認の申請中であっても、当初の確認の内容で広告を継続することは認められています（国土交通省「解釈・運用の考え方」第33条関係）。変更の確認の内容を広告する場合は、変更予定の旨と当初の確認内容を併記する必要があります。",
+    "cat": "広告開始時期の制限（応用）"
+  },
+  {
+    "q": "宅建業者F社が以前に取引態様を明示した広告を出していた場合、次回の広告では改めて取引態様を明示する必要はない。",
+    "a": false,
+    "ex": "誤り。取引態様の明示は、広告をするたびに必要です（宅建業法34条1項）。以前の広告で明示していたとしても、次回の広告でも改めて明示しなければなりません。一度明示すれば次回は不要、ということにはなりません。",
+    "cat": "取引態様の明示（応用）"
+  },
+  {
+    "q": "宅建業者G社が建物の貸借に関する広告をする場合にも、取引態様の別（売主・代理・媒介）を明示しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法34条1項は「宅地又は建物の売買、交換又は貸借に関する広告」と規定しており、貸借の広告にも取引態様の明示義務があります。売買や交換に限られるわけではありません。",
+    "cat": "取引態様の明示（応用）"
+  },
+  {
+    "q": "宅建業者H社が物件の広告を行う際、宅建業法32条の誇大広告の禁止規定は物件の価格や間取りについてのみ適用され、物件周辺の環境や交通の利便に関する表示には適用されない。",
+    "a": false,
+    "ex": "誤り。宅建業法32条は、物件の所在・規模・形質だけでなく、「環境若しくは交通その他の利便」や「対価の額若しくはその支払方法」など広範な事項について誇大広告を禁止しています。周辺環境や交通の利便に関する表示も規制対象です。",
+    "cat": "複合問題（横断）"
+  },
+  {
+    "q": "自ら貸主として自己所有のマンションを賃貸する者は、宅建業に該当しないため、その賃貸に関する広告について宅建業法の広告規制（32条〜34条）は適用されない。",
+    "a": true,
+    "ex": "正しい。「自ら貸借」は宅建業に該当しません（宅建業法2条2号）。宅建業に該当しない者が行う広告には、宅建業法の広告規制は適用されません。ただし、これは広告規制の問題ではなく、そもそも宅建業の定義の問題です。",
+    "cat": "複合問題（横断）"
+  },
+  {
+    "q": "宅建業者I社が、建築確認を受けた建物について、まだ着工していない段階で売買の広告を出した場合、宅建業法33条に違反する。",
+    "a": false,
+    "ex": "誤り。宅建業法33条は「許可等の処分があった後」であれば広告が可能と規定しています。建築確認を受けていれば、まだ着工していなくても広告を出すことは33条に違反しません。着工の有無ではなく、許可等の処分を受けたかどうかがポイントです。",
+    "cat": "広告開始時期の制限（応用）"
+  },
+  {
+    "q": "宅建業者J社が物件の広告において「日当たり良好」と記載したが、実際には隣接地に高層ビルの建設計画があり将来的に日照が大幅に遮られることが確実な場合、宅建業法32条に違反しうる。",
+    "a": true,
+    "ex": "正しい。宅建業法32条は「環境」についても誇大広告を禁止しており、国土交通省「宅建業法の解釈・運用の考え方」第32条関係では、広告における表示項目として「現在又は将来の環境」（取引物件に係る現在又は将来の周囲の状況）を挙げています。将来的に日照が大幅に遮られることが確実であるにもかかわらず「日当たり良好」と表示することは、著しく優良であると誤認させる表示に該当しうるため、32条違反となりえます。",
+    "cat": "誇大広告・おとり広告"
+  },
+  {
+    "q": "宅建業者K社が、宅地の交換に関する広告を出す場合、取引態様として「媒介」と明示すれば宅建業法34条の義務を果たしたことになるが、「交換の当事者」と明示することはできない。",
+    "a": false,
+    "ex": "誤り。宅建業法34条1項は、自己が契約の当事者となって「売買若しくは交換」を成立させる場合も取引態様の1つとして規定しています。したがって、宅建業者自身が交換の当事者となる場合は「当事者」と明示することもできます。宅建業者が自ら交換の当事者になることは宅建業法2条2号の「宅地建物取引業」に含まれます。",
+    "cat": "取引態様の明示（応用）"
+  },
+  {
+    "q": "宅建業者L社が、工事完了前のマンションについて、建築確認は受けているが開発許可をまだ受けていない場合、当該マンションの売買に関する広告を出すことはできない。",
+    "a": true,
+    "ex": "正しい。宅建業法33条は「当該工事に関し必要とされる…許可等の処分で政令で定めるもの」があった後でなければ広告できないと規定しています。建築確認と開発許可の両方が必要な場合は、両方の処分を受けた後でなければ広告はできません。一方だけでは不十分です。",
+    "cat": "広告開始時期の制限（応用）"
+  },
+  {
+    "q": "宅建業者M社が、建築確認を受けた分譲マンションの広告を出す際、セレクトプラン（確認済みのプランと未確認のプランを併記する方式）として、確認を受けていないプランも掲載した。この場合、確認を受けていないプランについて変更の確認が必要である旨を表示していなければ、宅建業法33条に違反する。",
+    "a": true,
+    "ex": "正しい。国土交通省「宅建業法の解釈・運用の考え方」第33条関係によれば、セレクトプランにおいて建築確認を受けていないプランを掲載する場合、当該プランについて変更の確認が必要である旨を表示する必要があります。この表示がなければ33条違反となります。",
+    "cat": "広告開始時期の制限（応用）"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで広告等の規制の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・不当景品類及び不当表示防止法との関係<br>・公正競争規約の詳細な表示基準<br>・広告の具体的な表示基準（面積の表示方法、徒歩所要時間の算出基準80m＝1分など）<br>・監督処分・罰則の詳細（業務停止処分、罰金等）<br>・セレクトプランの取扱いの詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 広告規制の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【広告規制の3本柱】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 誇大広告等の禁止（32条）</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 広告開始時期の制限（33条）</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 取引態様の明示（34条）</span><br><br><div style="font-family:sans-serif;font-size:13px;text-align:left;line-height:1.8"><strong>広告の流れ：</strong><br>物件の許可取得 → 広告作成（32条＋33条チェック）→ 広告掲載（34条：取引態様明示）→ 注文受付（34条：再度明示）</div></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★ポイント① 33条と36条（契約締結時期の制限）の違い</strong><br>33条＝広告の制限、36条＝契約締結の制限。どちらも許可等の処分前は禁止ですが、<strong>33条は「売買その他の業務」の広告全般</strong>（貸借も含む）、<strong>36条は「自ら売主となる売買・交換の契約」のみ</strong>が対象です。<br><span style="color:#d32f2f;font-weight:bold">⚠️ この2つの違いは頻出！混同注意！</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★ポイント② 32条違反は「実害がなくても」成立する</strong><br>誇大広告の規制は広告の表示そのものを規制するものです。実際に顧客が誤認したか、契約に至ったか、損害が発生したかは<strong>関係ありません</strong>。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「誰も騙されていないから違反ではない」は誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">★ポイント③ 34条の「当事者」に注意</strong><br>取引態様の明示で「自己が契約の当事者」となるのは、<strong>売買と交換</strong>の場合のみです。「自ら貸借」は宅建業に該当しないため、34条の取引態様には「貸主」は出てきません。明示するのは「売主（交換の当事者）・代理・媒介」の3種類です。</div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">★ポイント④ 「著しく」がないと32条違反にならない</strong><br>32条が禁止するのは「<strong>著しく</strong>事実に相違する表示」「<strong>著しく</strong>優良・有利であると誤認させる表示」です。多少の誇張や軽微な不一致は32条違反には該当しません。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「著しく」の有無で結論が変わる！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：広告規制の3本柱（32条・33条・34条）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">規制</th><th style="border:1px solid #90caf9;padding:5px">条文</th><th style="border:1px solid #90caf9;padding:5px">内容</th><th style="border:1px solid #90caf9;padding:5px">ポイント</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">誇大広告等の禁止</td><td style="border:1px solid #90caf9;padding:5px">32条</td><td style="border:1px solid #90caf9;padding:5px">著しく優良・有利と誤認させる表示の禁止</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">ネット広告にも適用 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">広告開始時期の制限</td><td style="border:1px solid #90caf9;padding:5px">33条</td><td style="border:1px solid #90caf9;padding:5px">許可等の処分前の広告禁止</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">申請中はNG、貸借にも適用 ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">取引態様の明示</td><td style="border:1px solid #90caf9;padding:5px">34条</td><td style="border:1px solid #90caf9;padding:5px">売主・代理・媒介の別を明示</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">毎回必要（広告＋注文時） ⚠️</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px">重要：取引態様の明示が必要な場面（34条）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">場面</th><th style="border:1px solid #a5d6a7;padding:5px">明示が必要な事項</th><th style="border:1px solid #a5d6a7;padding:5px">根拠</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">広告をするとき</td><td style="border:1px solid #a5d6a7;padding:5px">取引態様の別（売主・代理・媒介）</td><td style="border:1px solid #a5d6a7;padding:5px">34条1項</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px">注文を受けたとき</td><td style="border:1px solid #a5d6a7;padding:5px">取引態様の別（売主・代理・媒介）</td><td style="border:1px solid #a5d6a7;padding:5px">34条2項</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px">重要：32条の誇大広告の規制対象（表示項目）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;padding:5px">表示項目</th><th style="border:1px solid #ffcc80;padding:5px">具体例</th></tr><tr><td style="border:1px solid #ffcc80;padding:5px">所在</td><td style="border:1px solid #ffcc80;padding:5px">地番、所在地、位置図</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffcc80;padding:5px">規模</td><td style="border:1px solid #ffcc80;padding:5px">面積、間取り</td></tr><tr><td style="border:1px solid #ffcc80;padding:5px">形質</td><td style="border:1px solid #ffcc80;padding:5px">地目、構造、築年数</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffcc80;padding:5px">利用の制限</td><td style="border:1px solid #ffcc80;padding:5px">用途地域、借地権の有無</td></tr><tr><td style="border:1px solid #ffcc80;padding:5px">環境・交通の利便</td><td style="border:1px solid #ffcc80;padding:5px">最寄り駅、周辺施設</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffcc80;padding:5px">対価の額・支払方法</td><td style="border:1px solid #ffcc80;padding:5px">代金、借賃、ローン条件</td></tr></table></div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 広告等の規制とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者の広告にはルールがある。ウソの広告はダメ、早すぎる広告もダメ、何の立場で取引するか必ず伝える」という規制です。</div><div class="info-box" style="background:#f5f5f5">広告等の規制は<strong>3本柱</strong>で構成されています：<br>① <strong>誇大広告等の禁止</strong>（32条）：ウソ・大げさな広告はダメ<br>② <strong>広告開始時期の制限</strong>（33条）：許可が出る前の広告はダメ<br>③ <strong>取引態様の明示</strong>（34条）：自分の立場を毎回明示</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⛔ 誇大広告等の禁止（32条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「実際より著しく良く見せる広告は禁止。おとり広告も禁止」です。</div><div class="info-box" style="background:#fff3e0"><strong>禁止される表示は2種類：</strong><br>① <strong>著しく事実に相違する表示</strong>（虚偽広告）<br>→ 例：市街化調整区域の土地を「市街化区域」と表示<br>→ 例：築10年の建物を「築1年」と表示<br><br>② <strong>著しく優良・有利であると誤認させる表示</strong>（誇大広告）<br>→ 例：道のり4kmの駅を「1km」と表示（直線距離は1km）</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><strong style="color:#c62828">⚠️ 「おとり広告」「虚偽広告」も32条の対象！</strong><br><strong>おとり広告</strong>＝売る意思のない好条件の物件を広告して客を集め、実際は別の物件を販売<br><strong>虚偽広告</strong>＝実際には存在しない物件を広告<br>どちらも32条で禁止されています。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>著しく</strong>」がポイント。多少の誇張ではなく、「著しく」優良・有利と誤認させる表示が禁止。</div><div class="info-box" style="background:#e8f5e9;border:2px solid #43a047"><strong style="color:#1b5e20">★ 超重要：広告の媒体は問わない</strong><br>新聞折込チラシ、配布チラシ、雑誌、テレビ、ラジオ、そして<strong>インターネットのホームページ等</strong>、すべての媒体に32条は適用されます。<br><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！「ネット広告には適用されない」は誤り！</span></div><div class="info-box" style="background:#fce4ec"><strong>規制対象となる表示項目：</strong><br>所在 / 規模 / 形質 / 現在・将来の利用の制限 / 環境 / 交通その他の利便 / 対価の額・支払方法 / 金銭貸借のあっせん<br><span style="font-size:12px;color:#555">→ 物件の価格だけでなく、周辺環境や交通の利便も対象です</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">⏱️ 広告開始時期の制限（33条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「未完成物件は、許可や確認が下りてからでないと広告を出せない」です。</div><div class="info-box" style="background:#f3e5f5"><strong>ルール：</strong><br>工事完了前の物件は、以下の処分があった<strong>後</strong>でなければ広告できない：<br>・宅地の造成 → <strong>開発許可</strong>（都市計画法29条）<br>・建物の建築 → <strong>建築確認</strong>（建築基準法6条1項）<br>・その他法令に基づく許可等の処分</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><strong style="color:#c62828">⚠️ 最重要ひっかけ：「申請中」は広告不可！</strong><br>許可や確認の<strong>「申請中」</strong>はまだ処分が下りていないため、広告はできません。<br><span style="color:#d32f2f;font-weight:bold">「建築確認の申請をすれば広告できる」→ 誤り！確認を受けた後でなければ不可！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「許可が出てから広告OK。<strong>申請中はまだダメ</strong>」</div><div class="info-box" style="background:#e8f5e9;border:2px solid #43a047"><strong style="color:#1b5e20">★ 重要：33条は貸借にも適用される！</strong><br>33条は「売買<strong>その他の業務</strong>に関する広告」と規定。つまり、<strong>貸借の代理・媒介の広告にも適用</strong>されます。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「広告開始時期の制限は売買にのみ適用」→ 誤り！</span></div><div class="info-box" style="background:#f5f5f5"><strong>変更の確認との関係（国交省の解釈）：</strong><br>・当初の確認後、変更の確認の申請中 → <strong>当初の確認の内容で広告継続OK</strong><br>・変更内容を広告する場合 → 変更予定の旨＋当初の確認内容を併記する必要あり</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📝 取引態様の明示（34条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「広告するたびに、そして注文を受けるたびに、自分の立場（売主・代理・媒介）を必ず伝える」義務です。</div><div class="info-box" style="background:#e0f2f1"><strong>明示が必要な場面（2つ）：</strong><br>① <strong>広告をするとき</strong>（34条1項）<br>② <strong>注文を受けたとき</strong>（34条2項）→ 遅滞なく明らかにする</div><div class="info-box" style="background:#fff3e0"><strong>明示すべき内容：</strong><br>・自ら当事者（売主）となるのか<br>・代理人として取引を成立させるのか<br>・媒介（仲介）するのか<br><br><span style="font-size:12px;color:#555">※ 媒介の場合、「専任媒介」か「一般媒介」かの種類までは明示不要。「媒介」と明示すればOK</span></div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><strong style="color:#c62828">⚠️ 最重要ひっかけ：明示は「毎回」必要！</strong><br>広告するたびに、注文を受けるたびに必要です。<br><span style="color:#d32f2f;font-weight:bold">「一度明示すれば次回は不要」→ 誤り！毎回必要！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「広告するたび＋注文受けるたび」にセットで明示。毎回忘れずに！</div><div class="info-box" style="background:#e8f5e9"><strong>適用範囲：</strong><br>売買だけでなく、<strong>交換・貸借</strong>に関する広告でも取引態様の明示が必要です。<br><span style="font-size:12px;color:#555">34条は「宅地又は建物の売買、交換又は貸借に関する広告をするときは」と規定</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>特に32条〜34条を確認してみましょう。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">広告等の規制クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
