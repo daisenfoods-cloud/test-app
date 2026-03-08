@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 監督処分・罰則クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 監督処分・罰則</div>
+    <div class="header-desc">指示処分・業務停止・免許取消・罰則・宅建士への処分</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kantoku_bassoku_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業者に対する監督処分には、指示処分、業務停止処分、免許取消処分の3種類がある。",
+    "a": true,
+    "ex": "正しい。宅建業者に対する監督処分は、軽い順に①指示処分（宅建業法65条1項）、②業務停止処分（宅建業法65条2項）、③免許取消処分（宅建業法66条）の3段階です。",
+    "cat": "監督処分の種類"
+  },
+  {
+    "q": "指示処分は、宅建業者に対する監督処分の中で最も重い処分である。",
+    "a": false,
+    "ex": "誤り。指示処分は最も軽い監督処分です（宅建業法65条1項）。重さの順番は、指示処分（軽）→業務停止処分（中）→免許取消処分（重）です。",
+    "cat": "監督処分の種類"
+  },
+  {
+    "q": "都道府県知事は、宅建業者が指示処分に従わないときは、当該業者に対し業務停止処分をすることができる。",
+    "a": true,
+    "ex": "正しい。指示処分に違反した場合は、業務停止処分の対象となります（宅建業法65条2項1号）。指示処分に従わなければ、より重い処分に進む仕組みです。",
+    "cat": "指示処分・業務停止処分"
+  },
+  {
+    "q": "業務停止処分の期間は、2年以内の期間を定めて命じられる。",
+    "a": false,
+    "ex": "誤り。業務停止処分の期間は「1年以内」です（宅建業法65条2項）。「2年以内」は誤りで、この数字のひっかけは頻出です。",
+    "cat": "業務停止処分"
+  },
+  {
+    "q": "宅建業者が業務停止処分に違反して業務を行った場合、免許権者は当該業者の免許を取り消さなければならない。",
+    "a": true,
+    "ex": "正しい。業務停止処分に違反した場合は、必要的取消事由に該当し、免許権者は必ず免許を取り消さなければなりません（宅建業法66条1項9号）。",
+    "cat": "免許取消処分"
+  },
+  {
+    "q": "不正の手段により免許を取得した宅建業者については、免許権者が免許を取り消すかどうかは裁量に委ねられている。",
+    "a": false,
+    "ex": "誤り。不正手段による免許取得は必要的取消事由です（宅建業法66条1項8号）。免許権者は「取り消さなければならない」のであり、取り消すかどうかの裁量はありません。",
+    "cat": "免許取消処分"
+  },
+  {
+    "q": "免許取消処分を行うことができるのは、免許権者（国土交通大臣または免許を付与した都道府県知事）のみである。",
+    "a": true,
+    "ex": "正しい。免許取消処分は免許権者のみが行うことができます（宅建業法66条）。他の都道府県知事は免許取消を行うことはできません。指示処分・業務停止処分とは異なる点に注意してください。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "大臣免許を受けた宅建業者がA県内で違反行為を行った場合、A県知事は当該業者に対して指示処分を行うことができる。",
+    "a": true,
+    "ex": "正しい。指示処分と業務停止処分については、免許権者だけでなく、業務地の都道府県知事も行うことができます（宅建業法65条3項・4項）。免許権者以外の知事にも処分権限がある点が重要です。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "大臣免許を受けた宅建業者に対して、業務地の都道府県知事は免許取消処分を行うことができる。",
+    "a": false,
+    "ex": "誤り。免許取消処分ができるのは免許権者のみです（宅建業法66条）。業務地の都道府県知事ができるのは指示処分と業務停止処分までであり、免許取消はできません。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "免許を受けずに宅建業を営んだ者（無免許営業）は、3年以下の拘禁刑もしくは300万円以下の罰金に処せられる。",
+    "a": true,
+    "ex": "正しい。無免許営業は宅建業法の罰則の中でも最も重い類型の一つであり、3年以下の拘禁刑もしくは300万円以下の罰金、またはこれらの併科が科されます（宅建業法79条2号）。",
+    "cat": "罰則"
+  },
+  {
+    "q": "名義貸し（自己の名義をもって他人に宅建業を営ませること）をした宅建業者には、罰則の適用はない。",
+    "a": false,
+    "ex": "誤り。名義貸しも無免許営業と同様に、3年以下の拘禁刑もしくは300万円以下の罰金、またはこれらの併科が科されます（宅建業法79条3号）。名義貸しは重大な違反行為です。",
+    "cat": "罰則"
+  },
+  {
+    "q": "誇大広告をした宅建業者は、6月以下の拘禁刑もしくは100万円以下の罰金に処せられる。",
+    "a": true,
+    "ex": "正しい。誇大広告等の禁止に違反した場合は、6月以下の拘禁刑もしくは100万円以下の罰金、またはこれらの併科が科されます（宅建業法81条1号）。無免許営業等に比べると軽い罰則です。",
+    "cat": "罰則"
+  },
+  {
+    "q": "宅建士が事務禁止処分を受けた場合、その禁止期間は1年以内である。",
+    "a": true,
+    "ex": "正しい。宅建士に対する事務禁止処分は、1年以内の期間を定めて宅建士としての事務を行うことを禁止する処分です（宅建業法68条2項）。宅建業者に対する業務停止処分と同じく「1年以内」です。",
+    "cat": "宅建士への処分"
+  },
+  {
+    "q": "宅建士の登録消除処分を行うことができるのは、登録をしている都道府県知事のみである。",
+    "a": true,
+    "ex": "正しい。登録消除処分は、当該宅建士の登録をしている都道府県知事のみが行うことができます（宅建業法68条の2）。免許取消が免許権者のみであるのと同じ構造です。",
+    "cat": "宅建士への処分"
+  },
+  {
+    "q": "事務禁止処分を受けた宅建士は、宅建士証を破棄しなければならない。",
+    "a": false,
+    "ex": "誤り。事務禁止処分を受けた宅建士は、宅建士証を交付した都道府県知事に速やかに「返納」しなければなりません（宅建業法22条の2第7号）。「破棄」ではなく「返納」が正しく、禁止期間終了後に返還を受けることができます。",
+    "cat": "宅建士への処分"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "国土交通大臣免許のA社がB県内で不正行為を行った場合、B県知事はA社に対して業務停止処分を命じることができるが、A社に対する指示処分を行うことはできない。",
+    "a": false,
+    "ex": "誤り。業務地の都道府県知事は、指示処分も業務停止処分も行うことができます（宅建業法65条3項・4項）。「業務停止はできるが指示はできない」ということはなく、むしろ指示処分のほうが軽い処分であるため当然にできます。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "知事免許のC社がD県内で違反行為を行った場合、D県知事がC社に対し業務停止処分を行ったときは、C社の免許権者である知事にその旨を通知しなければならない。",
+    "a": true,
+    "ex": "正しい。業務地の知事が処分を行った場合は、遅滞なく免許権者にその旨を通知しなければなりません（宅建業法70条3項）。免許権者と処分権者が異なる場合の連携規定です。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "免許権者ではないE県知事がF社（大臣免許）に対して免許取消処分に相当する違反を発見した場合、E県知事が直接免許取消を行うことができる。",
+    "a": false,
+    "ex": "誤り。免許取消処分は免許権者のみが行えます（宅建業法66条）。E県知事は国土交通大臣に対して適当な措置を講ずべきことを求めることができますが、自ら免許取消を行うことはできません（宅建業法70条2項）。",
+    "cat": "処分権者"
+  },
+  {
+    "q": "宅建業者G社が情状が特に重い業務停止事由に該当する場合、免許権者はG社の免許を取り消すことができる。",
+    "a": true,
+    "ex": "正しい。業務停止事由に該当し、情状が特に重いときは、免許権者は免許を取り消すことができます（宅建業法66条1項9号）。これは任意的取消事由であり、「取り消さなければならない」必要的取消とは異なり、免許権者の裁量が認められています。",
+    "cat": "必要的取消と任意的取消"
+  },
+  {
+    "q": "宅建業者H社が欠格事由に該当するに至った場合、免許権者はH社の免許を取り消すかどうかを裁量で判断できる。",
+    "a": false,
+    "ex": "誤り。宅建業者が欠格事由に該当した場合は必要的取消事由に該当し、免許権者は「必ず」免許を取り消さなければなりません（宅建業法66条1項1号）。裁量の余地はありません。「必ず取り消す」=必要的、「取り消せる」=任意的の区別が重要です。",
+    "cat": "必要的取消と任意的取消"
+  },
+  {
+    "q": "業務停止処分に違反した宅建業者の免許取消は、任意的取消事由に該当する。",
+    "a": false,
+    "ex": "誤り。業務停止処分に違反した場合は、必要的取消事由に該当します（宅建業法66条1項9号）。免許権者は必ず免許を取り消さなければなりません。「業停違反＝必ず取消」と覚えましょう。",
+    "cat": "必要的取消と任意的取消"
+  },
+  {
+    "q": "業務停止処分や免許取消処分を行おうとするときは、行政手続法に基づく聴聞を行わなければならないが、この聴聞は非公開で実施される。",
+    "a": false,
+    "ex": "誤り。宅建業法に基づく聴聞は公開で行われます（宅建業法69条1項）。行政手続法の原則では聴聞は非公開ですが、宅建業法は特則として公開を定めています。「聴聞は非公開」とする選択肢は頻出のひっかけです。",
+    "cat": "聴聞・公告"
+  },
+  {
+    "q": "指示処分を行う場合にも、業務停止処分と同様に聴聞を実施しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法69条1項は、65条（指示処分・業務停止処分）又は68条（宅建士への処分）の規定による処分をしようとするときは聴聞を行わなければならないと定めています。65条には指示処分（1項）も含まれるため、指示処分を行う場合にも聴聞が必要です。「指示処分には聴聞不要」とする選択肢は誤りであり、頻出のひっかけです。",
+    "cat": "聴聞・公告"
+  },
+  {
+    "q": "免許取消処分を受けた宅建業者は、取消処分の前に締結していた契約に基づく取引であっても、取消後は一切の業務を行うことができない。",
+    "a": false,
+    "ex": "誤り。免許取消処分を受けた場合でも、取消前に締結した契約に基づく取引を結了する目的の範囲内では、なお宅建業者とみなされ業務を行うことができます（宅建業法76条）。取引の相手方を保護するための規定です。",
+    "cat": "免許取消後の業務継続"
+  },
+  {
+    "q": "宅建業者J社（法人）の代表取締役が宅建業法に違反して罰金刑に処せられた場合、J社自体も罰金刑に処せられることがある。",
+    "a": true,
+    "ex": "正しい。宅建業法には両罰規定が設けられており、法人の代表者や従業員が違反行為をした場合、行為者本人だけでなく、その法人も罰金刑に処せられます（宅建業法84条）。法人は逮捕・拘禁できないため、罰金刑のみが科されます。",
+    "cat": "両罰規定"
+  },
+  {
+    "q": "宅建業法の両罰規定では、従業者が業務に関して違反行為をした場合、法人に対しても懲役刑が科される場合がある。",
+    "a": false,
+    "ex": "誤り。法人に対しては罰金刑のみが科されます（宅建業法84条）。法人は自然人ではないため、懲役刑（身体の自由を奪う刑罰）を科すことはできません。両罰規定で法人に科されるのは常に罰金刑です。",
+    "cat": "両罰規定"
+  },
+  {
+    "q": "免許取消処分がなされた場合、免許権者はその旨を官報または都道府県の公報で公告しなければならない。",
+    "a": true,
+    "ex": "正しい。免許取消処分を行った場合は、その旨を公告しなければなりません（宅建業法70条1項）。国土交通大臣の場合は官報、都道府県知事の場合は当該都道府県の公報に掲載します。処分前の「聴聞」と処分後の「公告」はセットで覚えましょう。",
+    "cat": "聴聞・公告"
+  },
+  {
+    "q": "事務禁止処分を受けた宅建士Kは、禁止期間中に宅建士証の返納をしなければならないが、禁止期間が満了すれば返還を請求することができる。",
+    "a": true,
+    "ex": "正しい。事務禁止処分を受けた宅建士は、速やかに宅建士証を交付した知事に返納しなければなりません（宅建業法22条の2第7号）。ただし、禁止期間が満了すれば返還を請求できます。「破棄」ではなく「返納」である点が重要です。",
+    "cat": "宅建士への処分"
+  },
+  {
+    "q": "宅建士に対する指示処分や事務禁止処分は、登録をしている都道府県知事のほか、当該宅建士が事務を行う都道府県の知事も行うことができる。",
+    "a": true,
+    "ex": "正しい。宅建士に対する指示処分と事務禁止処分は、登録知事だけでなく、事務を行う都道府県の知事も行うことができます（宅建業法68条1項・3項）。ただし、登録消除処分は登録知事のみが行えます。宅建業者の処分権者の構造と同じパターンです。",
+    "cat": "宅建士への処分"
+  },
+  {
+    "q": "宅建業者が免許取消処分に係る聴聞の公示日から処分決定日までの間に相当の理由なく廃業届出をした場合、届出から5年を経過しなければその者は免許を受けることができない。",
+    "a": true,
+    "ex": "正しい。免許取消処分の聴聞公示日から処分決定日までの間に、処分を免れる目的で相当の理由なく廃業届出をした場合、届出の日から5年間は欠格事由に該当します（宅建業法5条1項3号）。「処分逃れ」を防ぐための規定です。",
+    "cat": "免許取消と欠格"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで監督処分・罰則の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・65条・66条の全条文レベルの詳細な取消事由<br>・監督処分に対する審査請求・執行停止の手続き詳細<br>・大臣と知事の権限関係の複雑ケース<br>・罰則の全条文一覧（79条〜86条の細部）<br>・宅建士の登録消除の詳細な事由</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 監督処分の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【違反行為が発覚したら？】</div><span style="background:#c8e6c9;padding:3px 10px;border-radius:4px">違反行為の発覚</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">処分権者が認定</span><br>↓<br><span style="background:#fff9c4;padding:3px 10px;border-radius:4px">聴聞（業停・取消の場合）</span><br>↓<br><span style="background:#ffcc80;padding:3px 10px;border-radius:4px">処分（指示／業務停止／免許取消）</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">公告（免許取消の場合）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 処分権者の判断</strong><br>免許取消 → <strong>免許権者のみ</strong><br>指示・業務停止 → <strong>免許権者 or 業務地の知事</strong><br><span style="font-size:12px;color:#d32f2f">⚠️「免許権者でない知事は一切処分できない」は誤り！指示・業務停止はできる</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 聴聞は「公開」</strong><br>宅建業法の聴聞は<strong>公開</strong>で行われる（宅建業法69条）<br><span style="font-size:12px;color:#d32f2f">⚠️「聴聞は非公開」とする選択肢 → 頻出ひっかけ</span><br><span style="font-size:12px;color:#555">指示処分・業務停止・免許取消の全てに聴聞が必要（69条1項）。公告は業務停止・免許取消のみ</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 免許取消後も業務継続の例外あり</strong><br>取消前に締結済みの契約 → 取引結了目的の範囲で業務可能（宅建業法76条）<br><span style="font-size:12px;color:#d32f2f">⚠️「免許取消後は直ちにすべて停止」は誤り！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 両罰規定（法人も処罰）</strong><br>従業者が違反 → 行為者<strong>＋法人</strong>も罰金刑の対象（宅建業法84条）<br><span style="font-size:12px;color:#d32f2f">⚠️「法人は罰則の対象にならない」は誤り！</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ 宅建士証は「返納」（破棄ではない）</strong><br>事務禁止処分 → 宅建士証を知事に<strong>返納</strong>（禁止期間後に返還請求可能）<br><span style="font-size:12px;color:#d32f2f">⚠️「廃棄・破棄する」は誤り！「返納」が正しい</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：監督処分の種類と処分権者（宅建業法65条・66条）</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">処分の種類</th><th style="border:1px solid #90caf9;padding:5px">対象</th><th style="border:1px solid #90caf9;padding:5px">処分権者</th><th style="border:1px solid #90caf9;padding:5px">聴聞</th><th style="border:1px solid #90caf9;padding:5px">公告</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">指示処分</td><td style="border:1px solid #90caf9;padding:5px">宅建業者</td><td style="border:1px solid #90caf9;padding:5px">免許権者 or 業務地知事</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">必要</td><td style="border:1px solid #90caf9;padding:5px">不要</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">業務停止（1年以内）</td><td style="border:1px solid #90caf9;padding:5px">宅建業者</td><td style="border:1px solid #90caf9;padding:5px">免許権者 or 業務地知事</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">必要</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">必要 ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">免許取消</td><td style="border:1px solid #90caf9;padding:5px">宅建業者</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">免許権者のみ ⚠️</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">必要</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">必要 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">事務禁止（1年以内）</td><td style="border:1px solid #90caf9;padding:5px">宅建士</td><td style="border:1px solid #90caf9;padding:5px">登録知事 or 業務地知事</td><td style="border:1px solid #90caf9;padding:5px">－</td><td style="border:1px solid #90caf9;padding:5px">－</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">登録消除</td><td style="border:1px solid #90caf9;padding:5px">宅建士</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">登録知事のみ</td><td style="border:1px solid #90caf9;padding:5px">－</td><td style="border:1px solid #90caf9;padding:5px">－</td></tr></table><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：主な罰則の比較（宅建業法79条〜81条）</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#ffecb3"><th style="border:1px solid #ffb74d;padding:5px">違反行為</th><th style="border:1px solid #ffb74d;padding:5px">懲役</th><th style="border:1px solid #ffb74d;padding:5px">罰金</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold">無免許営業・名義貸し・業停違反</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">3年以下</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">300万円以下</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffb74d;padding:5px">不当に高額な報酬の要求</td><td style="border:1px solid #ffb74d;padding:5px">1年以下</td><td style="border:1px solid #ffb74d;padding:5px">100万円以下</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">誇大広告</td><td style="border:1px solid #ffb74d;padding:5px">6月以下</td><td style="border:1px solid #ffb74d;padding:5px">100万円以下</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：罰則は重い順に「3年・300万」→「1年・100万」→「6月・100万」<br>「無免許・名義貸し・業停違反」がダントツに重い！</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：必要的取消と任意的取消の区別</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:5px">区分</th><th style="border:1px solid #ef9a9a;padding:5px">意味</th><th style="border:1px solid #ef9a9a;padding:5px">主な事由</th></tr><tr><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold;color:#d32f2f">必要的取消</td><td style="border:1px solid #ef9a9a;padding:5px">必ず取り消す</td><td style="border:1px solid #ef9a9a;padding:5px">不正手段で免許取得、業停違反、欠格事由該当</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold">任意的取消</td><td style="border:1px solid #ef9a9a;padding:5px">取り消せる（裁量）</td><td style="border:1px solid #ef9a9a;padding:5px">業停事由で情状が特に重い場合</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 監督処分・罰則とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者や宅建士が法律に違反したときに、行政庁が行うペナルティの仕組み」です。取引の公正を守り、消費者を保護するための制度です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⚖️ 監督処分の3段階（宅建業者向け）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「軽い順に、指示→業務停止→免許取消の3段階」です。</div><div class="info-box" style="background:#e8f5e9"><strong>① 指示処分（最も軽い）</strong>（宅建業法65条1項）<br>業務の適正な運営を確保するために必要な指示をする処分。<br>・聴聞が必要（公開）<br>・従わなければ業務停止処分の対象に</div><div class="info-box" style="background:#fff3e0"><strong>② 業務停止処分</strong>（宅建業法65条2項）<br><strong>1年以内</strong>の期間を定めて、業務の全部または一部を停止させる処分。<br>・聴聞が必要（公開）<br>・停止中に業務を行うと免許取消の対象に</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「業務停止は1年以内」―2年は誤り！</div><div class="info-box" style="background:#ffebee"><strong>③ 免許取消処分（最も重い）</strong>（宅建業法66条）<br>免許そのものを取り消す処分。宅建業を営めなくなる。<br>・聴聞が必要（公開）<br>・処分後は公告が必要</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🔑 必要的取消と任意的取消</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「必ず取り消す場合」と「取り消すことができる場合」の違いです。</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">必要的取消（必ず取り消す）：</strong><br>① 不正手段で免許を取得した場合<br>② 業務停止処分に違反した場合<br>③ 欠格事由に該当した場合<br>④ 免許を受けてから1年以内に事業を開始しない場合<br>⑤ 引き続き1年以上事業を休止した場合</div><div class="info-box" style="background:#fff3e0"><strong>任意的取消（取り消すことができる）：</strong><br>業務停止事由に該当し、<strong>情状が特に重い</strong>場合</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「必要的 = 絶対ダメ、必ず取消」「任意的 = 特に悪質なら取り消せる」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">👤 処分権者（誰が処分できるか）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「免許取消は免許権者だけ。指示と業務停止は業務地の知事もできる」です。</div><div class="info-box" style="background:#e8f5e9"><strong>免許権者ができること：</strong>全ての処分（指示・業務停止・免許取消）</div><div class="info-box" style="background:#fff3e0"><strong>業務地の都道府県知事ができること：</strong><br>・指示処分 ✅<br>・業務停止処分 ✅<br>・免許取消処分 ❌ ←ここだけ違う！</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 試験のひっかけポイント</strong><br>「免許権者でない知事は<u>一切</u>処分できない」→ <strong>誤り！</strong><br>指示処分と業務停止処分は免許権者でない業務地の知事も行えます。<br>免許取消<strong>だけ</strong>が免許権者の専権事項です。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「取消だけは免許権者！それ以外は現地の知事もOK」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📋 監督処分の手続き</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「全ての処分に聴聞が必要（公開）。業停・取消は公告も必要」です。</div><div class="info-box" style="background:#f3e5f5"><strong>聴聞（宅建業法69条）：</strong><br>・指示処分・業務停止処分・免許取消処分を行う前に実施<br>・<span style="color:#d32f2f;font-weight:bold">公開で行われる</span>（行政手続法の原則とは異なる特則）<br>・指示処分にも聴聞は必要（69条1項）</div><div class="info-box" style="background:#f3e5f5"><strong>公告（宅建業法70条）：</strong><br>・業務停止処分と免許取消処分をした場合に実施<br>・国土交通大臣 → 官報<br>・都道府県知事 → 都道府県の公報</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「全ての処分の前に聴聞（公開）、業停・取消の後に公告」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">👨‍💼 宅建士に対する処分</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者への処分と同じパターン。指示→事務禁止→登録消除の3段階」です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">処分の種類</th><th style="border:1px solid #ffb74d;padding:5px">処分権者</th><th style="border:1px solid #ffb74d;padding:5px">備考</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">指示処分</td><td style="border:1px solid #ffb74d;padding:5px">登録知事 or 業務地知事</td><td style="border:1px solid #ffb74d;padding:5px">最も軽い</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">事務禁止処分（1年以内）</td><td style="border:1px solid #ffb74d;padding:5px">登録知事 or 業務地知事</td><td style="border:1px solid #ffb74d;padding:5px">宅建士証を返納</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold">登録消除処分</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">登録知事のみ ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">最も重い</td></tr></table><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">⚠️ 事務禁止処分中の宅建士証の扱い</strong><br>・事務禁止 → 宅建士証を知事に<strong>「返納」</strong>する<br>・禁止期間満了後 → <strong>返還を請求できる</strong><br>・「破棄」「廃棄」は誤り！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🚨 主な罰則</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「違反の重さに応じた刑罰。無免許営業が最も重い」です。</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">最も重い罰則（3年以下の懲役 or 300万円以下の罰金）</strong><br>・無免許営業（宅建業法79条2号）<br>・名義貸し（宅建業法79条3号）<br>・業務停止処分違反（宅建業法79条4号）</div><div class="info-box" style="background:#fff3e0"><strong>中程度の罰則（1年以下の懲役 or 100万円以下の罰金）</strong><br>・不当に高額な報酬の要求（宅建業法80条）</div><div class="info-box" style="background:#fff9c4"><strong>軽い罰則（6月以下の懲役 or 100万円以下の罰金）</strong><br>・誇大広告（宅建業法81条1号）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「サン・サン（3年300万）は無免許・名義貸し・業停違反」</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#1b5e20">両罰規定（宅建業法84条）：</strong><br>従業者等が違反 → <strong>行為者本人＋法人</strong>も罰金刑の対象<br><span style="font-size:12px;color:#555">法人に科されるのは罰金刑のみ（懲役は科されない）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📝 免許取消後の業務継続（例外）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「取消後でも、すでに締結した契約の取引は結了できる」です。</div><div class="info-box" style="background:#e0f2f1"><strong>宅建業法76条のルール：</strong><br>免許取消後でも、取消前に締結した契約に基づく取引を結了する目的の範囲内では、なお宅建業者とみなされます。<br><br><span style="color:#d32f2f;font-weight:bold">⚠️「免許取消後は直ちにすべての業務が停止」は誤り！</span><br>取引の相手方を保護するための例外規定です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">監督処分・罰則クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
