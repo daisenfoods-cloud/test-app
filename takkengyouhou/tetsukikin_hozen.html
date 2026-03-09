@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 手付金等の保全措置クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 手付金等の保全措置</div>
+    <div class="header-desc">未完成物件・完成物件の閾値判定・保全措置の方法・合計額判定</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_tetsukikin_hozen_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業者が自ら売主となり、宅建業者でない買主との間で未完成物件の売買契約を締結する場合、手付金等の額が代金の5%を超えるときは、保全措置を講じた後でなければ手付金等を受領してはならない。",
+    "a": true,
+    "ex": "正しい。未完成物件（工事完了前）の場合、手付金等の額が代金の5%超または1,000万円超であれば、保全措置を講じた後でなければ受領できません（宅建業法41条1項）。",
+    "cat": "未完成物件の閾値"
+  },
+  {
+    "q": "宅建業者が自ら売主として完成物件を販売する場合、手付金等の額が代金の10%を超えるときは、保全措置を講じなければ手付金等を受領できない。",
+    "a": true,
+    "ex": "正しい。完成物件（工事完了後）の場合、手付金等の額が代金の10%超または1,000万円超であれば、保全措置が必要です（宅建業法41条の2第1項）。",
+    "cat": "完成物件の閾値"
+  },
+  {
+    "q": "代金5,000万円の未完成物件の売買において、宅建業者である売主が受領しようとする手付金の額が200万円（代金の4%）の場合、保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。200万円は代金5,000万円の4%であり、5%以下です。かつ1,000万円以下でもあるため、保全措置は不要です（宅建業法41条1項ただし書）。",
+    "cat": "未完成物件の閾値"
+  },
+  {
+    "q": "代金4,000万円の完成物件の売買で、宅建業者である売主が手付金として500万円を受領しようとする場合、保全措置が必要である。",
+    "a": true,
+    "ex": "正しい。500万円は代金4,000万円の12.5%であり10%を超えています。したがって保全措置が必要です（宅建業法41条の2第1項）。",
+    "cat": "完成物件の閾値"
+  },
+  {
+    "q": "未完成物件の売買において保全措置が必要となる場合、売主である宅建業者は、銀行等による保証、保証保険、指定保管機関による保管のいずれかの方法で保全措置を講じることができる。",
+    "a": false,
+    "ex": "誤り。未完成物件で使える保全措置は①銀行等による保証と②保証保険の2種類のみです。③指定保管機関による保管は完成物件でしか使えません（宅建業法41条1項1号・2号）。",
+    "cat": "保全措置の方法"
+  },
+  {
+    "q": "完成物件の売買において保全措置が必要となる場合、売主である宅建業者は、銀行等による保証、保証保険、指定保管機関による保管の3つの方法のいずれかを利用できる。",
+    "a": true,
+    "ex": "正しい。完成物件では①銀行等による保証、②保証保険、③指定保管機関による保管の3種類すべて利用可能です（宅建業法41条の2第1項、41条1項1号・2号）。",
+    "cat": "保全措置の方法"
+  },
+  {
+    "q": "「手付金等」とは手付金のみを指し、中間金や内金は含まれない。",
+    "a": false,
+    "ex": "誤り。「手付金等」とは、代金の全部または一部として授受される金銭及び手付金その他の名義をもって授受される金銭で代金に充当されるもの（契約締結後、引渡し前に支払われるもの）を指します。中間金・内金も含まれます（宅建業法41条1項）。",
+    "cat": "手付金等の合計額"
+  },
+  {
+    "q": "保全措置の要否を判定する際は、これから受領しようとする手付金等の額に既に受領済みの手付金等の額を加えた合計額で判断する。",
+    "a": true,
+    "ex": "正しい。受領しようとする手付金等の額に既に受領した手付金等がある場合はその額を加えた合計額で閾値を判定します（宅建業法41条1項ただし書、41条の2第1項ただし書）。",
+    "cat": "手付金等の合計額"
+  },
+  {
+    "q": "宅建業者が自ら売主となり、買主も宅建業者である場合、手付金等の保全措置の規定は適用されない。",
+    "a": true,
+    "ex": "正しい。手付金等の保全措置は8種制限の一つであり、売主が宅建業者・買主が宅建業者でない場合にのみ適用されます。買主も宅建業者であれば適用されません（宅建業法78条2項）。",
+    "cat": "適用除外"
+  },
+  {
+    "q": "買主も宅建業者である場合でも、未完成物件の手付金が代金の5%を超えるときは保全措置を講じなければならない。",
+    "a": false,
+    "ex": "誤り。手付金等の保全措置は8種制限の一つであり、宅建業者間の取引には適用されません（宅建業法78条2項）。買主が宅建業者であれば保全措置は不要です。",
+    "cat": "適用除外"
+  },
+  {
+    "q": "代金3,000万円の未完成物件の売買で、宅建業者である売主が手付金として300万円を受領しようとする場合、保全措置が必要である。",
+    "a": true,
+    "ex": "正しい。300万円は代金3,000万円の10%であり5%を超えています。未完成物件の閾値は代金の5%超であるため、保全措置が必要です（宅建業法41条1項）。",
+    "cat": "未完成物件の閾値"
+  },
+  {
+    "q": "代金6,000万円の完成物件の売買で、宅建業者である売主が手付金として400万円を受領しようとする場合、保全措置が必要である。",
+    "a": false,
+    "ex": "誤り。400万円は代金6,000万円の約6.7%であり10%以下です。かつ1,000万円以下でもあるため、完成物件の保全措置は不要です（宅建業法41条の2第1項ただし書）。",
+    "cat": "完成物件の閾値"
+  },
+  {
+    "q": "保全措置における銀行等の保証とは、宅建業者が手付金等の返還債務を負うこととなった場合に銀行等が連帯して保証することを約する制度である。",
+    "a": true,
+    "ex": "正しい。銀行等の保証は、宅建業者が手付金等の返還債務を負った場合に銀行等が連帯保証する仕組みです。保証委託契約を締結し、その書面を買主に交付します（宅建業法41条1項1号）。",
+    "cat": "保全措置の方法"
+  },
+  {
+    "q": "手付金等の保全措置が必要な場合に売主である宅建業者が保全措置を講じないときは、買主は手付金等の支払を拒否することができる。",
+    "a": true,
+    "ex": "正しい。保全措置が必要であるにもかかわらず宅建業者が保全措置を講じないときは、買主は手付金等の支払を拒否できます（宅建業法41条4項、41条の2第5項）。",
+    "cat": "保全措置の方法"
+  },
+  {
+    "q": "未完成物件の保全措置が不要となる閾値は、手付金等の額が代金の5%以下であり、かつ1,000万円以下である場合である。",
+    "a": true,
+    "ex": "正しい。未完成物件では、手付金等の額が代金の5%以下であり、かつ政令で定める額（1,000万円）以下であるときは保全措置が不要です（宅建業法41条1項ただし書）。両方の条件を満たす必要があります。",
+    "cat": "未完成物件の閾値"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "代金5,000万円の未完成物件の売買で、宅建業者である売主が手付金として250万円（代金の5%ちょうど）を受領しようとする場合、保全措置が必要である。",
+    "a": false,
+    "ex": "誤り。250万円は代金の5%「ちょうど」であり5%「超」ではありません。閾値は「5%超」であるため、5%ちょうどは保全措置不要です（宅建業法41条1項ただし書）。「超える」と「以下」の境界に注意が必要です。",
+    "cat": "境界線判定"
+  },
+  {
+    "q": "代金4,000万円の完成物件の売買で、宅建業者である売主が手付金として400万円（代金の10%ちょうど）を受領しようとする場合、保全措置が必要である。",
+    "a": false,
+    "ex": "誤り。400万円は代金の10%「ちょうど」であり10%「超」ではありません。完成物件の閾値は「10%超」であるため、10%ちょうどは保全措置不要です（宅建業法41条の2第1項ただし書）。",
+    "cat": "境界線判定"
+  },
+  {
+    "q": "代金5,000万円の未完成物件の売買で、宅建業者である売主が手付金として200万円を受領した後、さらに中間金として200万円を受領しようとする場合、中間金受領前に保全措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。手付金200万円（4%）の時点では閾値以下のため保全措置不要でしたが、中間金200万円を加えると合計400万円（8%）となり5%を超えます。合計が閾値を超える中間金を受領する前に保全措置が必要です（宅建業法41条1項）。",
+    "cat": "合計額判定"
+  },
+  {
+    "q": "代金5,000万円の未完成物件の売買で手付金200万円を受領済みの宅建業者が、中間金200万円を受領する前に保全措置を講じる場合、保全措置の対象額は中間金200万円分だけでよい。",
+    "a": false,
+    "ex": "誤り。保全措置を講じる場合、既に受領した手付金200万円とこれから受領する中間金200万円の合計額400万円について保全措置を講じなければなりません。中間金分だけでは不十分です（宅建業法41条1項1号・2号、2項・3項）。",
+    "cat": "合計額判定"
+  },
+  {
+    "q": "代金3,000万円の完成物件の売買で、宅建業者である売主が手付金として200万円を受領した後、さらに中間金として200万円を受領しようとする場合、中間金受領時に保全措置が必要である。",
+    "a": true,
+    "ex": "正しい。手付金200万円（約6.7%）の時点では10%以下かつ1,000万円以下のため不要でしたが、中間金を加えると合計400万円（約13.3%）となり10%を超えます。中間金受領前に合計額について保全措置が必要です（宅建業法41条の2第1項）。",
+    "cat": "合計額判定"
+  },
+  {
+    "q": "代金2億円の未完成物件の売買で、宅建業者である売主が手付金として800万円を受領しようとする場合、代金の5%（1,000万円）以下であるから保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。800万円は代金2億円の4%であり5%以下、かつ1,000万円以下です。両方の条件を満たすため保全措置は不要です（宅建業法41条1項ただし書）。",
+    "cat": "複合判定"
+  },
+  {
+    "q": "代金8,000万円の完成物件の売買で、宅建業者である売主が手付金として700万円を受領した後、中間金600万円を受領しようとする場合、保全措置が必要である。",
+    "a": true,
+    "ex": "正しい。手付金700万円（8.75%）の時点では10%以下かつ1,000万円以下で不要でしたが、中間金を加えると合計1,300万円（16.25%）となり10%を超えます（1,000万円も超えています）。どちらか一方でも閾値を超えれば保全措置が必要であり、中間金受領前に保全措置を講じなければなりません（宅建業法41条の2第1項）。",
+    "cat": "合計額判定"
+  },
+  {
+    "q": "未完成物件の売買において、売主である宅建業者が指定保管機関による保管の方法で保全措置を講じた場合、宅建業法41条の要件を満たしたことになる。",
+    "a": false,
+    "ex": "誤り。指定保管機関による保管は完成物件の保全措置としてのみ認められるものです。未完成物件の保全措置は銀行等の保証または保証保険の2種類に限られます。未完成物件に保管の措置を講じても法41条1項の要件を満たしません（宅建業法41条1項、解釈運用の考え方41条の2関係）。",
+    "cat": "保全措置の方法"
+  },
+  {
+    "q": "代金1億5,000万円の完成物件の売買で、宅建業者である売主が手付金として900万円（代金の6%）を受領しようとする場合、代金の10%以下だが1,000万円以下でもあるため保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。900万円は代金の6%で10%以下であり、かつ1,000万円以下です。保全措置が不要となるには「代金の10%以下」かつ「1,000万円以下」の両方を満たす必要があり、本問では両方を満たしています（宅建業法41条の2第1項ただし書）。",
+    "cat": "複合判定"
+  },
+  {
+    "q": "代金5,000万円の完成物件の売買で、宅建業者である売主が手付金として1,100万円を受領しようとする場合、代金の22%なので手付金の額の制限にも違反する。",
+    "a": true,
+    "ex": "正しい。手付金等の保全措置とは別に、宅建業者が自ら売主となる場合、手付金の額は代金の20%を超えてはなりません（宅建業法39条1項）。1,100万円は代金5,000万円の22%であり20%超のため、手付金額の制限にも違反します。",
+    "cat": "複合判定"
+  },
+  {
+    "q": "代金4,000万円の未完成物件の売買で手付金150万円を受領済みの宅建業者が、中間金100万円を受領しようとする場合、合計250万円は代金の6.25%で5%を超えるため保全措置が必要である。",
+    "a": true,
+    "ex": "正しい。手付金150万円（3.75%）の時点では5%以下で不要でしたが、中間金100万円を加えると合計250万円（6.25%）となり5%を超えます。中間金受領前に合計250万円について保全措置を講じなければなりません（宅建業法41条1項）。",
+    "cat": "合計額判定"
+  },
+  {
+    "q": "買主への所有権移転登記が完了している場合、手付金等の額が閾値を超えていても保全措置を講じる必要はない。",
+    "a": true,
+    "ex": "正しい。買主への所有権移転登記がされたとき、または買主が所有権の登記をしたときは、手付金等の額にかかわらず保全措置は不要です（宅建業法41条1項ただし書、41条の2第1項ただし書）。所有権が買主に移転済みであれば保全の必要性が低いためです。",
+    "cat": "複合判定"
+  },
+  {
+    "q": "宅建業法における「工事の完了」とは外観上の工事が完了している状態を指し、内装工事が未了でも「完成物件」として扱われる。",
+    "a": false,
+    "ex": "誤り。工事の完了とは、外観上の工事のみならず内装等の工事が完了しており居住が可能な状態を指します（宅建業法の解釈・運用の考え方41条関係）。内装未了であれば未完成物件として5%の閾値が適用されます。",
+    "cat": "境界線判定"
+  },
+  {
+    "q": "代金1億円の完成物件の売買で、宅建業者である売主が手付金として800万円を受領しようとする場合、代金の8%で10%以下だが1,000万円以下でもあるから保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。800万円は代金1億円の8%で10%以下、かつ1,000万円以下です。完成物件では「10%以下かつ1,000万円以下」であれば保全措置は不要です（宅建業法41条の2第1項ただし書）。",
+    "cat": "複合判定"
+  },
+  {
+    "q": "代金6,000万円の未完成物件の売買で、宅建業者である売主が手付金として250万円を受領した後、さらに中間金300万円を受領しようとする場合、手付金受領時に保全措置が不要であったとしても中間金受領前に保全措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。手付金250万円（約4.2%）の時点では5%以下で不要でしたが、中間金300万円を加えると合計550万円（約9.2%）で5%を超えます。手付金受領時に不要だったとしても、中間金によって合計が閾値を超える場合は受領前に保全措置が必要です（宅建業法41条1項）。",
+    "cat": "合計額判定"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで手付金等の保全措置の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・手付金の額の制限（39条）の詳細<br>・手付の性質（解約手付・証約手付・違約手付）<br>・クーリングオフ（37条の2）との関係<br>・保全措置の具体的手続き（保証書・保険証券の交付方法の細部）<br>・損害賠償額の予定（38条）との横断整理</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 手付金等保全措置の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【判定フロー】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 売主＝宅建業者？ 買主＝業者でない？</span><br>↓ Yes<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 物件は完成？ or 未完成？</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 手付金等の合計額が閾値を超える？</span><br>↓ 超える<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">保全措置を講じてから受領！</span><br><br><span style="color:#2e7d32;font-weight:bold;font-family:sans-serif">✅ 閾値以下なら保全措置不要で受領OK</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 「5%超」「10%超」の境界判定</strong><br>閾値は「超える」場合に保全措置が必要。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 5%ちょうど・10%ちょうど＝保全措置不要！</span><br><span style="font-size:12px;color:#555">「代金の5%の手付金→保全措置必要」は誤りです</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 中間金との合計で閾値を超えるパターン</strong><br>手付金だけでは閾値以下でも、中間金を加えると超える場合がある<br>→ <strong>中間金受領前</strong>に保全措置を講じる<br>→ 保全措置は<strong>既受領の手付金＋中間金の合計額</strong>について講じる<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「中間金分だけ保全すればOK」は誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 未完成物件に指定保管機関は使えない</strong><br>未完成物件の保全措置＝銀行等の保証 or 保証保険の<strong>2種類のみ</strong><br>指定保管機関による保管は<strong>完成物件限定</strong><br><span style="font-size:12px;color:#555">未完成物件は「物がまだない」から保管できないとイメージ</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 宅建業者間取引には適用されない</strong><br>買主が宅建業者であれば保全措置の規定は適用外（8種制限）<br><span style="font-size:12px;color:#d32f2f">⚠️ 問題文で「買主が宅建業者」を見落とさないこと</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 暗記表</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：完成物件 vs 未完成物件の閾値比較</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">区分</th><th style="border:1px solid #90caf9;padding:5px">代金に対する割合</th><th style="border:1px solid #90caf9;padding:5px">金額上限</th><th style="border:1px solid #90caf9;padding:5px">使える保全措置</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">未完成物件</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">5%超 ⚠️</td><td style="border:1px solid #90caf9;padding:5px">1,000万円超</td><td style="border:1px solid #90caf9;padding:5px">①銀行保証 ②保証保険<br><span style="color:#d32f2f;font-size:11px">※指定保管機関は不可</span></td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">完成物件</td><td style="border:1px solid #90caf9;padding:5px;color:#1565c0;font-weight:bold">10%超</td><td style="border:1px solid #90caf9;padding:5px">1,000万円超</td><td style="border:1px solid #90caf9;padding:5px">①銀行保証 ②保証保険 ③指定保管機関</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「未完成は5%（危険だから厳しい）、完成は10%（安心だから緩い）」</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 「超」がポイント！5%ちょうど・10%ちょうどは保全措置不要！</strong></div><div style="font-size:13px;font-weight:bold;margin:12px 0 8px 0">重要：保全措置の3つの方法</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">方法</th><th style="border:1px solid #a5d6a7;padding:5px">内容</th><th style="border:1px solid #a5d6a7;padding:5px">未完成</th><th style="border:1px solid #a5d6a7;padding:5px">完成</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">①銀行等の保証</td><td style="border:1px solid #a5d6a7;padding:5px">銀行等が返還債務を連帯保証</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#2e7d32;font-weight:bold">○</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#2e7d32;font-weight:bold">○</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #a5d6a7;padding:5px">②保証保険</td><td style="border:1px solid #a5d6a7;padding:5px">保険事業者が損害をてん補</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#2e7d32;font-weight:bold">○</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#2e7d32;font-weight:bold">○</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">③指定保管機関</td><td style="border:1px solid #a5d6a7;padding:5px">指定保管機関が金銭を保管</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#d32f2f;font-weight:bold">×</td><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#2e7d32;font-weight:bold">○</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「未完成は2種類（保証・保険）、完成は3種類（＋保管）」<br>「物がまだ完成していない→保管する物がない→指定保管機関は使えない」</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 手付金等の保全措置とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者が売主のとき、買主が払った手付金等が大きな金額になるなら、万が一のために保全措置（お金を守る仕組み）を先に講じてから受け取ってね」という制度です。</div><div class="info-box" style="background:#fff3e0"><strong>なぜ必要か：</strong><br>宅建業者（売主）が倒産したらどうなるか？→ 買主が払った手付金等が戻ってこない！<br>→ 特に未完成物件は危険（物件もお金も失う）<br>→ だから<strong>一定額を超える場合は保全措置が義務</strong>（宅建業法41条・41条の2）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 保全措置が必要になる条件</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「売主＝宅建業者、買主＝業者でない人」で、手付金等の合計が一定額を超えるときに必要になります。</div><div class="info-box" style="background:#ffebee"><strong>前提条件（3つ全て必要）：</strong><br>① 売主が<strong>宅建業者</strong>であること<br>② 買主が<strong>宅建業者でない</strong>こと（8種制限の適用要件）<br>③ 手付金等の合計額が<strong>閾値を超える</strong>こと</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「業者が売主＝お客さん保護。だから手付金も保全措置で守る」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">📊 未完成物件と完成物件の閾値</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「未完成物件は5%・完成物件は10%。どちらも1,000万円も基準。超えたら保全措置が必要」です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:6px">区分</th><th style="border:1px solid #ef9a9a;padding:6px">代金の割合</th><th style="border:1px solid #ef9a9a;padding:6px">金額</th><th style="border:1px solid #ef9a9a;padding:6px">条文</th></tr><tr><td style="border:1px solid #ef9a9a;padding:6px;font-weight:bold">未完成物件</td><td style="border:1px solid #ef9a9a;padding:6px;color:#d32f2f;font-weight:bold">5%超</td><td style="border:1px solid #ef9a9a;padding:6px">または1,000万円超</td><td style="border:1px solid #ef9a9a;padding:6px">41条1項</td></tr><tr style="background:#fff5f5"><td style="border:1px solid #ef9a9a;padding:6px;font-weight:bold">完成物件</td><td style="border:1px solid #ef9a9a;padding:6px;color:#1565c0;font-weight:bold">10%超</td><td style="border:1px solid #ef9a9a;padding:6px">または1,000万円超</td><td style="border:1px solid #ef9a9a;padding:6px">41条の2第1項</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「未完成は危険→5%と厳しい。完成は安全→10%と緩い」<br>「どちらも1,000万円を超えたらアウト」</div><div class="info-box" style="background:#ffebee;border:2px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 最重要ひっかけ：「超」と「以下」の境界</strong><br>閾値は<strong>「超える」</strong>場合に保全措置が必要。<br>5%<strong>ちょうど</strong>・10%<strong>ちょうど</strong>は保全措置<strong>不要</strong>！<br><br>例：代金5,000万円の未完成物件<br>・手付金250万円（5%ちょうど）→ <span style="color:#2e7d32;font-weight:bold">不要</span><br>・手付金251万円（5%超）→ <span style="color:#d32f2f;font-weight:bold">必要</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">💰 「手付金等」の意味と合計額判定</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「手付金だけじゃない。中間金・内金なども全部足して判定する」ということです。</div><div class="info-box" style="background:#fff3e0"><strong>手付金「等」に含まれるもの：</strong><br>代金の全部または一部として授受される金銭、および手付金その他の名義をもって授受される金銭で<strong>代金に充当されるもの</strong>のうち、<strong>契約締結後〜引渡し前</strong>に支払われるもの（宅建業法41条1項）<br><br>具体的には → <strong>手付金 + 中間金 + 内金</strong> = 手付金等の合計</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><strong style="color:#c62828">⚠️ 超重要パターン：中間金で閾値を超えるケース</strong><br><br>例：代金5,000万円の未完成物件<br>・手付金200万円（4%）受領 → 5%以下なので<span style="color:#2e7d32;font-weight:bold">保全措置不要</span><br>・後日、中間金200万円を受領したい<br>・合計400万円（8%）→ 5%超！<br>→ <span style="color:#d32f2f;font-weight:bold">中間金を受け取る前に保全措置が必要！</span><br><br><span style="color:#d32f2f;font-weight:bold">しかも保全措置は「合計400万円」について！中間金200万円分だけではダメ！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「等」がつくから手付金だけじゃない。<strong>全部足して</strong>超えるかチェック！<br>保全措置を講じるときは<strong>全額</strong>について。途中から追加分だけ、は通用しない</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🛡️ 保全措置の3つの方法</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「銀行保証・保証保険・指定保管機関の3種類。ただし未完成物件には保管は使えない」です。</div><div class="info-box" style="background:#e8f5e9"><strong>① 銀行等による保証（41条1項1号）</strong><br>銀行等が、宅建業者の手付金等返還債務を<strong>連帯保証</strong>する方法。保証委託契約を締結し、保証書を買主に交付する。<br><span style="color:#2e7d32">→ 未完成物件・完成物件どちらもOK</span></div><div class="info-box" style="background:#e8f5e9"><strong>② 保険事業者による保証保険（41条1項2号）</strong><br>保険事業者が、手付金等の返還債務不履行による買主の損害をてん補する保証保険契約を締結する方法。<br><span style="color:#2e7d32">→ 未完成物件・完成物件どちらもOK</span></div><div class="info-box" style="background:#e8f5e9"><strong>③ 指定保管機関による保管（41条の2第1項1号・2号）</strong><br>指定保管機関が宅建業者に代わって手付金等を受領・保管する方法。手付金等寄託契約と質権設定契約が必要。<br><span style="color:#d32f2f;font-weight:bold">→ 完成物件のみ！未完成物件では使えない！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「未完成は2種類（保証・保険だけ）。完成は3種類（＋保管）」<br>理由：未完成＝物がまだない→保管する物がない→指定保管機関は使えない</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🔄 保全措置が不要になるケース</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「閾値以下なら不要。所有権移転登記済みでも不要。業者間取引は丸ごと適用外」です。</div><div class="info-box" style="background:#f3e5f5"><strong>保全措置が不要になる3つのケース：</strong><br><br>① 手付金等の合計が閾値<strong>以下</strong>のとき<br><span style="font-size:12px">・未完成物件：5%以下 かつ 1,000万円以下</span><br><span style="font-size:12px">・完成物件：10%以下 かつ 1,000万円以下</span><br><br>② 買主への<strong>所有権移転登記</strong>が済んでいるとき<br><span style="font-size:12px">・所有権が移っていれば保全の必要性が低い</span><br><br>③ 買主も<strong>宅建業者</strong>であるとき（8種制限の適用外）<br><span style="font-size:12px">・プロ同士の取引には保護規定が適用されない</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">⚠️ 手付金額の上限（39条）との違い</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「保全措置の話（41条）と手付金の上限（39条）は別の制度。混同しないこと」です。</div><div class="info-box" style="background:#e0f2f1"><strong>手付金の額の制限（宅建業法39条1項）：</strong><br>宅建業者が自ら売主の場合、手付金の額は<strong>代金の20%を超えてはならない</strong>。<br><br><strong>保全措置（41条・41条の2）：</strong><br>手付金<strong>等</strong>の合計が閾値を超えたら保全措置を講じてから受領。<br><br><span style="color:#d32f2f;font-weight:bold">→ これらは別々の制度！両方に違反する場合もある！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「39条＝上限20%。41条＝5%超or10%超で保全措置。別の話」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>手付金等の保全措置：41条・41条の2<br>手付の額の制限：39条</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">手付金等の保全措置クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
