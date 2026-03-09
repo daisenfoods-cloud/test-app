@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 資力確保措置クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 資力確保措置</div>
+    <div class="header-desc">住宅瑕疵担保履行法・供託と保険・届出義務・基準日</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_shiryoku_kakuho_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "新築住宅の売主である宅建業者は、買主が宅建業者でない場合、住宅販売瑕疵担保保証金の供託または住宅販売瑕疵担保責任保険契約の締結のいずれかの措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者が自ら売主として新築住宅を販売する場合、買主が宅建業者でないときは、供託または保険のいずれかの資力確保措置を講じる義務があります（住宅瑕疵担保履行法11条1項）。万が一売主が倒産しても買主が補修等を受けられるようにする制度です。",
+    "cat": "適用対象"
+  },
+  {
+    "q": "資力確保措置の対象となるのは、新築住宅だけでなく中古住宅（既存住宅）の売買も含まれる。",
+    "a": false,
+    "ex": "誤り。資力確保措置の対象となるのは新築住宅の売買のみです（住宅瑕疵担保履行法11条1項）。中古住宅（既存住宅）の売買には適用されません。「新築」とは、建設工事完了から1年以内で、かつ人の居住の用に供したことがないものをいいます。",
+    "cat": "適用対象"
+  },
+  {
+    "q": "資力確保措置としての供託は、宅建業者の主たる事務所の最寄りの供託所に住宅販売瑕疵担保保証金を供託する方法で行う。",
+    "a": true,
+    "ex": "正しい。住宅販売瑕疵担保保証金の供託先は、主たる事務所の最寄りの供託所です（住宅瑕疵担保履行法11条6項）。営業保証金の供託先と同じ考え方であり、供託額は基準日前10年間に引き渡した新築住宅の戸数に応じて算定されます。",
+    "cat": "供託の基本"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険契約の相手方は、国土交通大臣が指定する保険法人である。",
+    "a": true,
+    "ex": "正しい。住宅販売瑕疵担保責任保険契約は、国土交通大臣が指定する住宅瑕疵担保責任保険法人との間で締結します（住宅瑕疵担保履行法2条7項、17条）。一般の保険会社ではなく、国が指定した専門の保険法人が引き受けます。",
+    "cat": "保険の基本"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険の保険料は、新築住宅の買主が支払う。",
+    "a": false,
+    "ex": "誤り。保険料を支払うのは売主である宅建業者です（住宅瑕疵担保履行法2条7項1号）。買主が保険料を負担するのではありません。売主の責任で資力を確保する制度なので、その費用も売主が負担します。",
+    "cat": "保険の基本"
+  },
+  {
+    "q": "宅建業者は、基準日（毎年3月31日）ごとに、資力確保措置の状況について免許権者に届出をしなければならない。届出期限は基準日から3週間以内である。",
+    "a": true,
+    "ex": "正しい。宅建業者は基準日（毎年3月31日）ごとに、供託または保険の状況を免許権者（国土交通大臣または都道府県知事）に届け出なければなりません。届出期限は基準日から3週間以内です（住宅瑕疵担保履行法12条1項）。なお、令和3年の法改正により基準日は年2回（3月31日・9月30日）から年1回（3月31日のみ）に変更されています。",
+    "cat": "届出義務"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険契約は、新築住宅の引渡し後であっても締結することができる。",
+    "a": false,
+    "ex": "誤り。住宅販売瑕疵担保責任保険契約は、新築住宅の引渡し前に締結しなければなりません（住宅瑕疵担保履行法2条7項、11条2項参照）。引渡し後では瑕疵の有無が不明確になるため、事前に保険を手配しておく必要があります。",
+    "cat": "保険の基本"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険の保険期間は、新築住宅の引渡しから10年以上でなければならない。",
+    "a": true,
+    "ex": "正しい。保険期間は引渡しから10年以上と定められています（住宅瑕疵担保履行法2条7項4号）。住宅品質確保法（品確法）により、新築住宅の売主は構造耐力上主要な部分等について引渡しから10年間の瑕疵担保責任を負うため、保険期間もこれに合わせています。",
+    "cat": "保険の基本"
+  },
+  {
+    "q": "供託により資力確保措置を講じた宅建業者は、新築住宅の買主に対して、売買契約を締結するまでに、供託所の所在地等について記載した書面を交付して説明しなければならない。",
+    "a": true,
+    "ex": "正しい。供託を選択した場合、宅建業者は買主に対し、契約締結前までに供託所の所在地等を記載した書面を交付して説明する義務があります（住宅瑕疵担保履行法15条1項）。口頭のみの説明では足りず、必ず書面の交付が必要です。",
+    "cat": "買主への説明"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険の対象となるのは、新築住宅の構造耐力上主要な部分および雨水の浸入を防止する部分の瑕疵である。",
+    "a": true,
+    "ex": "正しい。保険の対象は、構造耐力上主要な部分（柱・梁・基礎など）および雨水の浸入を防止する部分（屋根・外壁など）の瑕疵です（品確法95条1項）。内装の仕上げや設備の不具合は対象外です。",
+    "cat": "保険の対象"
+  },
+  {
+    "q": "住宅販売瑕疵担保保証金の額は、基準日前10年間に引き渡した新築住宅の戸数に応じて算定される。",
+    "a": true,
+    "ex": "正しい。保証金の額は、基準日前10年間に引き渡した新築住宅の戸数を基準に算定されます（住宅瑕疵担保履行法11条1項、施行令5条）。10年を超える前の引渡し分は算定対象外となり、古い引渡し分は順次算定対象から外れていきます。",
+    "cat": "供託の基本"
+  },
+  {
+    "q": "資力確保措置は、宅建業者が自ら売主として新築住宅を販売する場合だけでなく、新築住宅の売買を媒介する場合にも必要である。",
+    "a": false,
+    "ex": "誤り。資力確保措置が必要なのは、宅建業者が「自ら売主」として新築住宅を販売する場合に限られます（住宅瑕疵担保履行法11条1項）。売買の媒介・代理を行う宅建業者には適用されません。瑕疵担保責任を負うのは売主であり、媒介業者ではないからです。",
+    "cat": "適用対象"
+  },
+  {
+    "q": "保険により資力確保措置を講じた宅建業者は、買主に対して保険証券またはこれに代わるべき書面を交付しなければならない。",
+    "a": true,
+    "ex": "正しい。保険を選択した場合、宅建業者は買主に対して保険証券またはこれに代わるべき書面を交付しなければなりません（住宅瑕疵担保履行法15条2項）。これにより買主は、万が一瑕疵が発見されたとき保険金請求の根拠を手元に持つことができます。",
+    "cat": "買主への説明"
+  },
+  {
+    "q": "宅建業者が資力確保措置の届出をしなかった場合、基準日の翌日から起算して50日を経過した日以後は、新たに自ら売主として新築住宅の売買契約を締結することができない。",
+    "a": true,
+    "ex": "正しい。届出をしなかった場合、基準日の翌日から起算して50日を経過した日以後は、新たに新築住宅の売買契約を締結できなくなります（住宅瑕疵担保履行法13条）。届出の怠りに対する重い制裁です。",
+    "cat": "届出義務"
+  },
+  {
+    "q": "住宅瑕疵担保履行法に基づく資力確保措置の規定に違反した場合、宅建業法上の監督処分（指示処分・業務停止処分）の対象となる。",
+    "a": true,
+    "ex": "正しい。宅建業法65条1項は、住宅瑕疵担保履行法（履行確保法）の一定の規定に違反した場合に、国土交通大臣または都道府県知事が宅建業者に対して必要な指示をすることができると定めています。また、同条2項により業務停止処分の対象にもなります（宅建業法65条1項・2項）。",
+    "cat": "監督処分"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "宅建業者A社が新築住宅を宅建業者B社に販売する場合、A社は住宅販売瑕疵担保保証金の供託または保険契約の締結のいずれかの措置を講じなければならない。",
+    "a": false,
+    "ex": "誤り。資力確保措置が必要なのは、売主が宅建業者で買主が宅建業者でない場合に限られます（住宅瑕疵担保履行法11条1項）。宅建業者同士の取引には適用されません。「宅建業者である買主に対しても必要」とするのは頻出のひっかけパターンです。",
+    "cat": "適用対象のひっかけ"
+  },
+  {
+    "q": "宅建業者C社が基準日から50日以内に届出をしなかった場合、基準日の翌日から起算して3週間を経過した日以後は新たに新築住宅の売買契約を締結できない。",
+    "a": false,
+    "ex": "誤り。数字の混同に注意してください。届出期限は「基準日から3週間以内」ですが、届出をしなかった場合に新規契約が禁止されるのは「基準日の翌日から50日経過後」です（住宅瑕疵担保履行法12条1項、13条）。「3週間」と「50日」を入れ替えるひっかけです。",
+    "cat": "数字のひっかけ"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険の対象となるのは、新築住宅の構造耐力上主要な部分の瑕疵のみであり、雨水の浸入を防止する部分の瑕疵は対象に含まれない。",
+    "a": false,
+    "ex": "誤り。住宅販売瑕疵担保責任保険の対象は、構造耐力上主要な部分だけでなく、雨水の浸入を防止する部分の瑕疵も含まれます（品確法95条1項）。「構造耐力上主要な部分のみ」とする選択肢はひっかけです。",
+    "cat": "保険の対象"
+  },
+  {
+    "q": "新築住宅の売主である宅建業者と買主との間で、構造耐力上主要な部分の瑕疵について担保責任を負わない旨の特約をした場合、買主が同意していればその特約は有効である。",
+    "a": false,
+    "ex": "誤り。新築住宅の売主は、構造耐力上主要な部分および雨水の浸入を防止する部分の瑕疵について、引渡しから10年間担保責任を負います。この責任を免除・制限する特約は、たとえ買主が同意していても無効です（住宅品質確保法95条）。買主保護のための強行規定であり、当事者の合意では排除できません。",
+    "cat": "瑕疵担保責任の特約"
+  },
+  {
+    "q": "住宅販売瑕疵担保保証金が基準額を超える場合、宅建業者はその超過分を自由に取り戻すことができる。",
+    "a": false,
+    "ex": "誤り。住宅販売瑕疵担保保証金の取戻しには、免許権者の承認などの手続きが必要です（住宅瑕疵担保履行法16条で準用する9条2項）。超過分があるからといって直ちに取り戻せるわけではなく、所定の手続きを経なければなりません。",
+    "cat": "保証金の取戻し"
+  },
+  {
+    "q": "宅建業者D社が供託を選択した場合、新築住宅の買主に対する供託所の所在地等の説明は口頭で行えば足り、書面の交付は不要である。",
+    "a": false,
+    "ex": "誤り。供託を選択した場合、買主に対して供託所の所在地等について記載した書面を交付して説明しなければなりません（住宅瑕疵担保履行法15条1項）。口頭のみの説明では足りず、必ず書面の交付が必要です。「口頭で足りる」とするのはひっかけです。",
+    "cat": "買主への説明のひっかけ"
+  },
+  {
+    "q": "宅建業者E社が保険を選択した場合、基準日ごとの届出義務は免除される。",
+    "a": false,
+    "ex": "誤り。供託・保険のいずれの方法を選択した場合でも、基準日ごとの届出義務は課されます（住宅瑕疵担保履行法12条1項）。保険を選択したからといって届出義務が免除されるわけではありません。",
+    "cat": "届出義務"
+  },
+  {
+    "q": "信託業法上の免許を受けた信託会社が、宅建業法77条の規定により宅建業を営む場合であっても、新築住宅の売主として販売するときは住宅販売瑕疵担保保証金の供託義務を負う。",
+    "a": true,
+    "ex": "正しい。信託業法上の免許を受けた信託会社は宅建業の免許なしに宅建業を営めますが（宅建業法77条）、宅建業者として業務を行う以上、住宅瑕疵担保履行法に基づく資力確保措置の義務は負います（住宅瑕疵担保履行法11条1項）。「信託会社だから供託義務なし」とするのは誤りです。",
+    "cat": "適用対象の応用"
+  },
+  {
+    "q": "宅建業者F社が新築マンション50戸を分譲販売し、そのうち10戸の買主が宅建業者であった場合、資力確保措置の対象となるのは残りの40戸分である。",
+    "a": true,
+    "ex": "正しい。資力確保措置が必要なのは、買主が宅建業者でない場合に限られます（住宅瑕疵担保履行法11条1項）。宅建業者である買主10戸分は対象外となり、宅建業者でない買主40戸分のみが算定対象となります。",
+    "cat": "適用対象の応用"
+  },
+  {
+    "q": "住宅販売瑕疵担保責任保険契約を締結している場合、新築住宅に瑕疵が見つかったとき、買主は売主の宅建業者を介さず直接保険法人に保険金を請求することができる場合がある。",
+    "a": true,
+    "ex": "正しい。売主の宅建業者が倒産等により瑕疵の補修ができない場合、買主は保険法人に直接保険金の請求をすることができます（住宅瑕疵担保履行法2条7項2号ロ）。これが保険制度の最大のメリットであり、売主が倒産しても買主が保護される仕組みです。",
+    "cat": "保険の仕組み"
+  },
+  {
+    "q": "資力確保措置の届出先は、宅建業者の主たる事務所の所在地の供託所である。",
+    "a": false,
+    "ex": "誤り。資力確保措置の届出先は免許権者（国土交通大臣または都道府県知事）です（住宅瑕疵担保履行法12条1項）。供託所は保証金を預ける先であり、届出先ではありません。「供託先」と「届出先」を混同するひっかけに注意してください。",
+    "cat": "届出のひっかけ"
+  },
+  {
+    "q": "宅建業者G社が基準日から3週間以内に届出をしなかった場合の制裁として、新規売買契約の締結禁止だけでなく、免許の取消しも直ちに行われる。",
+    "a": false,
+    "ex": "誤り。届出をしなかった場合のペナルティは、基準日の翌日から50日経過後に新規売買契約の締結が禁止されることです（住宅瑕疵担保履行法13条）。届出をしなかったことだけで直ちに免許が取り消されるわけではありません。ただし、住宅瑕疵担保履行法違反は宅建業法上の監督処分の対象となり得ます（宅建業法65条）。",
+    "cat": "届出義務の応用"
+  },
+  {
+    "q": "住宅瑕疵担保履行法に基づく指定住宅紛争処理機関は、新築住宅に関する紛争について、あっせん・調停・仲裁の業務を行う。",
+    "a": true,
+    "ex": "正しい。指定住宅紛争処理機関は、住宅に関する紛争について、あっせん・調停・仲裁の業務を行います（住宅品質確保法66条）。保険付きの住宅の紛争について利用でき、裁判によらない紛争解決の手段を提供しています。",
+    "cat": "紛争処理"
+  },
+  {
+    "q": "宅建業者H社は、供託と保険を組み合わせて資力確保措置を講じることができる。たとえば、50戸のうち30戸分を供託で、残り20戸分を保険で対応することも可能である。",
+    "a": true,
+    "ex": "正しい。宅建業者は、一部の新築住宅について供託、残りについて保険と、供託と保険を組み合わせて資力確保措置を講じることができます（住宅瑕疵担保履行法11条1項・2項）。全戸について同一の方法を選ぶ必要はありません。",
+    "cat": "供託と保険の組合せ"
+  },
+  {
+    "q": "新築住宅の売主が宅建業者でない一般の事業者である場合であっても、住宅瑕疵担保履行法に基づく住宅販売瑕疵担保保証金の供託義務を負う。",
+    "a": false,
+    "ex": "誤り。住宅瑕疵担保履行法に基づく「住宅販売瑕疵担保保証金」の供託義務は、売主が宅建業者である場合に限って適用されます（住宅瑕疵担保履行法11条1項）。一般の事業者（宅建業者でない者）が売主となる場合には、この供託義務は適用されません。なお、建設業者には別途「住宅建設瑕疵担保保証金」の供託義務があります（同法3条）。",
+    "cat": "適用対象の応用"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで資力確保措置の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・供託金額の具体的な計算方法（戸数に応じた算定表の詳細）<br>・住宅販売瑕疵担保責任保険の具体的な保険金額・免責事項<br>・住宅紛争処理機関の詳細な手続き<br>・住宅品質確保法（品確法）の全体像<br>・保証金の取戻しに関する詳細な手続き<br>・建設業者の住宅建設瑕疵担保保証金に関する規定<br>これらは過去問学習で補完してください。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 資力確保措置の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【資力確保措置が必要な場面】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">売主＝宅建業者</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">買主＝宅建業者でない者</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">新築住宅の売買</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">供託 or 保険が必要！</span><br><br><span style="color:#2e7d32;font-weight:bold;font-family:sans-serif">✅ 宅建業者同士の取引には適用されない</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">（プロ同士の取引まで保護する必要がないため）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 適用対象のひっかけ</strong><br>資力確保措置が必要なのは<strong>「売主＝宅建業者、買主≠宅建業者」</strong>の場合のみ。<br><span style="color:#d32f2f;font-weight:bold">⚠️「宅建業者である買主にも必要」→ 誤り！</span><br><span style="font-size:12px;color:#555">※媒介業者にも適用されない（売主のみ）</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 数字の混同に注意</strong><br>届出期限：基準日から<strong>3週間以内</strong><br>契約制限：基準日の翌日から<strong>50日経過後</strong>に新規契約不可<br><span style="color:#d32f2f;font-weight:bold">⚠️「50日以内に届出」「3週間後に契約不可」はいずれも誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 保険の対象部分</strong><br>構造耐力上主要な部分 ＋ 雨水の浸入を防止する部分の<strong>両方</strong>が対象<br><span style="font-size:12px;color:#d32f2f">⚠️「構造耐力上主要な部分のみ」→ 誤り！雨水浸入防止部分も含む</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 保険契約の締結時期と保険料負担</strong><br>保険契約は<strong>引渡し前</strong>に締結が必要。保険料は<strong>売主（宅建業者）</strong>が負担<br><span style="font-size:12px;color:#d32f2f">⚠️「引渡し後でも締結可能」「保険料は買主負担」→ いずれも誤り！</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ 瑕疵担保責任免除特約は無効</strong><br>構造耐力上主要な部分・雨水浸入防止部分の瑕疵担保責任を免除する特約は、<strong>買主が同意しても無効</strong>（品確法95条）<br><span style="font-size:12px;color:#d32f2f">⚠️「合意があれば有効」→ 誤り！強行規定のため排除不可</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：供託 vs 保険 比較表</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">供託（保証金）</th><th style="border:1px solid #90caf9;padding:5px">保険（保険契約）</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">方法</td><td style="border:1px solid #90caf9;padding:5px">供託所に保証金を預ける</td><td style="border:1px solid #90caf9;padding:5px">保険法人と保険契約を締結</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">費用負担</td><td style="border:1px solid #90caf9;padding:5px">宅建業者が供託</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">宅建業者が保険料を支払う ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">対象期間・算定</td><td style="border:1px solid #90caf9;padding:5px">基準日前<strong>10年間</strong>の引渡し戸数で算定</td><td style="border:1px solid #90caf9;padding:5px">引渡しから<strong>10年以上</strong></td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">対象部分</td><td style="border:1px solid #90caf9;padding:5px">―</td><td style="border:1px solid #90caf9;padding:5px">構造耐力上主要な部分＋雨水浸入防止部分</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">買主への対応</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">供託所の所在地等を書面で交付・説明 ⚠️</td><td style="border:1px solid #90caf9;padding:5px">保険証券等を交付</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">届出</td><td style="border:1px solid #90caf9;padding:5px">基準日から3週間以内</td><td style="border:1px solid #90caf9;padding:5px">基準日から3週間以内</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">届出しないと</td><td style="border:1px solid #90caf9;padding:5px">基準日翌日から50日経過後、新規契約不可</td><td style="border:1px solid #90caf9;padding:5px">基準日翌日から50日経過後、新規契約不可</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">組合せ</td><td style="border:1px solid #90caf9;padding:5px" colspan="2">供託と保険の併用可能（一部を供託、残りを保険でもOK）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：保険料は「売主（業者）負担」。買主に負担させるのはNG！</div><div style="font-size:13px;font-weight:bold;margin:12px 0 8px 0">重要：資力確保措置の重要数字まとめ</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">項目</th><th style="border:1px solid #ffb74d;padding:5px">内容</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">基準日</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold">毎年3月31日（年1回）</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">届出期限</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">基準日から3週間以内</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">届出しない場合</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#d32f2f">基準日の翌日から50日経過後、新規契約不可 ⚠️</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">保証金の算定対象</td><td style="border:1px solid #ffb74d;padding:5px">基準日前<strong>10年間</strong>の引渡し戸数</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">保険期間</td><td style="border:1px solid #ffb74d;padding:5px">引渡しから<strong>10年以上</strong></td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">保険契約の締結時期</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">引渡し前 ⚠️</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">買主への説明（供託）</td><td style="border:1px solid #ffb74d;padding:5px">契約締結前までに書面交付して説明</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">届出先</td><td style="border:1px solid #ffb74d;padding:5px">免許権者（国土交通大臣 or 都道府県知事）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「3週間で届出 → 50日で契約禁止」。3→50の順で厳しくなる！</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「10年」が2つ登場。供託は「過去10年分の戸数で計算」、保険は「10年間カバー」</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：届出先と供託先を混同しない！「届出→免許権者」「供託→供託所」</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 資力確保措置（住宅瑕疵担保履行法）とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「新築住宅を売った宅建業者が倒産しても、買主が確実に補修を受けられるようにする仕組み」です。</div><div class="info-box" style="background:#f5f5f5"><strong>なぜこの制度があるのか？</strong><br>新築住宅に欠陥（瑕疵）が見つかった場合、売主の宅建業者が補修する義務があります。しかし、もし売主が倒産していたら、買主は補修を受けられません。<br>そこで、売主に<strong>あらかじめお金を準備させておく</strong>制度が作られました。これが「資力確保措置」です。<br><span style="font-size:12px;color:#555">根拠法：特定住宅瑕疵担保責任の履行の確保等に関する法律（住宅瑕疵担保履行法・平成19年法律第66号）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 適用対象：3つの条件</div><div class="info-box" style="background:#ffebee"><strong>資力確保措置が必要になる3つの条件（すべて満たす場合）：</strong><br>① 売主が<strong>宅建業者</strong>であること<br>② 買主が<strong>宅建業者でない</strong>こと<br>③ <strong>新築住宅</strong>の売買であること<br><br><span style="font-size:12px;color:#555">「新築住宅」＝建設工事完了から1年以内で、人の居住の用に供したことがないもの</span></div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最重要ひっかけ：宅建業者同士の取引</strong><br>宅建業者が買主の場合は<strong>適用されない</strong>。<br>「プロ同士の取引まで保護する必要はない」という趣旨です。<br><span style="color:#d32f2f;font-weight:bold">「宅建業者である買主にも供託が必要」→ これは誤り！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「新築＋売主が業者＋買主が素人」＝資力確保が必要</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">注意：媒介業者には適用されない</strong><br>資力確保措置が必要なのは「自ら売主」の宅建業者だけです。売買の媒介・代理を行う宅建業者は、瑕疵担保責任を負わないため対象外です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">💰 方法①：供託（住宅販売瑕疵担保保証金）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「法務局にお金を預けておく方法」。瑕疵があれば、買主が供託所から直接お金をもらえます。</div><div class="info-box" style="background:#e8f5e9"><strong>供託のポイント：</strong><br>・供託先：主たる事務所の<strong>最寄りの供託所</strong><br>・供託額：基準日前<strong>10年間</strong>に引き渡した新築住宅の戸数に応じて算定<br>・取戻し：免許権者の承認等の手続きが必要（自由に取り戻せない）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：営業保証金と同じ「最寄りの供託所」に預ける。似た制度なので混同注意！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🛡️ 方法②：保険（住宅販売瑕疵担保責任保険契約）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「保険でカバーする方法」。瑕疵があれば保険金で補修費用を賄える。売主が倒産しても、買主が直接保険金を請求できる。</div><div class="info-box" style="background:#f3e5f5"><strong>保険のポイント：</strong><br>・契約相手：国土交通大臣が指定する<strong>保険法人</strong><br>・保険料負担：<strong>売主（宅建業者）</strong>が支払う ← 買主負担ではない！<br>・保険期間：引渡しから<strong>10年以上</strong><br>・対象部分：<strong>構造耐力上主要な部分</strong>＋<strong>雨水の浸入を防止する部分</strong><br>・締結時期：<strong>引渡し前</strong>に締結しなければならない</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ ひっかけ注意：保険の対象部分</strong><br>「構造耐力上主要な部分<strong>のみ</strong>」ではありません。<br><strong>雨水の浸入を防止する部分</strong>も含みます。<br>ただし、内装の仕上げや設備機器の不具合は対象外です。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：保険は「引渡し前に締結、10年以上カバー」。保険は事前準備が大事！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📅 基準日と届出義務</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「年1回の基準日に、ちゃんと措置を講じているか報告する義務」です。</div><div class="info-box" style="background:#fff3e0"><strong>基準日：</strong>毎年<strong>3月31日</strong>の年1回（※令和3年改正で9月30日の基準日は廃止）<br><br><strong>届出：</strong>基準日から<strong>3週間以内</strong>に免許権者（国土交通大臣 or 都道府県知事）に届出<br><br><strong>届出しないと：</strong>基準日の翌日から<strong>50日経過後</strong>、新規売買契約を締結できない</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 数字のひっかけに注意！</strong><br>届出期限 ＝ <strong>3週間</strong>以内<br>契約制限 ＝ <strong>50日</strong>経過後<br>「3週間」と「50日」を入れ替えるのが定番のひっかけ！</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「3週間で届出→50日で契約禁止」。3→50の順で段階的に厳しくなる</div><div class="info-box" style="background:#e8f5e9"><strong>重要：供託でも保険でも届出は必要</strong><br>保険を選択した場合でも、基準日ごとの届出義務は免除されません。供託・保険のいずれの方法でも、同じ届出義務があります。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📝 買主への説明義務</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「買主に、いざというとき誰に請求すればいいか教える義務」です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;padding:5px">方法</th><th style="border:1px solid #80cbc4;padding:5px">買主への対応</th><th style="border:1px solid #80cbc4;padding:5px">タイミング</th></tr><tr><td style="border:1px solid #80cbc4;padding:5px">供託の場合</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">供託所の所在地等を書面で交付・説明 ⚠️</td><td style="border:1px solid #80cbc4;padding:5px">契約締結前まで</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #80cbc4;padding:5px">保険の場合</td><td style="border:1px solid #80cbc4;padding:5px">保険証券等を交付</td><td style="border:1px solid #80cbc4;padding:5px">―</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 供託の場合：「口頭で説明」だけではNG！必ず書面の交付が必要</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：供託＝「供託所の場所を書面で教える」、保険＝「保険証券を渡す」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">⛔ 瑕疵担保責任の免除特約は無効</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「新築住宅の欠陥について、売主が責任を逃れる約束をしても無効」という強力なルールです。</div><div class="info-box" style="background:#ffebee"><strong>品確法95条のポイント：</strong><br>・新築住宅の売主は、<strong>構造耐力上主要な部分</strong>＋<strong>雨水浸入防止部分</strong>の瑕疵について、引渡しから<strong>10年間</strong>担保責任を負う<br>・この責任を免除・制限する特約は<strong>無効</strong><br>・<strong>買主が同意していても無効</strong>（強行規定）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「10年間の責任は逃げられない！合意があっても無効！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #795548;color:#795548">⚖️ 監督処分との関係</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「資力確保措置の義務に違反すると、宅建業法上の処分を受ける」ことがあります。</div><div class="info-box" style="background:#efebe9">宅建業法65条は、住宅瑕疵担保履行法の一定の規定に違反した場合、宅建業者に対して<strong>指示処分</strong>や<strong>業務停止処分</strong>ができると定めています（宅建業法65条1項・2項）。<br>資力確保措置は、宅建業法の枠組みの中でも重要な義務として位置づけられています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=419AC0000000066" target="_blank">住宅瑕疵担保履行法（e-Gov）</a>で条文を直接確認できます。<br><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で監督処分（65条）等を確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">資力確保措置クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
