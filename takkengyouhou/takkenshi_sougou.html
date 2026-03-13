@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 宅地建物取引士クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 宅地建物取引士（総合）</div>
+    <div class="header-desc">登録・宅建士証・専任の宅建士・提示義務・変更届出</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_takkenshi_sougou_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建試験に合格した者が宅地建物取引士の登録を受けるには、宅地又は建物の取引に関して2年以上の実務経験を有するか、国土交通大臣が同等以上の能力を有すると認めた者でなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法18条1項により、試験合格者は2年以上の実務経験を有するか、国土交通大臣がその実務経験と同等以上の能力を有すると認めた者（実務講習修了者）でなければ登録を受けることができません。",
+    "cat": "登録の要件"
+  },
+  {
+    "q": "宅地建物取引士の登録は、試験を受けた都道府県知事ではなく、現在勤務している事務所の所在地の都道府県知事に対して行う。",
+    "a": false,
+    "ex": "誤り。登録は「当該試験を行った都道府県知事」に対して行います（宅建業法18条1項）。現在の勤務地ではなく、試験を受けた都道府県の知事が登録先です。",
+    "cat": "登録の要件"
+  },
+  {
+    "q": "宅地建物取引士の登録は一度受ければ一生有効であり、更新手続は必要ない。",
+    "a": true,
+    "ex": "正しい。登録そのものには有効期間がなく、一度登録すれば一生有効です。ただし、宅建士証の有効期間は5年であり、更新が必要です（宅建業法22条の2第3項）。「登録」と「宅建士証」を混同しないことが重要です。",
+    "cat": "登録の要件"
+  },
+  {
+    "q": "宅建士証の有効期間は5年であり、更新を受けようとする者は申請前6か月以内に都道府県知事が指定する法定講習を受講しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建士証の有効期間は5年です（宅建業法22条の2第3項）。更新には申請前6か月以内の法定講習の受講が必要です（同条2項本文）。",
+    "cat": "宅建士証の交付・更新"
+  },
+  {
+    "q": "宅建試験に合格した日から1年以内に宅建士証の交付を受けようとする場合でも、法定講習を受講しなければならない。",
+    "a": false,
+    "ex": "誤り。試験に合格した日から1年以内に宅建士証の交付を受けようとする者は、法定講習の受講が免除されます（宅建業法22条の2第2項ただし書）。合格直後であれば知識が新しいため、講習不要とされています。",
+    "cat": "宅建士証の交付・更新"
+  },
+  {
+    "q": "宅建士証の交付を受けるには、登録をしている都道府県知事に対して申請を行う。",
+    "a": true,
+    "ex": "正しい。宅建士証の交付は、登録をしている都道府県知事に対して申請します（宅建業法22条の2第1項）。試験地の知事ではなく、あくまで「登録先」の知事に申請する点に注意です。",
+    "cat": "宅建士証の交付・更新"
+  },
+  {
+    "q": "宅地建物取引士の登録事項に変更があった場合、変更の日から30日以内に変更の登録を申請しなければならない。",
+    "a": false,
+    "ex": "誤り。登録事項に変更があったときは「遅滞なく」変更の登録を申請しなければなりません（宅建業法20条）。「30日以内」ではなく「遅滞なく」が正しい表現です。",
+    "cat": "変更の届出"
+  },
+  {
+    "q": "宅建士が氏名を変更した場合、変更の登録の申請とともに、宅建士証の書換え交付を申請しなければならない。",
+    "a": true,
+    "ex": "正しい。氏名は宅建士証の記載事項であるため、氏名が変更された場合は変更の登録申請に加えて宅建士証の書換え交付の申請も必要です（宅建業法20条、規則14条の13）。",
+    "cat": "変更の届出"
+  },
+  {
+    "q": "住所は宅建士資格登録簿の登載事項であるが、宅建士証の記載事項ではないため、住所を変更しても宅建士証の書換え交付申請は不要である。",
+    "a": false,
+    "ex": "誤り。住所は登録簿の登載事項であると同時に宅建士証の記載事項でもあります（宅建業法18条2項、規則14条の11）。したがって住所変更時には変更の登録申請と宅建士証の書換え交付申請の両方が必要です。",
+    "cat": "変更の届出"
+  },
+  {
+    "q": "宅建業者の事務所には、業務に従事する者5人に1人以上の割合で、成年者である専任の宅地建物取引士を置かなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法31条の3第1項及び施行規則15条の5の3により、事務所ごとに業務に従事する者5人に1人以上の成年者である専任の宅建士を設置しなければなりません。",
+    "cat": "専任の宅建士"
+  },
+  {
+    "q": "専任の宅建士が法定の人数を下回った場合、宅建業者は1か月以内に必要な措置を執らなければならない。",
+    "a": false,
+    "ex": "誤り。専任の宅建士が不足した場合、宅建業者は「2週間以内」に必要な措置（補充）を執らなければなりません（宅建業法31条の3第3項）。「1か月」ではなく「2週間」が正しい期限です。",
+    "cat": "専任の宅建士"
+  },
+  {
+    "q": "案内所等で契約の締結又は申込みの受付を行う場合、1人以上の専任の宅建士を置かなければならない。",
+    "a": true,
+    "ex": "正しい。事務所以外の場所（案内所等）で契約の締結又は申込みの受付を行う場合は、1人以上の専任の宅建士を設置する必要があります（宅建業法31条の3第1項、規則6条の2）。",
+    "cat": "専任の宅建士"
+  },
+  {
+    "q": "宅建士は、取引の関係者から請求があったときは、宅建士証を提示しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法22条の4により、取引の関係者から請求があった場合、宅建士は宅建士証を提示する義務があります。",
+    "cat": "宅建士証の提示"
+  },
+  {
+    "q": "宅建士が重要事項の説明を行う際には、相手方から請求がなくても宅建士証を提示しなければならない。",
+    "a": true,
+    "ex": "正しい。重要事項説明（宅建業法35条）を行う際は、請求の有無にかかわらず宅建士証を提示しなければなりません（宅建業法35条4項）。通常の提示義務（請求があったとき）とは異なる点が重要です。",
+    "cat": "宅建士証の提示"
+  },
+  {
+    "q": "宅建士証と従業者証明書は同一のものであり、宅建士証を携帯していれば従業者証明書の携帯は不要である。",
+    "a": false,
+    "ex": "誤り。宅建士証と従業者証明書は全く別の書面です。宅建業者の従業者は従業者証明書を携帯する義務があり（宅建業法48条1項）、宅建士証を持っていても従業者証明書に代わるものではありません。",
+    "cat": "宅建士証の提示"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "宅建士Aが甲県知事の登録を受けた後、乙県に所在する宅建業者の事務所に勤務することとなった場合、Aは必ず乙県知事に登録の移転をしなければならない。",
+    "a": false,
+    "ex": "誤り。登録の移転は「申請をすることができる」とされており、義務ではありません（宅建業法19条の2）。甲県知事の登録のまま乙県の事務所で勤務することも可能です。",
+    "cat": "登録の移転"
+  },
+  {
+    "q": "宅建士Bが登録の移転をした場合、移転前の都道府県知事から交付を受けた宅建士証はそのまま有効であり、移転先の知事から新たに宅建士証の交付を受ける必要はない。",
+    "a": false,
+    "ex": "誤り。登録の移転があったときは、従前の宅建士証はその効力を失います（宅建業法22条の2第4項）。移転先の都道府県知事から新たに宅建士証の交付を受ける必要があります。",
+    "cat": "登録の移転"
+  },
+  {
+    "q": "宅建士Cが登録の移転をして移転先の都道府県知事から新たに宅建士証の交付を受けた場合、その有効期間は移転前の宅建士証の残存期間を引き継ぎ、新たに5年にはならない。",
+    "a": true,
+    "ex": "正しい。登録の移転に伴い交付される宅建士証の有効期間は、移転前の宅建士証の有効期間が経過するまでの期間（残存期間）です（宅建業法22条の2第5項）。免許換えと異なり、新たに5年にリセットされません。",
+    "cat": "登録の移転"
+  },
+  {
+    "q": "宅建士Dが事務禁止処分を受けた場合、速やかに宅建士証を交付を受けた都道府県知事に「返納」しなければならない。",
+    "a": false,
+    "ex": "誤り。事務禁止処分を受けた場合は宅建士証を「提出」します（宅建業法22条の2第7項）。「返納」は登録が消除されたとき等に行うものです（同条6項）。「提出」と「返納」は異なる手続きであり、提出の場合は禁止期間満了後に返還を請求できます。",
+    "cat": "提出と返納"
+  },
+  {
+    "q": "宅建士Eの登録が消除された場合、Eは速やかに宅建士証を交付を受けた都道府県知事に返納しなければならない。",
+    "a": true,
+    "ex": "正しい。登録が消除されたとき又は宅建士証が効力を失ったときは、速やかに宅建士証を交付を受けた都道府県知事に返納しなければなりません（宅建業法22条の2第6項）。事務禁止処分の「提出」とは異なります。",
+    "cat": "提出と返納"
+  },
+  {
+    "q": "事務禁止処分を受けた宅建士Fが、禁止期間満了後に宅建士証の返還を請求した場合、都道府県知事は直ちに返還しなければならない。",
+    "a": true,
+    "ex": "正しい。事務禁止処分により宅建士証の提出を受けた都道府県知事は、禁止期間が満了した場合において提出者から返還の請求があったときは、直ちに宅建士証を返還しなければなりません（宅建業法22条の2第8項）。",
+    "cat": "提出と返納"
+  },
+  {
+    "q": "宅建士Gが勤務先の宅建業者を変更した場合、変更の登録を申請するとともに、宅建士証の書換え交付も申請しなければならない。",
+    "a": false,
+    "ex": "誤り。勤務先の変更は登録簿の登載事項であるため変更の登録は必要ですが、勤務先は宅建士証の記載事項ではありません。したがって宅建士証の書換え交付の申請は不要です。書換え交付が必要なのは氏名・住所の変更時です。",
+    "cat": "変更届出の複合"
+  },
+  {
+    "q": "宅建士Hが住所を変更した場合、変更の登録を登録先の都道府県知事に申請し、併せて宅建士証の書換え交付も申請しなければならない。",
+    "a": true,
+    "ex": "正しい。住所は登録簿の登載事項であり、かつ宅建士証の記載事項でもあります（宅建業法18条2項）。住所変更時は、登録先の知事に変更の登録申請と宅建士証の書換え交付申請の両方を行う必要があります。",
+    "cat": "変更届出の複合"
+  },
+  {
+    "q": "変更の登録の届出先は、現在勤務している事務所の所在地を管轄する都道府県知事である。",
+    "a": false,
+    "ex": "誤り。変更の登録の届出先は「登録をしている都道府県知事」です（宅建業法20条）。現在の勤務先の所在地を管轄する知事ではありません。登録の移転をしていなければ、試験地の知事が届出先となります。",
+    "cat": "変更届出の複合"
+  },
+  {
+    "q": "宅建士証には旧姓を併記することが認められており、旧姓のみの記載も可能である。",
+    "a": false,
+    "ex": "誤り。令和2年10月1日より、宅建士証に旧姓を併記することが認められています（国土交通省技術的助言・令和2年3月18日国土動第133号）。ただし、旧姓「のみ」の記載は認められず、宅建士証には現在の氏名（戸籍上の氏名）の記載が必須であり、旧姓はあくまで「現姓［旧姓］名前」の形式で併記されるにとどまります。",
+    "cat": "宅建士証の記載事項"
+  },
+  {
+    "q": "宅建士証を提示する際、個人情報保護の観点から住所の部分にシールを貼って隠すことは認められていない。",
+    "a": false,
+    "ex": "誤り。宅建士証を提示する際に、住所欄にシールを貼って隠すことは、個人情報保護の観点から認められています（宅地建物取引業法の解釈・運用の考え方 第22条の4関係、第35条第4項関係）。ただし、シールは容易に剥がすことが可能なものとし、宅建士証を汚損しないよう注意する必要があります。住所欄以外（氏名・生年月日等）にシールを貼ることは認められていません。",
+    "cat": "宅建士証の記載事項"
+  },
+  {
+    "q": "宅建士資格登録簿は、一般の閲覧に供しなければならない。",
+    "a": false,
+    "ex": "誤り。宅建士資格登録簿は一般の閲覧に供されません。宅建業法には登録簿を閲覧に供する旨の規定はなく、個人情報が多数含まれているため非公開です。これに対し、宅建業者名簿は一般の閲覧に供しなければならず（宅建業法10条）、従業者名簿は取引関係者から請求があったときに閲覧に供しなければなりません（宅建業法48条4項）。混同しやすいポイントです。",
+    "cat": "宅建士証の記載事項"
+  },
+  {
+    "q": "宅建士の信用又は品位を害するような行為の禁止は、宅建業務に関する行為に限定されており、私的な行為は対象外である。",
+    "a": false,
+    "ex": "誤り。宅建業法15条の2は「宅地建物取引士は、宅地建物取引士の信用又は品位を害するような行為をしてはならない」と規定しており、業務上の行為に限定する文言はありません。したがって、私的な行為であっても宅建士としての信用・品位を害する行為は禁止の対象となります。",
+    "cat": "総合問題"
+  },
+  {
+    "q": "宅建士証の有効期間が満了した場合、宅地建物取引士の登録も自動的に失効する。",
+    "a": false,
+    "ex": "誤り。宅建士証の有効期間が満了しても、登録は失効しません。登録は一生有効であり、宅建士証の有効期間とは独立しています。宅建士証が失効しても、登録を消除する必要はなく、再度宅建士証の交付を受けることができます。",
+    "cat": "総合問題"
+  },
+  {
+    "q": "宅建士が死亡した場合、その相続人は死亡の事実を知った日から30日以内に、登録をしている都道府県知事にその旨を届け出なければならない。",
+    "a": true,
+    "ex": "正しい。宅建士が死亡した場合、相続人はその事実を知った日から30日以内に、登録をしている都道府県知事に届出をしなければなりません（宅建業法21条1号）。死亡の届出義務者は相続人であり、起算点は「知った日から」です。",
+    "cat": "総合問題"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで宅地建物取引士の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・登録の欠格事由の詳細（破産者・未成年者等の個別要件）<br>・監督処分の詳細な手続き（指示処分・事務禁止処分・登録消除の要件）<br>・宅建士の秘密保持義務の詳細（宅建業法45条）<br>・宅建士が関与する重要事項説明（35条）・37条書面の詳細<br>・知識及び能力の維持向上の努力義務（15条の3）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 宅地建物取引士の基本構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【宅建士になるまでの流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">試験に合格</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">実務経験2年 or 実務講習修了</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">都道府県知事の登録（一生有効）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">法定講習受講（合格後1年以内なら不要）</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">宅建士証の交付（5年ごとに更新）</span><br>↓<br><span style="background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold">業務開始！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#ffebee"><strong>① 「登録」と「宅建士証」の混同</strong><br>登録＝一生有効、宅建士証＝5年更新。宅建士証が失効しても登録は消えない！</div><div class="info-box" style="background:#fff3e0"><strong>② 登録の移転と宅建士証の有効期間</strong><br>登録の移転をしても宅建士証の有効期間は<span style="color:#d32f2f;font-weight:bold">リセットされない（残存期間を引き継ぐ）</span><br>⚠️ 免許換えとの違い：免許換えは新たに5年</div><div class="info-box" style="background:#e8f5e9"><strong>③ 「提出」と「返納」の使い分け</strong><br>・事務禁止処分 → <strong>提出</strong>（期間満了後に返してもらえる）<br>・登録消除 → <strong>返納</strong>（戻ってこない）</div><div class="info-box" style="background:#e3f2fd"><strong>④ 書換え交付が必要な変更事項</strong><br>氏名・住所の変更 → 書換え交付が<strong>必要</strong><br>勤務先の変更 → 書換え交付は<strong>不要</strong>（登録簿の登載事項だが宅建士証記載事項ではない）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：「登録」と「宅建士証」の違い</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">登録</th><th style="border:1px solid #90caf9;padding:5px">宅建士証</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">有効期間</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#2e7d32">一生有効（更新不要）</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">5年（更新必要）</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">申請先</td><td style="border:1px solid #90caf9;padding:5px">試験地の都道府県知事</td><td style="border:1px solid #90caf9;padding:5px">登録先の都道府県知事</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">要件</td><td style="border:1px solid #90caf9;padding:5px">実務経験2年以上等</td><td style="border:1px solid #90caf9;padding:5px">法定講習受講（原則）</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">移転時</td><td style="border:1px solid #90caf9;padding:5px">登録の移転（任意）</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">従前の証は効力喪失 → 新たに交付（残存期間）⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">変更時</td><td style="border:1px solid #90caf9;padding:5px">遅滞なく変更届出</td><td style="border:1px solid #90caf9;padding:5px">氏名・住所変更 → 書換え交付申請</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px">★最重要：届出・提出・返納のまとめ</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">場面</th><th style="border:1px solid #ffb74d;padding:5px">届出先</th><th style="border:1px solid #ffb74d;padding:5px">期限</th><th style="border:1px solid #ffb74d;padding:5px">備考</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">登録事項の変更</td><td style="border:1px solid #ffb74d;padding:5px">登録先の知事</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold">遅滞なく</td><td style="border:1px solid #ffb74d;padding:5px">氏名・住所 → 書換え交付も必要</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">専任宅建士の不足</td><td style="border:1px solid #ffb74d;padding:5px">免許権者</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#d32f2f">2週間以内に補充</td><td style="border:1px solid #ffb74d;padding:5px">補充不能なら業務停止</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">死亡等の届出</td><td style="border:1px solid #ffb74d;padding:5px">登録先の知事</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">知った日から30日以内 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">届出義務者：相続人</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">宅建士証の返納</td><td style="border:1px solid #ffb74d;padding:5px">交付を受けた知事</td><td style="border:1px solid #ffb74d;padding:5px">速やかに</td><td style="border:1px solid #ffb74d;padding:5px">登録消除の場合</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">宅建士証の提出</td><td style="border:1px solid #ffb74d;padding:5px">交付を受けた知事</td><td style="border:1px solid #ffb74d;padding:5px">速やかに</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">事務禁止処分の場合 ⚠️</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px">重要：宅建士証の提示義務</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">場面</th><th style="border:1px solid #a5d6a7;padding:5px">提示義務</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">取引関係者から請求があったとき</td><td style="border:1px solid #a5d6a7;padding:5px">提示義務あり（22条の4）</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold;color:#d32f2f">重要事項説明時 ⚠️</td><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold;color:#d32f2f">請求がなくても提示義務あり（35条4項）</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 宅地建物取引士とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建試験に合格し、都道府県知事に登録し、宅建士証の交付を受けた人」のことです（宅建業法2条4号）。不動産取引の専門家として重要事項説明等を行います。</div><div class="info-box" style="background:#fff3e0"><strong>宅建士の3つの独占業務：</strong><br>① 重要事項の説明（35条）<br>② 重要事項説明書への記名（35条5項）<br>③ 37条書面への記名（37条3項）<br><br><span style="font-size:12px;color:#555">これらは宅建士でなければ行えない業務です</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 登録の要件（宅建業法18条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「試験合格＋実務経験2年＝登録OK」です。</div><div class="info-box" style="background:#fff3e0"><strong>登録の要件：</strong><br>① 宅建試験に<strong>合格</strong>していること<br>② 宅地・建物の取引に関し<strong>2年以上の実務経験</strong>があること<br>　（又は国土交通大臣指定の<strong>実務講習</strong>を修了していること）<br><br><strong>登録先：</strong>試験を受けた都道府県知事<br><span style="font-size:12px;color:#555">※現在の勤務先の知事ではない点に注意</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「合格＋実務2年＝登録。登録先は試験地の知事！」</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">超重要：登録は一生有効！</strong><br>登録には有効期間がなく、一度登録すれば生涯にわたって有効です。<br>宅建士証（5年更新）とは別物です。</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 試験のひっかけ：「宅建士証が失効したら登録も失効する」→ 誤り！</strong><br>登録と宅建士証は独立しており、宅建士証の失効は登録に影響しません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📝 宅建士証の交付・更新（宅建業法22条の2・22条の3）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「登録しただけでは宅建士として活動できない。宅建士証の交付が必要」です。</div><div class="info-box" style="background:#f3e5f5"><strong>有効期間：5年</strong>（宅建業法22条の2第3項）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「宅建士証も免許も5年。でも登録は一生！」</div><div class="info-box" style="background:#f5f5f5"><strong>交付・更新の要件：</strong><br>原則：申請前<strong>6か月以内</strong>に法定講習を受講<br>例外：試験合格後<strong>1年以内</strong>の申請なら法定講習<strong>不要</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「合格から1年以内なら知識は新鮮。講習いらず！」</div><div class="info-box" style="background:#fff3e0"><strong>交付の申請先：</strong>登録をしている都道府県知事<br><span style="font-size:12px;color:#555">※試験地の知事ではなく「登録先」の知事。登録の移転をしていれば移転先の知事。</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🔄 登録の移転（宅建業法19条の2）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「他県の事務所で働くとき、登録を移せる（でも義務ではない）」制度です。</div><div class="info-box" style="background:#e0f2f1"><strong>登録の移転のポイント：</strong><br>① 他の都道府県の事務所に従事（又は従事しようと）するときに申請<strong>できる</strong><br>② 移転は<strong>義務ではない（任意）</strong><br>③ 申請先：移転先の都道府県知事（登録先の知事を経由）</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 最重要ひっかけ：移転後の宅建士証の有効期間</strong><br>登録の移転をすると従前の宅建士証は<strong>効力を失う</strong>。<br>移転先の知事から新たに交付を受けるが、有効期間は<strong>残存期間を引き継ぐ</strong>。<br><span style="font-weight:bold">「新たに5年になる」は誤り！</span><br><br><span style="font-size:12px;color:#555">比較：免許換え → 新たに5年 ／ 登録の移転 → 残存期間を引継ぎ</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「免許換えは新品5年。登録の移転は中古の残り期間」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📄 変更の届出（宅建業法20条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「登録事項が変わったら、遅滞なく届け出る」義務です。</div><div class="info-box" style="background:#fff3e0"><strong>届出先：</strong>登録をしている都道府県知事<br><strong>期限：</strong>遅滞なく<br><br><strong>書換え交付が必要な場合：</strong><br>宅建士証の記載事項（<strong>氏名・住所</strong>）が変わったとき<br>→ 変更の登録申請 ＋ 宅建士証の書換え交付申請<br><br><strong>書換え交付が不要な場合：</strong><br>勤務先の変更など（宅建士証の記載事項ではないため）<br>→ 変更の登録申請のみでOK</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🔒 提出と返納の違い（宅建業法22条の2第6項・7項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「返納は永久にお別れ、提出は一時預け」です。</div><div class="info-box" style="background:#ffebee"><strong>返納（22条の2第6項）：</strong><br>登録が消除されたとき / 宅建士証が効力を失ったとき<br>→ 速やかに交付を受けた知事へ返納<br>→ <strong>宅建士証は戻ってこない</strong></div><div class="info-box" style="background:#e8f5e9"><strong>提出（22条の2第7項）：</strong><br>事務禁止処分を受けたとき<br>→ 速やかに交付を受けた知事へ提出<br>→ <strong>禁止期間満了後に返還請求できる</strong>（同条8項）</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ここが最頻出ひっかけ！「事務禁止処分 → 返納する」は誤り。正しくは「提出」！</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「禁止は一時停止だから『提出（預ける）』。消除は終了だから『返納（永久にさよなら）』」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">👥 専任の宅建士（宅建業法31条の3）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「事務所には一定数の宅建士を常駐させなければならない」制度です。</div><div class="info-box" style="background:#e8f5e9"><strong>設置基準：</strong><br>① 事務所：業務に従事する者<strong>5人に1人以上</strong><br>② 案内所等（契約締結・申込受付を行う場合）：<strong>1人以上</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「事務所は『5人に1人』、案内所は最低1人」</div><div class="info-box" style="background:#fff3e0"><strong>不足時の対応：</strong><br><span style="font-size:15px;font-weight:bold;color:#d32f2f">2週間以内に補充</span><br>補充できないときは、業務を行ってはならない</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「足りなくなったら2週間で補充。できなきゃ業務停止！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">👁️ 宅建士証の提示義務（宅建業法22条の4、35条4項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「聞かれたら見せる。重説のときは黙ってても見せる」です。</div><div class="info-box" style="background:#f5f5f5"><strong>2つの提示義務の違い：</strong><br>① <strong>通常時</strong>（22条の4）：取引関係者から<strong>請求があったとき</strong>に提示<br>② <strong>重要事項説明時</strong>（35条4項）：<strong>請求がなくても</strong>必ず提示</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 注意：宅建士証 ≠ 従業者証明書</strong><br>この2つは全く別の書面です。宅建士証を持っていても従業者証明書の携帯義務は免除されません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>宅建士に関する規定：第15条〜第22条の4、第31条の3</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">宅地建物取引士クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
