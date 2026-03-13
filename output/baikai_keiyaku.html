@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 媒介契約の規制クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 媒介契約の規制</div>
+    <div class="header-desc">媒介契約の3類型・有効期間・レインズ登録・報告義務・書面交付</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_baikai_keiyaku_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "媒介契約には、一般媒介契約・専任媒介契約・専属専任媒介契約の3種類がある。",
+    "a": true,
+    "ex": "正しい。媒介契約は依頼者の自由度に応じて3類型に分かれます。宅建業法34条の2第1項が媒介契約全般を規定し、第3項が「他業者への重複依頼を禁ずる媒介契約」を専任媒介契約と定義、第9項括弧書が「自己発見取引も禁止する特約を含む専任媒介契約」を専属専任媒介契約と定義しています。これらに該当しないものが一般媒介契約です。",
+    "cat": "媒介契約の類型"
+  },
+  {
+    "q": "専任媒介契約では、依頼者が自ら買主を見つけた場合でも、必ず宅建業者を通じて契約しなければならない。",
+    "a": false,
+    "ex": "誤り。専任媒介契約では、他の宅建業者への重複依頼は禁止されますが、依頼者が自ら発見した相手方と直接契約すること（自己発見取引）は認められています。自己発見取引も禁止されるのは専属専任媒介契約のみです（宅建業法34条の2第9項括弧書）。",
+    "cat": "媒介契約の類型"
+  },
+  {
+    "q": "専属専任媒介契約では、依頼者は自ら発見した相手方と直接売買契約を締結することもできない。",
+    "a": true,
+    "ex": "正しい。専属専任媒介契約は最も制限が厳しく、依頼者が自分で買主を見つけても、必ず媒介を依頼した宅建業者を通じて契約しなければなりません（宅建業法34条の2第9項括弧書）。専任媒介契約では自己発見取引が可能です。",
+    "cat": "媒介契約の類型"
+  },
+  {
+    "q": "専任媒介契約の有効期間は、3ヶ月を超えることができない。",
+    "a": true,
+    "ex": "正しい。専任媒介契約（専属専任媒介契約を含む）の有効期間は3ヶ月が上限です。3ヶ月を超える期間を定めた場合でも、その期間は3ヶ月に短縮されます（宅建業法34条の2第3項）。",
+    "cat": "有効期間"
+  },
+  {
+    "q": "一般媒介契約の有効期間は、宅建業法上、3ヶ月を超えることができないと定められている。",
+    "a": false,
+    "ex": "誤り。宅建業法上、有効期間の制限があるのは専任媒介契約と専属専任媒介契約のみです（宅建業法34条の2第3項）。一般媒介契約には法律上の有効期間の制限はありません。ただし、標準媒介契約約款では3ヶ月以内と定めています。",
+    "cat": "有効期間"
+  },
+  {
+    "q": "専任媒介契約の更新は、依頼者の申出があった場合にのみ行うことができる。",
+    "a": true,
+    "ex": "正しい。専任媒介契約（専属専任媒介契約を含む）の更新には、依頼者からの申出が必要です。宅建業者が一方的に更新したり、自動更新する旨の特約を設けることはできません。更新後の期間も3ヶ月が上限です（宅建業法34条の2第4項）。",
+    "cat": "有効期間"
+  },
+  {
+    "q": "専任媒介契約を締結した宅建業者は、契約締結日から7日以内（休業日を除く）に指定流通機構（レインズ）に登録しなければならない。",
+    "a": true,
+    "ex": "正しい。専任媒介契約の場合、媒介契約締結日から7日以内（宅建業者の休業日を除く）に指定流通機構へ登録する義務があります（宅建業法34条の2第5項、施行規則15条の10）。専属専任の場合は5日以内とさらに短いです。",
+    "cat": "レインズ登録"
+  },
+  {
+    "q": "専属専任媒介契約を締結した場合の指定流通機構への登録期限は、契約締結日から7日以内（休業日を除く）である。",
+    "a": false,
+    "ex": "誤り。7日以内（休業日不算入）は専任媒介契約の登録期限です。専属専任媒介契約の登録期限は5日以内（休業日不算入）と、より短く設定されています（宅建業法34条の2第5項、施行規則15条の10）。専属専任の方が制限が厳しい分、日数も短いと覚えましょう。",
+    "cat": "レインズ登録"
+  },
+  {
+    "q": "一般媒介契約の場合でも、宅建業者は指定流通機構（レインズ）に物件情報を登録する義務がある。",
+    "a": false,
+    "ex": "誤り。指定流通機構への登録義務があるのは、専任媒介契約と専属専任媒介契約のみです（宅建業法34条の2第5項）。一般媒介契約では登録義務はありません。ただし、任意で登録することは可能です。",
+    "cat": "レインズ登録"
+  },
+  {
+    "q": "専任媒介契約を締結した宅建業者は、依頼者に対し2週間に1回以上、業務処理状況を報告しなければならない。",
+    "a": true,
+    "ex": "正しい。専任媒介契約の場合、2週間に1回以上（14日に1回以上）の頻度で業務処理状況を依頼者に報告する義務があります（宅建業法34条の2第9項）。専属専任媒介契約の場合は1週間に1回以上です。",
+    "cat": "報告義務"
+  },
+  {
+    "q": "専属専任媒介契約を締結した宅建業者は、依頼者に対し2週間に1回以上、業務処理状況を報告しなければならない。",
+    "a": false,
+    "ex": "誤り。2週間に1回以上は専任媒介契約の報告頻度です。専属専任媒介契約では、1週間に1回以上の頻度で報告しなければなりません（宅建業法34条の2第9項括弧書）。専属専任の方が制限が厳しい分、報告も頻繁です。",
+    "cat": "報告義務"
+  },
+  {
+    "q": "一般媒介契約を締結した宅建業者には、依頼者に対する業務処理状況の報告義務は法律上課されていない。",
+    "a": true,
+    "ex": "正しい。宅建業法上、業務処理状況の報告義務が課されているのは専任媒介契約と専属専任媒介契約のみです（宅建業法34条の2第9項）。一般媒介契約では報告義務はありません。",
+    "cat": "報告義務"
+  },
+  {
+    "q": "宅建業者は、媒介契約を締結したときは、遅滞なく一定の事項を記載した書面を作成して依頼者に交付しなければならない。",
+    "a": true,
+    "ex": "正しい。媒介契約書面の作成・交付義務は、一般媒介契約を含む全ての媒介契約に適用されます（宅建業法34条の2第1項）。「遅滞なく」交付する必要があります。",
+    "cat": "書面交付"
+  },
+  {
+    "q": "建物状況調査（インスペクション）を実施する者は、宅地建物取引士である。",
+    "a": false,
+    "ex": "誤り。建物状況調査を実施する者は、建築士（既存住宅状況調査技術者）です（宅建業法34条の2第1項4号）。宅地建物取引士ではありません。この入れ替えは頻出のひっかけです。",
+    "cat": "書面交付"
+  },
+  {
+    "q": "指定流通機構に登録した宅建業者は、登録を証する書面を遅滞なく依頼者に引き渡さなければならない。",
+    "a": true,
+    "ex": "正しい。指定流通機構への登録後、宅建業者は登録を証する書面（登録済証）を遅滞なく依頼者に引き渡す義務があります（宅建業法34条の2第6項）。依頼者が請求した場合のみ交付すればよいのではなく、自発的に引き渡す必要があります。",
+    "cat": "書面交付"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "専属専任媒介契約の有効期間を6ヶ月と定めた場合、その媒介契約は全体として無効となる。",
+    "a": false,
+    "ex": "誤り。有効期間を3ヶ月を超えて定めた場合、媒介契約自体が無効になるのではなく、有効期間の部分のみが3ヶ月に短縮されます（宅建業法34条の2第3項）。契約そのものは有効に成立します。この点は最頻出のひっかけです。",
+    "cat": "有効期間の超過"
+  },
+  {
+    "q": "専任媒介契約の有効期間を1ヶ月と定めた場合、その定めは有効であり、有効期間は1ヶ月となる。",
+    "a": true,
+    "ex": "正しい。有効期間の制限は「3ヶ月を超えることができない」という上限規制です（宅建業法34条の2第3項）。3ヶ月以内であれば1ヶ月でも2ヶ月でも有効です。",
+    "cat": "有効期間の超過"
+  },
+  {
+    "q": "専属専任媒介契約において、有効期間満了の際に依頼者からの申出がなくても自動的に更新される旨の特約は有効である。",
+    "a": false,
+    "ex": "誤り。自動更新の特約は無効です（宅建業法34条の2第4項・第10項）。更新には必ず依頼者の申出が必要であり、あらかじめ更新を約定することは許されません。解釈運用の考え方でも、更新の申出は有効期間満了の都度行われるべきとされています。",
+    "cat": "有効期間の超過"
+  },
+  {
+    "q": "専任媒介契約の指定流通機構への登録期限は、媒介契約締結日から5日以内（休業日を除く）である。",
+    "a": false,
+    "ex": "誤り。5日以内（休業日不算入）は専属専任媒介契約の登録期限です。専任媒介契約の登録期限は7日以内（休業日不算入）です（施行規則15条の10）。専任と専属専任の日数を入れ替えるひっかけは頻出です。",
+    "cat": "レインズ登録期限"
+  },
+  {
+    "q": "指定流通機構への登録期限の日数計算において、宅建業者の休業日も暦日として算入される。",
+    "a": false,
+    "ex": "誤り。登録期限の日数計算では、宅建業者の休業日は算入されません（施行規則15条の10）。例えば、水曜日に専任媒介契約を締結し、土日が休業日の場合、土日はカウントせずに7日以内を計算します。",
+    "cat": "レインズ登録期限"
+  },
+  {
+    "q": "指定流通機構への登録期限の起算日は、媒介契約に係る書面を依頼者に交付した日である。",
+    "a": false,
+    "ex": "誤り。登録期限の起算日は「媒介契約締結の日」であり、書面交付の日ではありません（宅建業法34条の2第5項）。解釈運用の考え方でも「媒介契約締結の日とは、契約締結の意思の合致のあった日であって、書面の交付の日でないことに留意する」とされています。なお、契約締結日当日は民法上の初日不算入の原則により期間に含まれません。",
+    "cat": "レインズ登録期限"
+  },
+  {
+    "q": "専属専任媒介契約を締結した宅建業者の業務処理状況の報告頻度は、2週間に1回以上である。",
+    "a": false,
+    "ex": "誤り。2週間に1回以上は専任媒介契約の報告頻度です。専属専任媒介契約では1週間に1回以上の報告が義務づけられています（宅建業法34条の2第9項）。報告頻度の混同は最頻出ひっかけです。",
+    "cat": "報告義務の頻度"
+  },
+  {
+    "q": "媒介契約を締結した宅建業者は、当該物件の売買の申込みがあったときは、遅滞なくその旨を依頼者に報告しなければならない。この報告義務は、一般媒介契約を含む全ての媒介契約に適用される。",
+    "a": true,
+    "ex": "正しい。売買の申込みがあった場合の報告義務（宅建業法34条の2第8項）は、一般媒介契約を含む全ての媒介契約に適用されます。これは定期的な業務処理状況の報告義務（第9項、専任系のみ）とは別の義務であり、混同しやすい点です。",
+    "cat": "報告義務の頻度"
+  },
+  {
+    "q": "一般媒介契約の場合、媒介契約書面の作成・交付義務は適用されない。",
+    "a": false,
+    "ex": "誤り。媒介契約書面の作成・交付義務は、一般媒介契約を含む全ての媒介契約に適用されます（宅建業法34条の2第1項）。「一般媒介だから書面不要」は誤りであり、頻出のひっかけです。",
+    "cat": "書面記載事項"
+  },
+  {
+    "q": "媒介契約書面に「建物状況調査を実施する者のあっせんに関する事項」を記載する義務は、対象建物が既存の建物（中古建物）である場合に限られ、新築建物の場合は記載不要である。",
+    "a": true,
+    "ex": "正しい。建物状況調査（インスペクション）を実施する者のあっせんに関する事項は、「当該建物が既存の建物であるとき」に記載が必要とされています（宅建業法34条の2第1項4号）。新築建物の場合は記載不要です。なお、実施する者は建築士（既存住宅状況調査技術者）であり、宅地建物取引士ではありません。",
+    "cat": "書面記載事項"
+  },
+  {
+    "q": "宅建業者は、媒介契約において売買すべき価額について意見を述べるときは、その根拠を明らかにしなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業者が価額について意見を述べるときは、その根拠を明示する義務があります（宅建業法34条の2第2項）。根拠としては、価格査定マニュアルや同種の取引事例等が挙げられます。口頭でも書面でも差し支えありません。",
+    "cat": "書面記載事項"
+  },
+  {
+    "q": "専任媒介契約を締結した宅建業者Aが、依頼者Bから特に請求がなかったため、指定流通機構の登録済証を引き渡さなかった場合、宅建業法に違反しない。",
+    "a": false,
+    "ex": "誤り。登録を証する書面（登録済証）は、依頼者からの請求の有無にかかわらず、遅滞なく引き渡さなければなりません（宅建業法34条の2第6項）。「請求があった場合のみ交付」は宅建業法違反です。",
+    "cat": "レインズ登録後の義務"
+  },
+  {
+    "q": "専任媒介契約に基づきレインズに登録した物件について売買契約が成立した場合、宅建業者は遅滞なくその旨を指定流通機構に通知しなければならない。",
+    "a": true,
+    "ex": "正しい。登録に係る物件の売買契約が成立した場合、宅建業者は遅滞なく成約の情報を指定流通機構に通知する義務があります（宅建業法34条の2第7項）。成約情報は不動産流通の円滑化に重要な役割を果たしています。",
+    "cat": "レインズ登録後の義務"
+  },
+  {
+    "q": "宅建業者Cが専任媒介契約と一般媒介契約を同一の依頼者と同時に締結した場合、専任媒介契約の方が宅建業者の義務が重い。この義務の差は、「制限が厳しい分だけ業者にも責任を負わせる」という趣旨による。",
+    "a": true,
+    "ex": "正しい。専任媒介契約は依頼者が他業者に依頼できないため、その分宅建業者にレインズ登録義務や報告義務が課されます。制限が厳しい契約ほど業者の義務も重くなるのが媒介契約制度の基本的な仕組みです。",
+    "cat": "3類型の横断比較"
+  },
+  {
+    "q": "宅建業法34条の2の規定に反する特約であっても、依頼者が同意していれば有効である。",
+    "a": false,
+    "ex": "誤り。宅建業法34条の2第3項から第6項まで及び第8項・第9項の規定に反する特約は、依頼者の同意の有無にかかわらず無効です（宅建業法34条の2第10項）。例えば「有効期間を6ヶ月とする」「自動更新を認める」「報告を3週間に1回とする」等の特約は全て無効となります。",
+    "cat": "3類型の横断比較"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで媒介契約の規制の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・代理契約への準用規定（宅建業法34条の3）<br>・価額に関する意見の根拠の明示義務（34条の2第2項）の詳細<br>・指定流通機構（レインズ）の組織・運営に関する詳細規定<br>・媒介報酬の計算方法（報酬額の上限規制）<br>・標準媒介契約約款の詳細な内容<br>・一般媒介契約の明示型・非明示型の違い<br>・媒介契約書面の電磁的方法による提供（34条の2第11項、2022年施行）<br>・レインズのステータス管理機能（取引申込み受付状況の登録義務、2025年施行規則改正）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 媒介契約の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【媒介契約の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">依頼者（売主）が宅建業者に媒介を依頼</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">媒介契約の締結 → 書面交付（全類型で必須）</span><br>↓<br><span style="background:#c8e6c9;padding:3px 10px;border-radius:4px">レインズ登録（専任系のみ）→ 登録済証を依頼者に引渡し</span><br>↓<br><span style="background:#c8e6c9;padding:3px 10px;border-radius:4px">業務処理状況の報告（専任系のみ）</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">売買契約成立 → 成約情報をレインズに通知</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 有効期間を超える定めをした場合の効果</strong><br>3ヶ月を超える期間を定めても→<span style="color:#d32f2f;font-weight:bold">契約は無効にならない！有効期間が3ヶ月に短縮されるだけ</span><br><span style="font-size:12px;color:#555">例：6ヶ月と定めた → 有効期間は3ヶ月として扱われる</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 専任と専属専任の数字を入れ替えるひっかけ</strong><br>レインズ登録：専任 = <strong>7日</strong>以内 ／ 専属専任 = <strong>5日</strong>以内<br>報告頻度：専任 = <strong>2週間</strong>に1回 ／ 専属専任 = <strong>1週間</strong>に1回<br><span style="color:#d32f2f;font-weight:bold">⚠️ 数字を逆にするひっかけが超頻出！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 建物状況調査の実施者</strong><br>実施する者 = <strong>建築士</strong>（既存住宅状況調査技術者）<br><span style="color:#d32f2f;font-weight:bold">⚠️「宅地建物取引士」は誤り！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 一般媒介でも書面交付は必要</strong><br>書面作成・交付義務は<strong>全ての媒介契約</strong>に適用<br><span style="color:#d32f2f;font-weight:bold">⚠️「一般媒介だから書面不要」は誤り！</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ レインズ登録の起算日</strong><br>起算日 = 「媒介契約<strong>締結</strong>の日」（意思の合致があった日）<br><span style="color:#d32f2f;font-weight:bold">⚠️「書面交付の日」からではない！契約締結日当日は初日不算入</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：媒介契約3類型の比較表（宅建業法34条の2）</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">一般媒介</th><th style="border:1px solid #90caf9;padding:5px">専任媒介</th><th style="border:1px solid #90caf9;padding:5px">専属専任媒介</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">他業者への依頼</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">できる</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f">できない</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f">できない</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">自己発見取引</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">できる</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">できる</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">できない ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">有効期間の上限</td><td style="border:1px solid #90caf9;padding:5px">法律上の制限なし</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">3ヶ月</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">3ヶ月</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">レインズ登録期限</td><td style="border:1px solid #90caf9;padding:5px">義務なし</td><td style="border:1px solid #90caf9;padding:5px;color:#1565c0;font-weight:bold">7日以内（休業日除く）</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">5日以内（休業日除く）⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">業務報告頻度</td><td style="border:1px solid #90caf9;padding:5px">義務なし</td><td style="border:1px solid #90caf9;padding:5px;color:#1565c0;font-weight:bold">2週間に1回以上</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">1週間に1回以上 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">書面交付</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">必要</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 専属専任が最も厳しい：日数が短く（5日）、報告が多い（毎週）</strong></div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：媒介契約書面の主な記載事項（宅建業法34条の2第1項）</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">号</th><th style="border:1px solid #a5d6a7;padding:5px">記載事項</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">1号</td><td style="border:1px solid #a5d6a7;padding:5px">物件を特定するために必要な表示</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">2号</td><td style="border:1px solid #a5d6a7;padding:5px">売買すべき価額または評価額</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">3号</td><td style="border:1px solid #a5d6a7;padding:5px">他業者への重複依頼の許否・明示義務の有無</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px;text-align:center;color:#d32f2f;font-weight:bold">4号 ⚠️</td><td style="border:1px solid #a5d6a7;padding:5px"><strong>建物状況調査を実施する者のあっせんに関する事項</strong>（2018年改正で追加）<br><span style="color:#d32f2f;font-size:11px">実施者＝建築士（宅建士ではない！）</span></td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">5号</td><td style="border:1px solid #a5d6a7;padding:5px">有効期間および解除に関する事項</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">6号</td><td style="border:1px solid #a5d6a7;padding:5px">指定流通機構への登録に関する事項</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px;text-align:center">7号</td><td style="border:1px solid #a5d6a7;padding:5px">報酬に関する事項</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 媒介契約の規制とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「売主が宅建業者に不動産の売却を依頼するときの契約ルール」です（宅建業法34条の2）。依頼者保護のために、契約の類型ごとに宅建業者の義務が定められています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 媒介契約の3類型</div><div class="info-box" style="background:#fff3e0"><strong>3つの類型の違い（宅建業法34条の2第3項・第9項）</strong><br><br><strong style="color:#2e7d32">① 一般媒介契約</strong>＝最も自由<br>・他の業者にも依頼OK ・自分で買主を見つけてもOK<br><br><strong style="color:#1565c0">② 専任媒介契約</strong>＝やや厳しい<br>・他の業者への依頼NG ・自分で買主を見つけるのはOK<br><br><strong style="color:#d32f2f">③ 専属専任媒介契約</strong>＝最も厳しい<br>・他の業者への依頼NG ・自分で買主を見つけてもNG（必ず業者を通す）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「専属がつくと一番厳しい。依頼者の自由度が最も低い」</div><div class="info-box" style="background:#f5f5f5"><strong>制限が厳しいほど、宅建業者の義務も重くなる</strong><br>依頼者が他業者に頼めない → その分、業者はしっかり働く義務がある<br>→ レインズ登録義務・報告義務が課される</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">⏱️ 有効期間（宅建業法34条の2第3項・第4項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「専任系の媒介契約は3ヶ月が上限。一般媒介は法律上の制限なし」</div><div class="info-box" style="background:#f3e5f5"><strong>専任媒介契約・専属専任媒介契約：</strong><br><span style="font-size:15px;font-weight:bold;color:#7b1fa2">有効期間の上限 ＝ 3ヶ月</span><br><br>・3ヶ月を超える定め → <span style="color:#d32f2f;font-weight:bold">3ヶ月に短縮（契約は無効にならない！）</span><br>・3ヶ月以内の定め → そのまま有効（1ヶ月でもOK）<br><br><strong>一般媒介契約：</strong><br>法律上の有効期間の制限なし<br><span style="font-size:12px;color:#555">（標準媒介契約約款では3ヶ月以内と定めていますが、法律上の義務ではありません）</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「専任系は3ヶ月が天井。超えても天井まで下がるだけ（無効にはならない）」</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">⚠️ 更新のルール（超重要）</strong><br>・更新には<strong>依頼者の申出</strong>が必要<br>・<span style="color:#d32f2f;font-weight:bold">自動更新の特約は無効！</span><br>・更新後の期間も<strong>3ヶ月が上限</strong><br>・あらかじめ更新を約定することは許されない</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏢 指定流通機構（レインズ）への登録</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「専任系の契約では、物件情報をレインズに登録して広く買主を探す義務がある」（宅建業法34条の2第5項）</div><div class="info-box" style="background:#e8f5e9"><strong>登録期限（休業日は数えない！）：</strong><table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:13px"><tr style="background:#c8e6c9"><th style="border:1px solid #a5d6a7;padding:5px">契約類型</th><th style="border:1px solid #a5d6a7;padding:5px">登録期限</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">専任媒介契約</td><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold;color:#1565c0">7日以内（休業日不算入）</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #a5d6a7;padding:5px">専属専任媒介契約</td><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold;color:#d32f2f">5日以内（休業日不算入）</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">一般媒介契約</td><td style="border:1px solid #a5d6a7;padding:5px">登録義務なし</td></tr></table></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「専属専任の方が厳しいから日数が短い（5日＜7日）。休業日は数えない」</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">⚠️ ここが試験のひっかけ！</strong><br>・「専任 = 5日」「専属専任 = 7日」と<strong>逆にする</strong>出題が超頻出<br>・起算日は「書面交付の日」ではなく<strong>「契約締結の日」</strong><br>・契約締結日当日は初日不算入（民法の原則）</div><div class="info-box" style="background:#f5f5f5"><strong>登録後の義務：</strong><br>① 登録済証を<strong>遅滞なく</strong>依頼者に引き渡す（請求の有無を問わない）<br>② 売買契約が成立したら<strong>遅滞なく</strong>成約情報を指定流通機構に通知</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📊 業務処理状況の報告義務</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「専任系の契約では、定期的に依頼者に進捗を報告する義務がある」（宅建業法34条の2第9項）</div><div class="info-box" style="background:#fff3e0"><strong>報告頻度：</strong><table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:13px"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">契約類型</th><th style="border:1px solid #ffb74d;padding:5px">報告頻度</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">専任媒介契約</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">2週間に1回以上（14日に1回以上）</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">専属専任媒介契約</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#d32f2f">1週間に1回以上</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">一般媒介契約</td><td style="border:1px solid #ffb74d;padding:5px">報告義務なし</td></tr></table></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「専属専任 = 毎週（最も厳しい）、専任 = 隔週（2週間に1回）」</div><div class="info-box" style="background:#f5f5f5"><strong>報告方法：</strong>口頭でも書面でもメールでもOK（法律で限定されていない）<br><strong>報告内容：</strong>物件のレインズ登録状況、広告の実施状況、引き合いの状況など</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📝 媒介契約書面の交付義務</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「媒介契約を結んだら、全ての類型で書面を作成して交付する義務がある」（宅建業法34条の2第1項）</div><div class="info-box" style="background:#e0f2f1"><strong>全ての媒介契約で書面交付が必要！</strong><br>一般媒介契約であっても例外ではありません。<br><span style="font-size:12px;color:#555">※2022年改正により、依頼者の承諾を得れば、書面の交付に代えて電磁的方法（メール・PDF等）での提供も可能になりました（34条の2第11項）。</span><br><br><strong>主な記載事項：</strong><br>・物件の特定に必要な事項<br>・売買すべき価額<br>・重複依頼の許否<br>・建物状況調査を実施する者のあっせんに関する事項（既存建物の場合）<br>・有効期間・解除に関する事項<br>・指定流通機構への登録に関する事項<br>・報酬に関する事項</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">⚠️ 建物状況調査（インスペクション）について</strong><br>2018年改正で記載事項に追加された重要論点<br>・実施する者 = <strong>建築士</strong>（既存住宅状況調査技術者）<br>・<span style="color:#d32f2f;font-weight:bold">宅地建物取引士ではない！（超頻出ひっかけ）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">媒介契約の規制クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
