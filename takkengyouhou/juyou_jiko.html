@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 重要事項説明クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 重要事項の説明等</div>
+    <div class="header-desc">35条の基本ルール・記載事項・IT重説・既存建物・ハザードマップ</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_juyou_jiko_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅地建物取引業者は、宅地・建物の売買または貸借の契約が成立するまでの間に、宅地建物取引士をして重要事項の説明をさせなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条1項は、契約が成立するまでの間に、宅地建物取引士をして重要事項を説明させることを義務づけています。「契約成立前」がポイントです。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "重要事項の説明は、買主だけでなく売主に対しても行わなければならない。",
+    "a": false,
+    "ex": "誤り。重要事項の説明は、その宅地・建物を「取得しようとする者」または「借りようとする者」に対して行います（宅建業法35条1項）。売買の場合、売主への説明は不要で、買主に対してのみ説明義務があります。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "宅地建物取引士は、重要事項の説明をするとき、説明の相手方に対し宅地建物取引士証を提示しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条4項により、取引士は重要事項の説明時に取引士証を提示する義務があります。提示しなかった場合は10万円以下の過料に処せられます（宅建業法86条）。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "重要事項説明書には、説明を担当する宅地建物取引士が記名しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条5項により、重要事項説明書の交付にあたっては、宅地建物取引士が記名しなければなりません。記名は説明担当の取引士が行います。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "重要事項説明書の記載事項である「登記された権利の種類及び内容」には、登記されていない借地権等も含まれる。",
+    "a": false,
+    "ex": "誤り。宅建業法35条1項1号が説明を求めているのは「登記された権利」の種類・内容・登記名義人です。登記されていない権利は本号の対象外です。ただし、実務上は登記されていない権利についても説明することが望ましいとされています。",
+    "cat": "記載事項"
+  },
+  {
+    "q": "建物の貸借の契約においては、私道に関する負担について重要事項として説明する必要はない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条1項3号は「建物の貸借の契約以外のもの」について私道負担の説明を求めています。つまり、建物の貸借だけは私道負担の説明が不要です。宅地の貸借では説明が必要な点に注意してください。",
+    "cat": "記載事項"
+  },
+  {
+    "q": "飲用水・電気・ガスの供給施設および排水施設の整備状況は、売買・貸借を問わず重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条1項4号により、飲用水・電気・ガスの供給施設および排水施設の整備状況は、取引の種類を問わずすべての取引で説明すべき事項です。",
+    "cat": "記載事項"
+  },
+  {
+    "q": "未完成の宅地・建物を売買する場合、完了時における形状・構造等を重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条1項5号により、宅地の造成または建築に関する工事の完了前の物件については、完了時の形状・構造等を説明しなければなりません。図面が必要な場合は図面を交付して説明します。",
+    "cat": "記載事項"
+  },
+  {
+    "q": "水防法に基づく水害ハザードマップにおける対象物件の所在地は、売買の場合のみ説明すれば足り、貸借では説明不要である。",
+    "a": false,
+    "ex": "誤り。水害ハザードマップにおける物件の所在地の説明は、売買・貸借、宅地・建物を問わず、すべての取引類型で必要です。洪水・雨水出水（内水）・高潮の3種類それぞれについて説明が求められます。",
+    "cat": "ハザードマップ"
+  },
+  {
+    "q": "市町村が水害ハザードマップを作成していない場合、宅建業者はその旨を説明すればよい。",
+    "a": true,
+    "ex": "正しい。ハザードマップが存在しない場合は、「存在しない」旨を相手方に説明すれば足ります。宅建業者が独自にハザードマップを作成する義務はありません。",
+    "cat": "ハザードマップ"
+  },
+  {
+    "q": "重要事項説明書の交付・説明をITで行う場合、相手方の承諾は不要であり、宅建業者の判断で実施できる。",
+    "a": false,
+    "ex": "誤り。IT重説により重要事項説明書を電磁的方法で提供するには、相手方の承諾が必要です（宅建業法35条8項）。宅建業者の一方的な判断では実施できず、相手方が書面を希望すれば書面で交付しなければなりません。",
+    "cat": "IT重説"
+  },
+  {
+    "q": "IT重説を行う場合でも、宅地建物取引士は取引士証を画面上に提示し、相手方が確認できるようにしなければならない。",
+    "a": true,
+    "ex": "正しい。IT重説の場合でも、取引士証の提示義務（宅建業法35条4項）は免除されません。テレビ電話等の画面上で取引士証を提示し、相手方がその内容を確認できる状態で説明を行う必要があります。",
+    "cat": "IT重説"
+  },
+  {
+    "q": "既存の建物の売買において、建物状況調査を実施しているかどうかは重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条1項6号の2イにより、既存建物の場合、建物状況調査（インスペクション）の実施の有無、および実施している場合はその結果の概要を説明する必要があります。",
+    "cat": "既存建物"
+  },
+  {
+    "q": "区分所有建物（マンション）の売買では、専有部分の用途制限に関する規約の定めは重要事項として説明する必要がない。",
+    "a": false,
+    "ex": "誤り。区分所有建物の取引では、共用部分の規約の定めに加え、専有部分の用途その他の利用の制限に関する規約の定め（例：ペット飼育禁止、事業用利用の制限等）も説明しなければなりません（施行規則16条の2第3号）。",
+    "cat": "区分所有建物"
+  },
+  {
+    "q": "宅建業者は、石綿（アスベスト）の使用の有無について自ら調査を行ったうえで重要事項として説明しなければならない。",
+    "a": false,
+    "ex": "誤り。宅建業者に石綿使用の有無の調査を実施する義務はありません。石綿使用調査の「記録がある場合」にその内容を説明する義務があるにとどまります。記録がなければ「記録がない」旨を説明すれば足ります。",
+    "cat": "既存建物"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "宅地・建物の交換契約の場合、重要事項の説明は交換当事者の双方に対して行わなければならない。",
+    "a": true,
+    "ex": "正しい。交換の場合は、双方がそれぞれ宅地・建物を取得することになるため、交換当事者の双方に対して重要事項の説明が必要です（宅建業法35条1項）。売買と異なり、一方だけへの説明では足りません。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "取引の相手方が宅地建物取引業者である場合、重要事項の説明を省略することができる。",
+    "a": false,
+    "ex": "誤り。相手方が宅建業者であっても、重要事項の説明そのものを省略することはできません。宅建業法35条6項により、業者間取引では取引士による「説明」は不要とされますが、重要事項説明書の「交付」は必要です。省略できるのは35条の2（供託所等の説明）です。",
+    "cat": "基本ルール"
+  },
+  {
+    "q": "売主業者A社と媒介業者B社が関与する売買取引において、重要事項説明書にはB社の取引士のみが記名すれば足りる。",
+    "a": false,
+    "ex": "誤り。複数の宅建業者が関与する取引では、関与するすべての宅建業者の取引士が重要事項説明書に記名しなければなりません（宅建業法35条5項。各業者がそれぞれ書面交付義務を負うため）。ただし、実際の説明はいずれかの取引士が行えばよいとされています。",
+    "cat": "複数業者の関与"
+  },
+  {
+    "q": "宅地の貸借の契約において、私道に関する負担を重要事項として説明する必要がある。",
+    "a": true,
+    "ex": "正しい。私道負担の説明が不要なのは「建物の貸借」のみです（宅建業法35条1項3号）。宅地の売買、宅地の貸借、建物の売買ではいずれも私道負担の説明が必要です。「貸借だから不要」と早合点しないよう注意してください。",
+    "cat": "取引類型別の違い"
+  },
+  {
+    "q": "建物の貸借の契約では、台所・浴室・便所等の設備の整備状況を重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。建物の貸借では、建物に備えられた台所・浴室・便所等の設備の整備状況について説明が必要です（施行規則16条の4の3第5号）。これは貸借特有の記載事項であり、借主が入居後に困らないための情報提供です。",
+    "cat": "取引類型別の違い"
+  },
+  {
+    "q": "建物の貸借の契約では、契約終了時における敷金等の精算に関する事項を重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。建物の貸借では、契約終了時における敷金その他の金銭の精算に関する事項を説明しなければなりません（施行規則16条の4の3第11号）。退去時のトラブル防止のための重要な説明事項です。",
+    "cat": "取引類型別の違い"
+  },
+  {
+    "q": "建物状況調査（インスペクション）の結果を重要事項として説明する場合、実施後2年以内のものであれば有効である。",
+    "a": false,
+    "ex": "誤り。建物状況調査の結果について説明の対象となるのは、実施後1年以内のものに限られます（宅建業法35条1項6号の2イ、施行規則16条の2の2）。「2年以内」は誤りです。",
+    "cat": "既存建物"
+  },
+  {
+    "q": "宅建業者は、既存建物の売買にあたり建物状況調査を実施していない場合、調査を実施したうえで重要事項説明書を作成しなければならない。",
+    "a": false,
+    "ex": "誤り。宅建業者に建物状況調査を実施する義務はありません（宅建業法35条1項6号の2）。調査の実施の「有無」を説明する義務があるだけであり、実施していなければ「実施していない」旨を説明すれば足ります。",
+    "cat": "既存建物"
+  },
+  {
+    "q": "昭和57年1月に建築された建物の売買において、耐震診断の結果を重要事項として説明する必要がある。",
+    "a": false,
+    "ex": "誤り。耐震診断の結果の説明が求められるのは、昭和56年5月31日以前に確認を受けた旧耐震基準の建物に限られます。昭和57年1月に建築された建物は新耐震基準が適用されるため、耐震診断の結果の説明義務はありません。なお、正確には確認済証の交付年月日で判断します（宅建業法の解釈・運用の考え方）。",
+    "cat": "既存建物"
+  },
+  {
+    "q": "水害ハザードマップを提示して説明する際、当該マップへの記載をもって「対象物件は水害の恐れがない」と説明してもよい。",
+    "a": false,
+    "ex": "誤り。ハザードマップへの記載をもって、対象物件が安全であると説明してはなりません。ハザードマップは避難場所等の確認に資する情報であり、水害リスクの有無を保証するものではないためです。",
+    "cat": "ハザードマップ"
+  },
+  {
+    "q": "IT重説で重要事項説明書を電磁的方法により提供した場合でも、相手方が書面の交付を希望したときは、書面を交付しなければならない。",
+    "a": true,
+    "ex": "正しい。電磁的方法による提供は相手方の承諾が前提であり（宅建業法35条8項）、相手方が書面の交付を希望した場合は、書面で交付しなければなりません。相手方の意思が最優先です。",
+    "cat": "IT重説"
+  },
+  {
+    "q": "宅地の貸借の契約において、契約終了時における当該宅地上の建物の取壊しに関する事項を重要事項として説明しなければならない。",
+    "a": true,
+    "ex": "正しい。宅地の貸借では、当該宅地の上に存する建物の取壊しに関する事項（取壊しの時期・費用負担等）を説明しなければなりません（施行規則16条の4の3第12号）。これは宅地の貸借特有の記載事項です。",
+    "cat": "取引類型別の違い"
+  },
+  {
+    "q": "区分所有建物（マンション）の売買において、管理費用や修繕積立金に滞納がある場合、その滞納額を説明しなければならない。",
+    "a": true,
+    "ex": "正しい。区分所有建物の取引では、管理費用や修繕積立金の額だけでなく、滞納がある場合はその額も説明事項に含まれます（施行規則16条の2第6号・7号）。購入後に滞納額を承継するリスクがあるため重要な情報です。",
+    "cat": "区分所有建物"
+  },
+  {
+    "q": "割賦販売（分割払い）の場合、割賦販売価格を重要事項として説明すれば足り、現金販売価格の説明は不要である。",
+    "a": false,
+    "ex": "誤り。割賦販売の場合は、現金販売価格と割賦販売価格の双方を重要事項として説明しなければなりません（宅建業法35条2項1号・2号）。買主が分割払いと一括払いの差額を比較できるようにする趣旨です。",
+    "cat": "割賦販売"
+  },
+  {
+    "q": "宅建業者間の売買取引であっても、重要事項説明書の交付は省略できない。",
+    "a": true,
+    "ex": "正しい。宅建業法35条6項により、相手方が宅建業者の場合、取引士による「説明」は省略できますが、重要事項説明書の「交付」自体は省略できません。書面交付義務は業者間でも存続します。",
+    "cat": "基本ルール"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで重要事項説明（35条）の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・35条の2（供託所等に関する説明）の詳細<br>・個別の法令上の制限（都市計画法・建築基準法の具体的制限内容）<br>・金銭の貸借のあっせんに関する事項の詳細<br>・契約不適合責任の特約に関する具体的事例<br>・37条書面（契約書面）との比較の詳細<br>・信託受益権の売買に関する重要事項</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 重要事項説明の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【重要事項説明の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 取引士証の提示</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 重要事項説明書の交付</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 書面に基づく口頭説明</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">④ 契約締結</span><br><br><span style="color:#d32f2f;font-weight:bold;font-family:sans-serif">⚠️ 必ず「契約前」に行う！契約後では遅い！</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">説明の相手方：買主・借主（売主への説明は不要）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 業者間取引での扱い</strong><br>相手方が宅建業者の場合、説明は省略可でも書面交付は省略不可！<br><span style="font-size:12px;color:#555">→ 詳しくは原則タブの「業者間取引の特例」を参照</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 「調査義務なし」パターン</strong><br>以下の3つは全て「記録がある場合に説明」するだけで<strong>調査義務はない</strong>：<br>・石綿（アスベスト）使用調査<br>・建物状況調査（インスペクション）<br>・耐震診断の結果<br><span style="color:#d32f2f;font-weight:bold">⚠️「調査を実施しなければならない」は誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">★最重要③ 建物の貸借だけ私道負担の説明不要</strong><br>私道に関する負担の説明：<br>・宅地の売買 → <strong>必要</strong><br>・宅地の貸借 → <strong>必要</strong><br>・建物の売買 → <strong>必要</strong><br>・建物の貸借 → <span style="color:#d32f2f;font-weight:bold">不要（ここだけ！）</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 複数業者が関与する場合</strong><br>・重要事項説明書への記名 → <strong>全業者の取引士</strong>が記名必要<br>・実際の説明 → いずれかの取引士が行えばOK<br><span style="font-size:12px;color:#d32f2f">⚠️「説明担当の取引士のみ記名」は誤り</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 取引類型別：重要事項の記載事項まとめ</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：取引類型による記載事項の違い</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:4px">記載事項</th><th style="border:1px solid #90caf9;padding:4px">売買（宅地）</th><th style="border:1px solid #90caf9;padding:4px">売買（建物）</th><th style="border:1px solid #90caf9;padding:4px">貸借（宅地）</th><th style="border:1px solid #90caf9;padding:4px">貸借（建物）</th></tr><tr><td style="border:1px solid #90caf9;padding:4px">登記された権利</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:4px">法令上の制限</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr><td style="border:1px solid #90caf9;padding:4px;font-weight:bold">私道に関する負担</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center;color:#d32f2f;font-weight:bold">× ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:4px">飲用水・電気・ガス等</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr><td style="border:1px solid #90caf9;padding:4px">水害ハザードマップ</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:4px">石綿使用調査の記録</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr><td style="border:1px solid #90caf9;padding:4px">耐震診断（旧耐震基準）</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:4px">建物状況調査（既存建物）</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">○</td></tr><tr><td style="border:1px solid #90caf9;padding:4px">台所・浴室等の設備</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center;color:#1565c0;font-weight:bold">○（貸借のみ）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:4px">敷金等の精算</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center;color:#1565c0;font-weight:bold">○（貸借のみ）</td></tr><tr><td style="border:1px solid #90caf9;padding:4px">宅地上の建物の取壊し</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td><td style="border:1px solid #90caf9;padding:4px;text-align:center;color:#1565c0;font-weight:bold">○（宅地貸借のみ）</td><td style="border:1px solid #90caf9;padding:4px;text-align:center">−</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 重要事項説明制度とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「契約する前に、買主・借主が知っておくべき情報を、宅地建物取引士が書面を使って説明する」制度です（宅建業法35条）。</div><div class="info-box" style="background:#fff3e0"><strong>なぜこの制度があるのか？</strong><br>不動産取引は高額で専門的です。契約後に「こんなはずじゃなかった」とならないよう、買主・借主を保護するために、契約前に重要な情報を説明することが法律で義務づけられています。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 基本ルール：4つの要素</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「いつ・誰が・誰に・何を」を押さえれば基本ルールはマスターです。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:5px;width:20%">要素</th><th style="border:1px solid #ef9a9a;padding:5px">内容</th></tr><tr><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold">いつ？</td><td style="border:1px solid #ef9a9a;padding:5px">契約が成立する<strong>まで</strong>の間（契約前）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold">誰が？</td><td style="border:1px solid #ef9a9a;padding:5px"><strong>宅地建物取引士</strong>が説明（取引士証を提示）</td></tr><tr><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold">誰に？</td><td style="border:1px solid #ef9a9a;padding:5px"><strong>買主・借主</strong>に対して（売主への説明は不要）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px;font-weight:bold">何を？</td><td style="border:1px solid #ef9a9a;padding:5px">取引士が記名した<strong>重要事項説明書</strong>を交付＋口頭で説明</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ひっかけ注意：「交換」の場合</strong><br>交換では双方が取得者になるため、<strong>双方に説明が必要</strong>。売買の「買主のみ」と混同しないこと。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「重説は契約前に、取引士が、買主・借主に、書面交付＋説明」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📝 重要事項説明書の記載事項</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「物件そのものの情報」と「取引条件の情報」の2本柱です。</div><div class="info-box" style="background:#fff3e0"><strong>【物件に関する事項】</strong><br>① 登記された権利の種類・内容・名義人<br>② 法令に基づく制限の概要<br>③ 私道に関する負担（建物の貸借では不要）<br>④ 飲用水・電気・ガス・排水施設の整備状況<br>⑤ 未完成物件の完了時の形状・構造<br>⑥ 区分所有建物の規約等（マンション特有）<br>⑥の2 既存建物の建物状況調査・設計図書等</div><div class="info-box" style="background:#e8f5e9"><strong>【取引条件に関する事項】</strong><br>⑦ 代金等以外に授受される金銭（手付金等）の額・目的<br>⑧ 契約の解除に関する事項<br>⑨ 損害賠償額の予定・違約金に関する事項<br>⑩ 手付金等の保全措置の概要<br>⑪ 支払金・預り金の保全措置の有無・概要<br>⑫ 金銭の貸借のあっせん<br>⑬ 契約不適合責任の履行措置<br>⑭ その他（省令で定める事項）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏠 貸借特有の記載事項</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「入居後に困らないための情報」を中心に説明します。</div><div class="info-box" style="background:#e8f5e9"><strong>建物の貸借で必要な事項：</strong><br>✅ 台所・浴室・便所等の設備の整備状況<br>✅ 建物の用途その他の利用の制限<br>✅ 契約終了時の敷金等の精算に関する事項<br>✅ 管理が委託されている場合はその内容</div><div class="info-box" style="background:#fff3e0"><strong>宅地の貸借で必要な事項：</strong><br>✅ 契約終了時における宅地上の建物の取壊しに関する事項</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「貸借は住んだ後に困ること。設備・制限・敷金精算が3本柱」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #0277bd;color:#0277bd">🌊 水害ハザードマップ</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「全取引で、3種類の水害リスクについて説明する」義務です。</div><div class="info-box" style="background:#e0f7fa"><strong>ルール：</strong><br>・対象：<strong>全取引類型</strong>（売買・貸借、宅地・建物すべて）<br>・市町村作成のハザードマップを<strong>提示して</strong>説明<br>・<strong>3種類</strong>：洪水・雨水出水（内水）・高潮<br>・マップが<strong>存在しない</strong>場合 → その旨を説明すればOK<br>・マップを<strong>添付</strong>する義務はない（提示で足りる）</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 絶対やってはいけないこと：</strong>ハザードマップへの記載をもって「この物件は安全です」と説明すること。マップは安全性を保証するものではありません。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「ハザードマップは全取引×3種類。なければ『ない』と説明」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">💻 IT重説（電磁的方法による説明）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「条件を満たせば、テレビ電話等で重説できる」制度です（35条8項）。</div><div class="info-box" style="background:#f3e5f5"><strong>IT重説の要件：</strong><br>① <strong>相手方の承諾</strong>を得ること<br>② 取引士証を<strong>画面上に提示</strong>し、相手方が確認できること<br>③ <strong>双方向</strong>でやり取りできるIT環境であること<br>④ 相手方が書面交付を希望 → <strong>書面で交付</strong>しなければならない</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「IT重説は承諾＋取引士証の画面提示がセット」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ef6c00;color:#ef6c00">🏚️ 既存建物（中古物件）の重要事項</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「中古建物では、建物の状態に関する3つの記録の有無を説明する」義務です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">項目</th><th style="border:1px solid #ffb74d;padding:5px">説明義務</th><th style="border:1px solid #ffb74d;padding:5px">調査義務</th><th style="border:1px solid #ffb74d;padding:5px">備考</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">建物状況調査</td><td style="border:1px solid #ffb74d;padding:5px;color:#2e7d32;font-weight:bold">あり</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">なし</td><td style="border:1px solid #ffb74d;padding:5px">実施後<strong>1年以内</strong>のもの</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">石綿使用調査</td><td style="border:1px solid #ffb74d;padding:5px;color:#2e7d32;font-weight:bold">あり（記録がある場合）</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">なし</td><td style="border:1px solid #ffb74d;padding:5px">記録なければ「ない」と説明</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">耐震診断の結果</td><td style="border:1px solid #ffb74d;padding:5px;color:#2e7d32;font-weight:bold">あり（記録がある場合）</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">なし</td><td style="border:1px solid #ffb74d;padding:5px"><strong>旧耐震基準</strong>の建物のみ</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 最頻出ひっかけ：「調査を実施しなければならない」は全て誤り！</strong><br>宅建業者には調査実施義務がない。「記録があれば説明」「なければ『ない』と説明」で足りる。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「昭和56年5月31日以前＝旧耐震。それより後の建物は耐震診断の説明不要」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00695c;color:#00695c">⚖️ 業者間取引の特例（35条6項）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「プロ同士なら説明は省略可。でも書面交付は必要」です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;padding:5px">項目</th><th style="border:1px solid #80cbc4;padding:5px">一般消費者が相手方</th><th style="border:1px solid #80cbc4;padding:5px">宅建業者が相手方</th></tr><tr><td style="border:1px solid #80cbc4;padding:5px">重要事項説明書の交付</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">取引士による口頭説明</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">不要</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px">取引士証の提示</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #80cbc4;padding:5px;color:#d32f2f;font-weight:bold">不要</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">取引士の記名</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">必要</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">重要事項説明クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
