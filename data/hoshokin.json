@@ -1,0 +1,193 @@
+{
+  "app_id": "hoshokin",
+  "app_title": "保証金制度クイズ",
+  "header_title": "宅建業法 ＞ 保証金制度",
+  "header_desc": "営業保証金・弁済業務保証金分担金・保証協会・還付・取戻し",
+  "quiz_title": "保証金制度クイズ",
+  "quizzes_l1": [
+    {
+      "q": "宅建業者は、営業保証金を主たる事務所の最寄りの供託所に供託しなければならない。",
+      "a": true,
+      "ex": "正しい。営業保証金の供託先は「主たる事務所の最寄りの供託所」です（宅建業法25条1項）。従たる事務所（支店）の分も含めて、すべて主たる事務所の最寄りの供託所に一括して供託します。",
+      "cat": "営業保証金の供託"
+    },
+    {
+      "q": "営業保証金の額は、主たる事務所につき1,000万円、従たる事務所1か所につき500万円である。",
+      "a": true,
+      "ex": "正しい。営業保証金の額は政令で定められており、主たる事務所（本店）は1,000万円、従たる事務所（支店）は1か所あたり500万円です（宅建業法25条2項、施行令2条の4）。",
+      "cat": "営業保証金の金額"
+    },
+    {
+      "q": "宅建業者は、営業保証金を供託しただけで事業を開始することができる。",
+      "a": false,
+      "ex": "誤り。営業保証金を供託した後、その旨を免許権者（知事または国土交通大臣）に届け出なければなりません。届出をした後でなければ事業を開始できません（宅建業法25条4項・5項）。「供託→届出→事業開始」の順番が重要です。",
+      "cat": "営業保証金の供託"
+    },
+    {
+      "q": "宅建業者と宅地建物取引業に関して取引をした者は、その取引により生じた債権について営業保証金から弁済を受ける権利を有する。",
+      "a": true,
+      "ex": "正しい。宅建業者と宅建業に関する取引をした者は、その取引により生じた債権について、営業保証金から弁済（還付）を受ける権利を有します（宅建業法27条1項）。ただし、宅建業者は還付の対象外です。",
+      "cat": "営業保証金の還付"
+    },
+    {
+      "q": "宅建業者であるA社がB社（宅建業者）と土地の売買取引を行った場合、B社は営業保証金から還付を受けることができる。",
+      "a": false,
+      "ex": "誤り。営業保証金の還付を受けられるのは「宅建業者に該当する者を除く」とされています（宅建業法27条1項）。宅建業者同士の取引では、相手方の営業保証金から還付を受けることはできません。",
+      "cat": "営業保証金の還付"
+    },
+    {
+      "q": "営業保証金が還付により不足した場合、宅建業者は免許権者から通知を受けた日から2週間以内に不足額を供託しなければならない。",
+      "a": true,
+      "ex": "正しい。営業保証金の還付により不足が生じた場合、宅建業者は通知を受けた日から2週間以内に不足額を供託しなければなりません（宅建業法28条1項）。この「2週間」は頻出の数字です。",
+      "cat": "営業保証金の不足額供託"
+    },
+    {
+      "q": "宅地建物取引業保証協会に加入して弁済業務保証金分担金を納付すれば、営業保証金を供託する必要はない。",
+      "a": true,
+      "ex": "正しい。保証協会の社員は、弁済業務開始日以後、営業保証金を供託することを要しません（宅建業法64条の13）。保証協会制度は営業保証金制度の代替として設けられた制度です。",
+      "cat": "保証協会の基本"
+    },
+    {
+      "q": "弁済業務保証金分担金の額は、主たる事務所につき60万円、従たる事務所1か所につき30万円である。",
+      "a": true,
+      "ex": "正しい。弁済業務保証金分担金は、主たる事務所60万円、従たる事務所1か所あたり30万円です（宅建業法64条の9第1項、施行令7条）。営業保証金（本店1,000万円・支店500万円）と比べて大幅に安く、約1/16.7の金額です。",
+      "cat": "保証協会の分担金"
+    },
+    {
+      "q": "弁済業務保証金分担金は保証協会に納付し、保証協会がそれを供託所に供託する仕組みである。",
+      "a": true,
+      "ex": "正しい。宅建業者は弁済業務保証金分担金を保証協会に納付し、保証協会はその納付を受けた日から1週間以内に、納付額に相当する弁済業務保証金を供託所に供託します（宅建業法64条の7第1項）。",
+      "cat": "保証協会の基本"
+    },
+    {
+      "q": "保証協会の社員と宅建業に関して取引をした者が弁済を受けるには、保証協会の認証を受けた上で供託所から還付を受ける。",
+      "a": true,
+      "ex": "正しい。還付を受けるには、まず保証協会に認証を申し出て認証を受け、その後に供託所から弁済業務保証金の還付を受けます（宅建業法64条の8第1項・2項）。認証の申出先は保証協会、還付を受ける先は供託所という点が重要です。",
+      "cat": "保証協会の還付"
+    },
+    {
+      "q": "保証協会の社員である宅建業者が還付充当金を通知から2週間以内に保証協会に納付しなかった場合、社員の地位を失う。",
+      "a": true,
+      "ex": "正しい。還付充当金の納付期限は通知を受けた日から2週間以内であり、この期間内に納付しなかった場合は保証協会の社員の地位を失います（宅建業法64条の10第2項・3項）。",
+      "cat": "保証協会の還付"
+    },
+    {
+      "q": "一の宅建業者が2つの保証協会に同時に加入することができる。",
+      "a": false,
+      "ex": "誤り。一の保証協会の社員である者は、他の保証協会の社員となることができません（宅建業法64条の4第1項）。加入できるのは1つの保証協会のみです。",
+      "cat": "保証協会の基本"
+    },
+    {
+      "q": "営業保証金は金銭のほか、国債証券や地方債証券などの有価証券でも供託することができる。",
+      "a": true,
+      "ex": "正しい。営業保証金は金銭のほか、国債証券・地方債証券その他の国土交通省令で定める有価証券で供託することができます（宅建業法25条3項）。ただし有価証券の評価額は種類によって異なります。",
+      "cat": "営業保証金の供託"
+    },
+    {
+      "q": "営業保証金の供託先は、従たる事務所（支店）の分も含めて、すべて主たる事務所の最寄りの供託所である。",
+      "a": true,
+      "ex": "正しい。営業保証金は主たる事務所・従たる事務所の分すべてを「主たる事務所の最寄りの供託所」に一括して供託します（宅建業法25条1項）。支店ごとに別々の供託所に供託するのではありません。",
+      "cat": "営業保証金の供託"
+    },
+    {
+      "q": "営業保証金と弁済業務保証金分担金の両方を納付・供託する必要がある。",
+      "a": false,
+      "ex": "誤り。営業保証金の供託と保証協会への加入（分担金の納付）は、いずれか一方を選択します。保証協会の社員は営業保証金を供託する必要がなく（宅建業法64条の13）、両方を行う必要はありません。",
+      "cat": "営業保証金と保証協会の違い"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "営業保証金を国債証券で供託する場合、額面金額の100%で評価される。一方、地方債証券や政府保証債で供託する場合は額面金額の90%で評価される。",
+      "a": true,
+      "ex": "正しい。有価証券による供託の評価額は、国債証券は額面の100%、地方債証券・政府保証債は額面の90%です（宅建業法施行規則15条の2）。評価額の違いにより、地方債等で供託する場合は額面金額をより多く供託する必要があります。",
+      "cat": "営業保証金の供託形態"
+    },
+    {
+      "q": "弁済業務保証金分担金は、金銭のほか有価証券でも保証協会に納付することができる。",
+      "a": false,
+      "ex": "誤り。弁済業務保証金分担金は「金銭のみ」で保証協会に納付します。有価証券での納付はできません。一方、保証協会が供託所に供託する弁済業務保証金は有価証券でも可能です（宅建業法64条の7第3項が25条3項を準用）。「分担金＝金銭のみ」「弁済業務保証金＝有価証券も可」の区別が重要です。",
+      "cat": "弁済業務保証金分担金の供託形態"
+    },
+    {
+      "q": "宅建業者が主たる事務所を移転し最寄りの供託所が変わった場合、営業保証金を金銭のみで供託しているときは保管替えを請求できるが、有価証券を含む場合は新たに供託し旧供託所から取り戻す手続きとなる。",
+      "a": true,
+      "ex": "正しい。金銭のみで供託している場合は「保管替え」の請求ができますが、有価証券を含む場合は保管替えができず、新しい供託所に新たに供託した上で、旧供託所から取り戻す手続きが必要です（宅建業法29条1項）。",
+      "cat": "事務所移転時の手続き"
+    },
+    {
+      "q": "有価証券を含む営業保証金について、主たる事務所の移転により供託所が変わった場合、旧供託所からの取戻しには6か月以上の公告が必要である。",
+      "a": false,
+      "ex": "誤り。主たる事務所の移転に伴う供託所変更による取戻しには公告は不要です。宅建業法29条1項の規定により新たに供託した場合の旧供託所からの取戻しには、30条2項の公告規定は適用されません（30条1項後段参照）。公告が必要なのは、免許失効・事務所廃止等を理由とする取戻しの場合です。供託所の変更は既存の取引関係に影響しないため、公告なしで取り戻せます。",
+      "cat": "事務所移転時の手続き"
+    },
+    {
+      "q": "営業保証金の取戻しをする場合、原則として6か月以上の期間を定めて公告しなければならないが、保証協会に加入した場合の取戻しは公告不要である。",
+      "a": true,
+      "ex": "正しい。営業保証金の取戻しは原則として6か月以上の公告が必要ですが（宅建業法30条2項）、保証協会に加入して営業保証金の供託が不要になった場合の取戻しは公告不要です（宅建業法64条の14）。保証協会の弁済業務保証金に切り替わるため、取引相手の保護は維持されるからです。",
+      "cat": "営業保証金の取戻し"
+    },
+    {
+      "q": "営業保証金を取り戻すことができる事由が発生してから10年を経過した場合は、公告をしなくても取り戻すことができる。",
+      "a": true,
+      "ex": "正しい。営業保証金の取戻し事由が発生した時から10年を経過したときは、公告なしで取り戻すことができます（宅建業法30条2項ただし書）。債権の消滅時効との関係で、10年経過後は還付請求権者が存在しないと考えられるためです。",
+      "cat": "営業保証金の取戻し"
+    },
+    {
+      "q": "保証協会の社員である宅建業者が社員の地位を失った場合、2週間以内に営業保証金を供託しなければならない。",
+      "a": false,
+      "ex": "誤り。社員の地位を失った場合の営業保証金の供託期限は「1週間以内」です（宅建業法64条の15）。他の多くの期限が「2週間以内」であるのに対し、ここだけ「1週間以内」と短い点が最頻出のひっかけです。",
+      "cat": "社員の地位喪失"
+    },
+    {
+      "q": "還付充当金は保証協会に納付するが、営業保証金の不足額は供託所に供託する。両方とも期限は通知を受けた日から2週間以内である。",
+      "a": true,
+      "ex": "正しい。還付充当金は保証協会に2週間以内に納付し（宅建業法64条の10第2項）、営業保証金の不足額は供託所に2週間以内に供託します（宅建業法28条1項）。期限は同じ2週間ですが、納付先が異なります。「還付充当金→保証協会」「不足額→供託所」の違いが頻出です。",
+      "cat": "還付充当金と不足額供託の違い"
+    },
+    {
+      "q": "保証協会の社員が新たに従たる事務所を設置した場合、その日から2週間以内に弁済業務保証金分担金を保証協会に納付しなければならない。",
+      "a": true,
+      "ex": "正しい。保証協会の社員が新たに事務所を設置した場合は、設置した日から2週間以内に分担金を保証協会に納付しなければなりません（宅建業法64条の9第2項）。この期間内に納付しないと社員の地位を失います（同条3項）。",
+      "cat": "事務所新設時の手続き"
+    },
+    {
+      "q": "営業保証金制度を利用する宅建業者が新たに従たる事務所を設置した場合、供託→届出→事業開始の手順が必要であり、届出前に当該事務所で事業を開始することはできない。",
+      "a": true,
+      "ex": "正しい。事業開始後に新たに事務所を設置した場合も、その事務所につき営業保証金を供託し、免許権者に届出をした後でなければ、当該事務所で事業を開始できません（宅建業法26条、25条4項・5項を準用）。",
+      "cat": "事務所新設時の手続き"
+    },
+    {
+      "q": "保証協会の社員と取引をした者が弁済業務保証金から還付を受けられる限度額は、弁済業務保証金分担金の額である。",
+      "a": false,
+      "ex": "誤り。還付を受けられる限度額は、その社員が保証協会に加入していなかったならば供託すべき営業保証金の額に相当する額です（宅建業法64条の8第1項）。つまり本店のみなら1,000万円が限度であり、分担金の60万円ではありません。",
+      "cat": "保証協会の認証と弁済"
+    },
+    {
+      "q": "保証協会の社員と取引をして損害を受けた者は、保証協会から直接弁済を受ける。",
+      "a": false,
+      "ex": "誤り。弁済を受ける手続きは、まず保証協会に認証を申し出て認証を受け、その後「供託所」から還付を受けます（宅建業法64条の8第1項・2項）。保証協会から直接還付を受けるのではありません。「認証は保証協会、還付は供託所」が正しい手続きです。",
+      "cat": "保証協会の認証と弁済"
+    },
+    {
+      "q": "保証協会の社員が社員の地位を失った場合、保証協会は6か月以上の期間を定めて、その社員に係る取引から生じた債権について認証の申出をすべき旨を公告しなければならない。",
+      "a": true,
+      "ex": "正しい。社員が地位を失った場合、保証協会は6か月以上の期間を定めて、取引から生じた債権について認証の申出をすべき旨を公告しなければなりません（宅建業法64条の11第4項）。この期間内に申出がなかった債権については認証できなくなります（同条5項）。",
+      "cat": "社員の地位喪失"
+    },
+    {
+      "q": "保証協会に加入しようとする宅建業者は、加入しようとする日までに弁済業務保証金分担金を保証協会に納付しなければならない。",
+      "a": true,
+      "ex": "正しい。保証協会に加入しようとする宅建業者は、加入しようとする日までに弁済業務保証金分担金を保証協会に納付しなければなりません（宅建業法64条の9第1項1号）。納付先は供託所ではなく保証協会です。",
+      "cat": "保証協会の加入手続き"
+    },
+    {
+      "q": "宅建業者が社員となる前に行った宅建業に関する取引で生じた債権については、保証協会の弁済業務保証金による弁済の対象外である。",
+      "a": false,
+      "ex": "誤り。社員となる前に取引をした者の有する債権も、弁済業務保証金からの弁済の対象に含まれます（宅建業法64条の8第1項かっこ書）。社員となる前の取引であっても保護される点が重要です。ただし、保証協会は弁済業務の円滑な運営に支障が生じるおそれがある場合、当該社員に担保の提供を求めることができます（同法64条の4第3項）。",
+      "cat": "保証協会の認証と弁済"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで保証金制度の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">このアプリでカバーできていない論点：</strong><br>・弁済業務保証金の取戻しの詳細な手続き<br>・保証協会の業務（研修・苦情解決等）の詳細<br>・供託法の詳細な手続き<br>・特別弁済業務保証金分担金の仕組み<br>・手付金等保管事業の詳細</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 保証金制度の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6\"><div style=\"font-weight:bold;margin-bottom:6px;font-family:sans-serif\">【宅建業者が営業を始めるには？】</div><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">免許取得</span><br>↓<br><span style=\"background:#ffe0b2;padding:3px 10px;border-radius:4px;font-weight:bold\">方法①：営業保証金を供託所に供託</span><br><span style=\"font-size:12px;font-family:sans-serif\">（本店1,000万円・支店500万円）</span><br>or<br><span style=\"background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold\">方法②：保証協会に加入し分担金を納付</span><br><span style=\"font-size:12px;font-family:sans-serif\">（本店60万円・支店30万円）</span><br>↓<br><span style=\"background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c\">営業開始！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">★最重要① 社員の地位喪失→「1週間以内」に営業保証金を供託</strong><br>他の期限は2週間が多いが、ここだけ<span style=\"color:#d32f2f;font-weight:bold\">「1週間」</span>！<br><span style=\"font-size:12px;color:#555\">「2週間以内に営業保証金を供託」とするひっかけに注意</span></div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #e53935\"><strong style=\"color:#c62828\">★最重要② 納付先の混同を狙う問題</strong><br><table style=\"width:100%;border-collapse:collapse;font-size:13px\"><tr style=\"background:#ffcdd2\"><th style=\"border:1px solid #ef9a9a;padding:4px\">項目</th><th style=\"border:1px solid #ef9a9a;padding:4px\">納付先</th><th style=\"border:1px solid #ef9a9a;padding:4px\">期限</th></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">営業保証金の不足額</td><td style=\"border:1px solid #ef9a9a;padding:4px;font-weight:bold\">供託所</td><td style=\"border:1px solid #ef9a9a;padding:4px\">2週間以内</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:4px\">還付充当金</td><td style=\"border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold\">保証協会 ⚠️</td><td style=\"border:1px solid #ef9a9a;padding:4px\">2週間以内</td></tr></table><span style=\"font-size:12px;color:#d32f2f\">⚠️ 期限は同じ2週間だが、納付先が違う！</span></div><div class=\"info-box\" style=\"background:#e8f5e9;border-left:4px solid #43a047\"><strong style=\"color:#1b5e20\">重要③ 分担金は「金銭のみ」、弁済業務保証金は「有価証券も可」</strong><br>宅建業者が保証協会に納付する分担金＝金銭のみ<br>保証協会が供託所に供託する弁済業務保証金＝有価証券も可<br><span style=\"font-size:12px;color:#555\">「分担金を有価証券で納付できる」は誤り</span></div><div class=\"info-box\" style=\"background:#e3f2fd;border-left:4px solid #1976d2\"><strong style=\"color:#0d47a1\">重要④ 認証は保証協会、還付は供託所</strong><br>取引相手が弁済を受ける手順：<br>①保証協会に認証を申し出る → ②認証を受ける → ③<strong>供託所</strong>から還付<br><span style=\"font-size:12px;color:#d32f2f\">⚠️「保証協会から直接還付」は誤り！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">📊 暗記表</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">★最重要：営業保証金 vs 保証協会（弁済業務保証金）比較表</div><table style=\"width:100%;border-collapse:collapse;font-size:12px\"><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;padding:4px\">項目</th><th style=\"border:1px solid #90caf9;padding:4px\">営業保証金</th><th style=\"border:1px solid #90caf9;padding:4px\">保証協会（分担金）</th></tr><tr><td style=\"border:1px solid #90caf9;padding:4px\">本店の額</td><td style=\"border:1px solid #90caf9;padding:4px;font-weight:bold\">1,000万円</td><td style=\"border:1px solid #90caf9;padding:4px;font-weight:bold\">60万円</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:4px\">支店1か所</td><td style=\"border:1px solid #90caf9;padding:4px;font-weight:bold\">500万円</td><td style=\"border:1px solid #90caf9;padding:4px;font-weight:bold\">30万円</td></tr><tr><td style=\"border:1px solid #90caf9;padding:4px\">納付先</td><td style=\"border:1px solid #90caf9;padding:4px\">供託所</td><td style=\"border:1px solid #90caf9;padding:4px\">保証協会</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:4px\">供託形態</td><td style=\"border:1px solid #90caf9;padding:4px\">金銭または有価証券</td><td style=\"border:1px solid #90caf9;padding:4px;color:#d32f2f;font-weight:bold\">金銭のみ ⚠️</td></tr><tr><td style=\"border:1px solid #90caf9;padding:4px\">還付手続き</td><td style=\"border:1px solid #90caf9;padding:4px\">供託所に直接請求</td><td style=\"border:1px solid #90caf9;padding:4px\">保証協会に認証申出→供託所から還付</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:4px\">不足時の対応</td><td style=\"border:1px solid #90caf9;padding:4px\">2週間以内に<strong>供託所</strong>に供託</td><td style=\"border:1px solid #90caf9;padding:4px\">2週間以内に<strong>保証協会</strong>に納付</td></tr><tr><td style=\"border:1px solid #90caf9;padding:4px\">事務所新設時</td><td style=\"border:1px solid #90caf9;padding:4px\">供託→届出→事業開始</td><td style=\"border:1px solid #90caf9;padding:4px\">2週間以内に分担金を保証協会に納付</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:4px\">取戻し公告</td><td style=\"border:1px solid #90caf9;padding:4px\">原則6か月以上</td><td style=\"border:1px solid #90caf9;padding:4px\">―</td></tr></table><br><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">重要：数字のまとめ</div><table style=\"width:100%;border-collapse:collapse;font-size:12px\"><tr style=\"background:#ffe0b2\"><th style=\"border:1px solid #ffb74d;padding:4px\">場面</th><th style=\"border:1px solid #ffb74d;padding:4px\">期限・数字</th></tr><tr><td style=\"border:1px solid #ffb74d;padding:4px\">営業保証金の不足額供託</td><td style=\"border:1px solid #ffb74d;padding:4px\">通知から<strong>2週間</strong>以内</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:4px\">還付充当金の納付</td><td style=\"border:1px solid #ffb74d;padding:4px\">通知から<strong>2週間</strong>以内</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:4px\">事務所新設時の分担金納付</td><td style=\"border:1px solid #ffb74d;padding:4px\">設置日から<strong>2週間</strong>以内</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:4px;color:#d32f2f;font-weight:bold\">社員の地位喪失後の営業保証金供託 ⚠️</td><td style=\"border:1px solid #ffb74d;padding:4px;color:#d32f2f;font-weight:bold\">1週間以内 ⚠️</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:4px\">営業保証金の取戻し公告</td><td style=\"border:1px solid #ffb74d;padding:4px\"><strong>6か月</strong>以上</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:4px\">社員の地位喪失後の認証申出公告</td><td style=\"border:1px solid #ffb74d;padding:4px\"><strong>6か月</strong>以上</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:4px\">公告不要の取戻し（事由発生後）</td><td style=\"border:1px solid #ffb74d;padding:4px\"><strong>10年</strong>経過後</td></tr></table></div></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 保証金制度とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「宅建業者と取引をした消費者が損害を受けたとき、お金を回収できるようにする制度」です。営業保証金を供託所に供託するか、保証協会に加入するか、どちらかの方法で消費者を保護します。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">💰 営業保証金の供託</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「営業前に保証金を供託所に預けておく」制度です（宅建業法25条）。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>基本の仕組み：</strong><br>・<strong>供託先</strong>：主たる事務所の最寄りの供託所（全事務所分を一括）<br>・<strong>金額</strong>：本店1,000万円、支店1か所500万円<br>・<strong>供託形態</strong>：金銭のほか有価証券でもOK<br>・<strong>手順</strong>：供託→免許権者に届出→事業開始</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「千（1,000万）と五百（500万）。供（供託）→届（届出）→営（営業開始）の順！」</div><div class=\"info-box\" style=\"background:#fce4ec\"><span style=\"color:#d32f2f;font-weight:bold\">⚠️ ここが試験のひっかけ！</span><br>「供託しただけで営業開始できる」→<strong>誤り</strong>！届出が必要。<br>「支店の分は支店の最寄りの供託所に供託する」→<strong>誤り</strong>！全て主たる事務所の最寄りの供託所。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🔑 有価証券の評価額</div><div class=\"info-box\" style=\"background:#fff3e0\"><table style=\"width:100%;border-collapse:collapse;font-size:13px\"><tr style=\"background:#ffe0b2\"><th style=\"border:1px solid #ffb74d;padding:4px\">有価証券の種類</th><th style=\"border:1px solid #ffb74d;padding:4px\">評価額</th></tr><tr><td style=\"border:1px solid #ffb74d;padding:4px\">国債証券</td><td style=\"border:1px solid #ffb74d;padding:4px;font-weight:bold\">額面の100%</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:4px\">地方債証券・政府保証債</td><td style=\"border:1px solid #ffb74d;padding:4px;font-weight:bold\">額面の90%</td></tr></table></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「国債はそのまま（100%）、地方債はちょっと割引（90%）」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🔄 営業保証金の還付と不足額供託</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「取引相手が損害を受けたら営業保証金から弁済。減った分は2週間以内に補充する」仕組みです。</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>還付を受けられる人：</strong><br>✅ 宅建業に関する取引で損害を受けた者<br>❌ <strong>宅建業者は対象外</strong>（宅建業法27条1項）</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>不足額の供託手続き：</strong><br>還付→免許権者から通知→<strong>2週間以内</strong>に不足額を<strong>供託所</strong>に供託→届出</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「還付で減った→2週間で補充！業者は業者同士で解決（還付対象外）」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">🏠 営業保証金の取戻し</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「供託した保証金を返してもらう手続き。原則公告が必要だが、例外あり」です（宅建業法30条）。</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>取戻しできる場合：</strong><br>・免許の有効期間満了<br>・廃業等による免許失効<br>・免許取消処分<br>・事務所の一部廃止（超過額の取戻し）<br>・保証協会に加入した場合</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>原則：</strong>6か月以上の公告が必要<br><strong>例外（公告不要）：</strong><br>✅ 保証協会に加入した場合<br>✅ 主たる事務所の移転で供託所が変わった場合<br>✅ 取戻し事由発生から10年経過した場合</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「取戻しは6か月公告がお約束。でも保証協会加入と引越しはすぐOK」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00897b;color:#00897b\">🤝 保証協会（弁済業務保証金制度）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「営業保証金の代わりに、保証協会に安い分担金を払って加入する制度」です。金額が約1/16.7で済みます。</div><div class=\"info-box\" style=\"background:#e0f2f1\"><strong>基本の仕組み：</strong><br>・<strong>分担金</strong>：本店60万円、支店1か所30万円<br>・<strong>納付先</strong>：保証協会（供託所ではない！）<br>・<strong>供託形態</strong>：分担金は<strong>金銭のみ</strong><br>・<strong>加入制限</strong>：1つの保証協会にしか加入できない<br>・<strong>流れ</strong>：分担金を保証協会に納付→保証協会が供託所に弁済業務保証金を供託</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">📄 保証協会の還付と還付充当金</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「保証協会経由の還付手続き。認証→供託所から還付。減った分は2週間以内に保証協会に補充」です。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>還付の手順：</strong><br>①取引相手が<strong>保証協会</strong>に認証を申出<br>②保証協会が認証<br>③取引相手が<strong>供託所</strong>から弁済業務保証金の還付を受ける</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>還付後の手続き（還付充当金）：</strong><br>保証協会が社員に通知→社員は通知から<strong>2週間以内</strong>に還付充当金を<strong>保証協会</strong>に納付<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 納付しないと社員の地位を失う！</span></div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>還付の限度額：</strong><br>保証協会に加入していなかったならば供託すべき営業保証金の額が限度<br>（例：本店のみ→1,000万円が限度。分担金の60万円ではない）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">⚡ 社員の地位喪失→1週間以内に営業保証金を供託</div><div class=\"info-box\" style=\"background:#ffebee\"><strong style=\"color:#d32f2f\">一言で言うと：</strong>「保証協会をやめたら、すぐに営業保証金を自分で供託しなおす」義務です（宅建業法64条の15）。</div><div class=\"info-box\" style=\"background:#fff9c4;border:2px solid #f9a825\"><strong style=\"color:#e65100\">⚠️ 最重要ひっかけ：期限は「1週間以内」！</strong><br>他の多くの期限が「2週間以内」である中、<span style=\"color:#d32f2f;font-weight:bold\">ここだけ「1週間以内」</span>！<br>「2週間以内に営業保証金を供託」とするひっかけが頻出です。</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「社員やめたら大ピンチ！1週間で保証金を用意しろ！（他は2週間の余裕あり）」</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>社員の地位を失う場合：</strong><br>・還付充当金を2週間以内に納付しなかった場合<br>・事務所新設時の分担金を2週間以内に納付しなかった場合<br>・保証協会からの脱退</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=327AC0000000176\" target=\"_blank\">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。<br>営業保証金：第25条〜第30条<br>保証協会：第64条の2〜第64条の25</div></div>"
+}
