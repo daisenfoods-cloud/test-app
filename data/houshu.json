@@ -1,0 +1,193 @@
+{
+  "app_id": "houshu",
+  "app_title": "報酬額の制限クイズ",
+  "header_title": "宅建業法 ＞ 報酬額の制限",
+  "header_desc": "売買・交換・賃貸の報酬計算・速算式・低廉空家等の特例",
+  "quiz_title": "報酬額の制限クイズ",
+  "quizzes_l1": [
+    {
+      "q": "宅建業者が売買の媒介に関して受けることのできる報酬の額は、国土交通大臣が告示で定める上限額の範囲内でなければならない。",
+      "a": true,
+      "ex": "正しい。宅建業法46条1項により、報酬の額は国土交通大臣の定めるところによるとされ、同条2項により、業者はその額を超えて報酬を受けてはなりません。具体的な上限額は昭和45年建設省告示第1552号で定められています。",
+      "cat": "報酬の基本ルール"
+    },
+    {
+      "q": "宅建業者が売買の媒介報酬を計算する際、物件価格（税抜）が400万円を超える場合の速算式は「価格×3％＋6万円」である。",
+      "a": true,
+      "ex": "正しい。売買の媒介報酬は本来、200万円以下＝5%、200万円超400万円以下＝4%、400万円超＝3%と区分計算しますが、400万円超の場合はこれを一括すると「価格×3%＋6万円」になります。この額に消費税を加算したものが依頼者の一方から受け取れる上限です。",
+      "cat": "売買の速算式"
+    },
+    {
+      "q": "売買代金が300万円（税抜）の宅地の媒介をした場合、宅建業者が依頼者の一方から受け取れる報酬の上限は「300万円×4％＋2万円＝14万円」に消費税を加算した額である。",
+      "a": true,
+      "ex": "正しい。200万円超400万円以下の速算式「価格×4%＋2万円」を適用します。300万円×4%＋2万円＝14万円。これに消費税10%を加算して15万4,000円が依頼者の一方から受け取れる上限です。",
+      "cat": "売買の速算式"
+    },
+    {
+      "q": "売買の媒介報酬の速算式において、物件価格（税抜）が200万円以下の場合の報酬料率は5％である。",
+      "a": true,
+      "ex": "正しい。200万円以下の金額に対する報酬料率は100分の5（5%）です。200万円超400万円以下は4%、400万円超は3%となり、金額が大きいほど料率が低くなります。",
+      "cat": "売買の速算式"
+    },
+    {
+      "q": "宅建業者が居住用建物の賃貸の媒介をした場合、依頼者の一方から受け取れる報酬の上限は、原則として借賃の1か月分に消費税を加算した額である。",
+      "a": false,
+      "ex": "誤り。居住用建物の賃貸の媒介では、依頼者の一方から受け取れる報酬は原則として借賃の「0.5か月分」＋消費税が上限です（告示第四後段）。ただし、媒介の依頼を受けるに当たって依頼者の承諾を得ている場合は1か月分まで受け取れます。",
+      "cat": "賃貸の報酬（居住用）"
+    },
+    {
+      "q": "店舗用建物の賃貸の媒介をした場合、依頼者の双方から受け取る報酬の合計額の上限は、借賃の1か月分に消費税を加算した額である。",
+      "a": true,
+      "ex": "正しい。居住用以外の建物（店舗、事務所等）の賃貸の媒介では、報酬の合計が借賃1か月分＋消費税を超えてはなりません（告示第四前段）。居住用と異なり、合計額が上限以内であれば双方からの配分は自由です。",
+      "cat": "賃貸の報酬（居住用以外）"
+    },
+    {
+      "q": "賃貸の媒介において、居住用以外の建物であれば、依頼者の双方から受け取る報酬の配分割合に特段の規制はない。",
+      "a": true,
+      "ex": "正しい。解釈運用の考え方によれば、賃貸の媒介に関しては合計額の限度額のみが定められており、居住用以外の場合は依頼者のそれぞれから受ける報酬の額や割合については特段の規制はありません。一方からのみ受け取ることも可能です。",
+      "cat": "賃貸の報酬（居住用以外）"
+    },
+    {
+      "q": "宅建業者が売買の代理をした場合、依頼者から受け取れる報酬の上限は、媒介の場合の報酬限度額の2倍である。",
+      "a": true,
+      "ex": "正しい。売買の代理の場合、依頼者から受け取れる報酬の上限は、告示第二の計算方法（媒介の速算式）で算出した額の2倍です（告示第三）。ただし、相手方からも報酬を受ける場合は合計額がこの2倍を超えてはなりません。",
+      "cat": "代理の報酬"
+    },
+    {
+      "q": "宅建業者が賃貸の代理をした場合、依頼者から受け取れる報酬の上限は借賃の2か月分に消費税を加算した額である。",
+      "a": false,
+      "ex": "誤り。賃貸の代理の場合でも、依頼者から受け取れる報酬の上限は借賃の「1か月分」＋消費税です（告示第五）。売買の代理は媒介の2倍ですが、賃貸の代理では1か月分のままで2倍にはなりません。",
+      "cat": "代理の報酬"
+    },
+    {
+      "q": "報酬の計算にあたって、土地の売買代金には消費税が課税されないため、土地の価格はそのまま速算式に当てはめて計算する。",
+      "a": true,
+      "ex": "正しい。土地の譲渡は消費税の非課税取引です。そのため土地の売買代金はそのまま税抜価格として速算式に当てはめます。建物の売買代金が税込表示の場合は消費税を差し引いた本体価格で計算する必要があります。",
+      "cat": "消費税と報酬計算"
+    },
+    {
+      "q": "宅建業者は、報酬の限度額を国土交通大臣が定めた告示のとおり、事務所ごとに公衆の見やすい場所に掲示しなければならない。",
+      "a": true,
+      "ex": "正しい。宅建業法46条4項により、宅建業者はその事務所ごとに、公衆の見やすい場所に国土交通大臣が定めた報酬の額を掲示する義務があります。",
+      "cat": "報酬の基本ルール"
+    },
+    {
+      "q": "宅建業者が宅地の交換の媒介をする場合、交換する双方の宅地の価額に差があるときは、低い方の価額を基準に報酬を計算する。",
+      "a": false,
+      "ex": "誤り。交換の媒介報酬は、交換する双方の物件の価額のうち「いずれか多い方の価額」を基準に計算します（告示第二）。低い方ではなく高い方を基準とする点に注意が必要です。",
+      "cat": "売買の速算式"
+    },
+    {
+      "q": "宅建業者は、告示で定める報酬の限度額を、依頼者に対して当然に請求できるわけではない。",
+      "a": true,
+      "ex": "正しい。解釈運用の考え方によれば、報酬の限度額を当然に請求できるものではなく、具体的な報酬額については宅建業者と依頼者との間で協議して定めるものです。告示が定めるのはあくまで上限であり、当然の請求権ではありません。",
+      "cat": "報酬の基本ルール"
+    },
+    {
+      "q": "宅建業者が依頼者の依頼によって行った広告の料金に相当する額は、告示で定める報酬とは別に受け取ることができる。",
+      "a": true,
+      "ex": "正しい。告示第七および解釈運用の考え方により、依頼者の依頼によって行う広告の料金に相当する額は、報酬の限度額とは別に受領することができます。ただし、依頼者の依頼によらない広告の費用は受領できません。",
+      "cat": "報酬以外の金銭"
+    },
+    {
+      "q": "建物の売買代金が1,100万円（税込・消費税10%）と表示されている場合、報酬計算の基礎となる価格は消費税を含めた1,100万円である。",
+      "a": false,
+      "ex": "誤り。報酬計算は税抜価格で行います。1,100万円（税込）の建物の場合、1,100万円÷1.1＝1,000万円が本体価格です。この1,000万円を速算式に当てはめて報酬を計算します。税込価格をそのまま当てはめると報酬が過大になります。",
+      "cat": "消費税と報酬計算"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "宅建業者Aが売主側の媒介、宅建業者Bが買主側の媒介をした場合、AとBがそれぞれの依頼者から受け取れる報酬は、各自が速算式で算出した限度額以内であれば適法である。",
+      "a": true,
+      "ex": "正しい。売買の媒介報酬の限度額は「依頼者のそれぞれ一方から受けることのできる限度額」として定められています（告示第二、解釈運用の考え方）。業者Aは売主から、業者Bは買主から、それぞれ速算式の限度額以内の報酬を受け取ることができ、合計は速算式の2倍になりますが適法です。",
+      "cat": "複数業者の報酬"
+    },
+    {
+      "q": "宅建業者Aが売主の代理をし、宅建業者Bが買主の媒介をした場合において、AとBが受領する報酬額の総額は、速算式で算出した額の3倍まで受け取ることができる。",
+      "a": false,
+      "ex": "誤り。複数の宅建業者が代理及び媒介をした場合、受領する報酬額の総額は速算式で算出した額の「2倍」以内でなければなりません（解釈運用の考え方）。代理だから2倍＋媒介で1倍＝3倍とはなりません。",
+      "cat": "複数業者の報酬"
+    },
+    {
+      "q": "居住用建物の賃貸の媒介において、賃貸借契約が成立した後に借主の承諾を得て、借主から借賃の1か月分の報酬を受け取った場合、宅建業法に違反する。",
+      "a": true,
+      "ex": "正しい。居住用建物の賃貸媒介で依頼者の一方から0.5か月分を超える報酬を受け取るには、「媒介の依頼を受けるに当たって」承諾を得る必要があります（告示第四後段、解釈運用の考え方）。契約成立後の承諾では足りず、宅建業法に違反します。",
+      "cat": "賃貸の報酬（承諾）"
+    },
+    {
+      "q": "居住の用に供する建物で事務所を兼ねる建物（居住兼事務所）の賃貸の媒介では、居住用建物として0.5か月分の制限が適用される。",
+      "a": false,
+      "ex": "誤り。解釈運用の考え方によれば、「居住の用に供する建物」とは専ら居住の用に供する建物を指し、事務所や店舗等の居住以外の用途を兼ねるものは含まれません。したがって居住兼事務所の建物には0.5か月分の制限は適用されず、配分は自由です。",
+      "cat": "賃貸の報酬（居住用）"
+    },
+    {
+      "q": "居住用以外の建物の賃貸で権利金500万円の授受がある場合、宅建業者は権利金を売買代金とみなして速算式で報酬を計算することができる。",
+      "a": true,
+      "ex": "正しい。居住用以外の建物の賃貸借で権利金の授受がある場合は、権利金の額を売買代金とみなして速算式で報酬を計算できます（告示第六）。この場合、借賃ベースの計算と権利金ベースの計算のうち高い方を選択できます。",
+      "cat": "権利金の特例"
+    },
+    {
+      "q": "居住用建物の賃貸で権利金200万円の授受がある場合でも、権利金を売買代金とみなして速算式で報酬を計算することができる。",
+      "a": false,
+      "ex": "誤り。権利金の特例（告示第六）は、居住の用に供する建物の賃貸借の代理又は媒介には適用されません（解釈運用の考え方）。居住用建物では権利金があっても借賃ベースでしか報酬を計算できません。",
+      "cat": "権利金の特例"
+    },
+    {
+      "q": "権利金の特例における「権利金」には、賃貸借契約終了時に賃貸人から賃借人に返還される敷金も含まれる。",
+      "a": false,
+      "ex": "誤り。解釈運用の考え方によれば、「権利金」とは権利設定の対価として支払われる金銭であって返還されないものをいいます。敷金のように契約終了時に返還される金銭は権利金に該当しません。礼金等の返還されない金銭が該当します。",
+      "cat": "権利金の特例"
+    },
+    {
+      "q": "800万円以下（税抜）の低廉な空家等の売買の媒介では、宅建業者は依頼者の一方から30万円に消費税を加算した33万円を上限として報酬を受け取ることができる。",
+      "a": true,
+      "ex": "正しい。2024年改正により、800万円以下（税抜）の低廉な空家等の売買の媒介では、報酬の上限が30万円＋消費税＝33万円とされています。売主だけでなく買主からも受領可能に拡大されました。ただし、事前に報酬額について説明し合意を得ることが必要です。",
+      "cat": "低廉空家等の特例"
+    },
+    {
+      "q": "低廉な空家等の売買の特例により、宅建業者は事前の合意がなくても30万円＋消費税の報酬を請求することができる。",
+      "a": false,
+      "ex": "誤り。低廉な空家等の特例を適用するには、事前に報酬額について依頼者に説明し合意を得ることが必要です。合意なく上乗せ請求することはできません。",
+      "cat": "低廉空家等の特例"
+    },
+    {
+      "q": "売買の代理をした宅建業者が、代理の依頼者と売買の相手方の双方から報酬を受ける場合、その合計額は速算式で算出した額の2倍を超えてはならない。",
+      "a": true,
+      "ex": "正しい。売買の代理で相手方からも報酬を受ける場合は、代理の依頼者からの報酬と相手方からの報酬の合計額が、速算式で算出した額の2倍を超えてはなりません（告示第三、解釈運用の考え方）。",
+      "cat": "代理の報酬"
+    },
+    {
+      "q": "賃貸の代理をした宅建業者が、代理の依頼者のほか賃借の相手方からも報酬を受ける場合、その合計額は借賃の2か月分＋消費税を超えてはならない。",
+      "a": false,
+      "ex": "誤り。賃貸の代理で相手方からも報酬を受ける場合、合計額は借賃の「1か月分」＋消費税を超えてはなりません（告示第五、解釈運用の考え方）。売買の代理とは異なり、賃貸では代理でも上限は1か月分のままです。",
+      "cat": "代理の報酬"
+    },
+    {
+      "q": "宅建業者は、依頼者の依頼によらず自ら判断で行った広告の費用を、報酬とは別に依頼者に請求することができる。",
+      "a": false,
+      "ex": "誤り。告示第七および解釈運用の考え方により、報酬とは別に受領できるのは「依頼者の依頼によって行う」広告の料金に相当する額のみです。依頼者の依頼によらず業者が自ら行った広告の費用を別途請求することはできません。",
+      "cat": "報酬以外の金銭"
+    },
+    {
+      "q": "定期建物賃貸借の再契約の媒介をした場合、宅建業者は新規の契約の媒介と同じ報酬規制の適用を受ける。",
+      "a": true,
+      "ex": "正しい。解釈運用の考え方によれば、定期建物賃貸借の再契約に関する報酬についても、新規の契約と同様に告示の規定が適用されます。再契約だからといって報酬規制が緩和されるわけではありません。",
+      "cat": "報酬の基本ルール"
+    },
+    {
+      "q": "土地付建物の売買代金が「土地2,000万円、建物1,100万円（税込）」と表示されている場合、報酬計算の基礎となる価格は3,100万円である。",
+      "a": false,
+      "ex": "誤り。土地は非課税なのでそのまま2,000万円、建物は税込1,100万円÷1.1＝1,000万円（本体価格）です。したがって報酬計算の基礎は2,000万円＋1,000万円＝3,000万円です。税込の建物価格をそのまま加算すると100万円多くなり、報酬が過大に算定されます。",
+      "cat": "消費税と報酬計算"
+    },
+    {
+      "q": "宅建業者は、依頼者の特別の依頼により行う遠隔地における現地調査等の費用について、事前に依頼者の承諾を得ていれば、告示で定める報酬とは別に受領することができる。",
+      "a": true,
+      "ex": "正しい。解釈運用の考え方（告示第七関係）によれば、依頼者の特別の依頼により支出を要する特別の費用に相当する額の金銭で、その負担について事前に依頼者の承諾があるものを別途受領することは禁止されていません。",
+      "cat": "報酬以外の金銭"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで報酬額の制限の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">このアプリでカバーできていない論点：</strong><br>・報酬告示の改正経緯の詳細<br>・免税事業者のみなし仕入率の特例（消費税転嫁の細かい計算）<br>・報酬に関する広告費等の実費請求の詳細な要件<br>・不動産取引に関連する媒介業務以外の業務に係る報酬<br>これらは過去問学習で補ってください。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 報酬計算の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6\"><div style=\"font-weight:bold;margin-bottom:6px;font-family:sans-serif\">【報酬計算の流れ】</div><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">① 取引の種類を確認</span><br><span style=\"font-size:12px;color:#555;font-family:sans-serif\">（売買 / 交換 / 賃貸）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">② 税抜価格を算出</span><br><span style=\"font-size:12px;color:#555;font-family:sans-serif\">（土地＝非課税、建物＝税込なら÷1.1）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">③ 速算式 or 借賃で上限を計算</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">④ 消費税を加算（×1.1）</span><br>↓<br><span style=\"background:#c8e6c9;padding:3px 10px;border-radius:4px\">⑤ 特例の適用を確認</span><br><span style=\"font-size:12px;color:#555;font-family:sans-serif\">（低廉空家・権利金等）</span><br>↓<br><span style=\"background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c\">報酬の上限額が確定！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#ffebee\"><strong style=\"color:#c62828\">ひっかけ頻出パターン：</strong><br>① <strong>税込価格をそのまま速算式に当てはめる</strong>→ 誤り（建物は税抜にする）<br>② <strong>居住用の賃貸媒介で「1か月分が原則」</strong>→ 誤り（原則は0.5か月分）<br>③ <strong>賃貸の代理で「借賃の2か月分」</strong>→ 誤り（上限は1か月分のまま）<br>④ <strong>承諾を「契約成立後」に得る</strong>→ 違反（依頼を受けるに当たって得る）<br>⑤ <strong>交換で「低い方の価額」で計算</strong>→ 誤り（高い方で計算する）<br>⑥ <strong>権利金の特例を居住用建物に適用</strong>→ 誤り（居住用以外のみ）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📊 表で暗記</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px;color:#c62828\">★最重要：売買・交換の報酬速算式</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;padding:5px\">物件価格（税抜）</th><th style=\"border:1px solid #90caf9;padding:5px\">料率</th><th style=\"border:1px solid #90caf9;padding:5px\">速算式</th></tr><tr><td style=\"border:1px solid #90caf9;padding:5px\">200万円以下</td><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">5%</td><td style=\"border:1px solid #90caf9;padding:5px\">価格×5%</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:5px\">200万円超〜400万円以下</td><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">4%</td><td style=\"border:1px solid #90caf9;padding:5px\">価格×4%＋2万円</td></tr><tr><td style=\"border:1px solid #90caf9;padding:5px\">400万円超</td><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">3%</td><td style=\"border:1px solid #90caf9;padding:5px\">価格×3%＋6万円</td></tr></table><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 ポイント：料率は「高額ほど低率」。400万超の速算式「×3%＋6万円」が最頻出！</div><div style=\"font-size:13px;font-weight:bold;margin:16px 0 8px 0;color:#c62828\">★最重要：賃貸の報酬上限まとめ</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#ffe0b2\"><th style=\"border:1px solid #ffb74d;padding:5px\">区分</th><th style=\"border:1px solid #ffb74d;padding:5px\">媒介の上限</th><th style=\"border:1px solid #ffb74d;padding:5px\">代理の上限</th></tr><tr><td style=\"border:1px solid #ffb74d;padding:5px\">居住用建物</td><td style=\"border:1px solid #ffb74d;padding:5px\"><span style=\"color:#d32f2f;font-weight:bold\">片方0.5か月分が原則 ⚠️</span><br>（承諾あれば1か月分まで）</td><td style=\"border:1px solid #ffb74d;padding:5px\">1か月分</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #ffb74d;padding:5px\">居住用以外（店舗等）</td><td style=\"border:1px solid #ffb74d;padding:5px\">合計1か月分（配分自由）</td><td style=\"border:1px solid #ffb74d;padding:5px\">1か月分</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:5px\">権利金あり（居住用以外のみ）</td><td style=\"border:1px solid #ffb74d;padding:5px\" colspan=\"2\">権利金を代金とみなし速算式で計算可（高い方を選択）</td></tr></table><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「居住用の賃貸媒介は半月が原則、承諾で1か月」「代理でも上限は1か月のまま」</div><div style=\"font-size:13px;font-weight:bold;margin:16px 0 8px 0;color:#1565c0\">重要：低廉な空家等の特例（2024年改正）</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e8eaf6\"><th style=\"border:1px solid #9fa8da;padding:5px\">項目</th><th style=\"border:1px solid #9fa8da;padding:5px\">内容</th></tr><tr><td style=\"border:1px solid #9fa8da;padding:5px\">対象物件</td><td style=\"border:1px solid #9fa8da;padding:5px;font-weight:bold\">800万円以下（税抜）の宅地・建物</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #9fa8da;padding:5px\">報酬上限</td><td style=\"border:1px solid #9fa8da;padding:5px;font-weight:bold\">30万円＋消費税＝33万円</td></tr><tr><td style=\"border:1px solid #9fa8da;padding:5px\">受領できる相手</td><td style=\"border:1px solid #9fa8da;padding:5px\"><span style=\"color:#d32f2f;font-weight:bold\">売主・買主の双方から可 ⚠️</span></td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #9fa8da;padding:5px\">条件</td><td style=\"border:1px solid #9fa8da;padding:5px;color:#d32f2f;font-weight:bold\">事前説明と合意が必要 ⚠️</td></tr></table><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 ポイント：改正前（400万以下・売主のみ・19.8万）→改正後（800万以下・双方OK・33万）の変化を押さえる！<br>※2024年改正前は400万円以下・売主からのみだったので、改正後の数字を覚える！</div><div style=\"font-size:13px;font-weight:bold;margin:16px 0 8px 0;color:#1565c0\">重要：媒介と代理の報酬上限比較</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;padding:5px\">取引</th><th style=\"border:1px solid #90caf9;padding:5px\">媒介の上限</th><th style=\"border:1px solid #90caf9;padding:5px\">代理の上限</th></tr><tr><td style=\"border:1px solid #90caf9;padding:5px\">売買・交換</td><td style=\"border:1px solid #90caf9;padding:5px\">速算式の額（片方から）</td><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">速算式の2倍</td></tr><tr style=\"background:#f5f5f5\"><td style=\"border:1px solid #90caf9;padding:5px\">賃貸</td><td style=\"border:1px solid #90caf9;padding:5px\">借賃1か月分（合計）</td><td style=\"border:1px solid #90caf9;padding:5px\"><span style=\"color:#d32f2f;font-weight:bold\">借賃1か月分（2倍にならない！）⚠️</span></td></tr></table></div></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 報酬額の制限とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>宅建業者が媒介・代理で受け取れる報酬（仲介手数料）には法律で上限がある、という制度です（宅建業法46条）。</div><div class=\"info-box\" style=\"background:#f5f5f5\">宅建業法46条1項：報酬の額は<strong>国土交通大臣の定めるところ</strong>による<br>宅建業法46条2項：業者はその額を<strong>超えて報酬を受けてはならない</strong><br>宅建業法46条4項：事務所ごとに報酬額を<strong>掲示する義務</strong><br><br>具体的な金額は「昭和45年建設省告示第1552号」で定められています。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🔢 売買・交換の報酬計算（速算式）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>物件価格（税抜）に料率をかけて報酬の上限を出す。400万円超なら「価格×3%＋6万円」が速算式。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>速算式のしくみ：</strong><br>本来は価格を3つの区分に分けて計算しますが、400万円超の物件は一括で計算できます。<br><br><strong>200万円以下の部分</strong>→ 5%<br><strong>200万円超〜400万円以下の部分</strong>→ 4%<br><strong>400万円超の部分</strong>→ 3%<br><br>これを一括計算すると：<br>・200万円以下 → 価格×5%<br>・200万円超400万円以下 → 価格×4%＋2万円<br>・<strong>400万円超 → 価格×3%＋6万円</strong>（最も使う）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「サン・シ・ゴ（3・4・5）」＝400万超は3%、200万超は4%、200万以下は5%。金額が上がるほど料率が下がる！</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>計算のポイント：</strong><br>① <strong>必ず税抜価格で計算する</strong>（消費税込みの価格は÷1.1して本体価格を出す）<br>② 速算式で出た額に<strong>消費税を加算する</strong>（×1.1）<br>③ 交換の場合は<strong>高い方の価額</strong>を基準にする</div><div class=\"info-box\" style=\"background:#ffebee;border:2px solid #ef5350\"><strong style=\"color:#c62828\">⚠️ ここが試験のひっかけ！</strong><br>・税込価格をそのまま速算式に当てはめてはいけない！<br>・<strong>土地は非課税</strong>なのでそのまま。<strong>建物の税込価格は÷1.1</strong>して本体価格にする<br>・交換は「<strong>高い方</strong>」で計算（低い方は誤り）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🏠 賃貸の報酬計算</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>賃貸の媒介報酬は合計で「借賃1か月分＋消費税」が上限。ただし居住用建物は片方0.5か月分が原則。</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>【原則】賃貸の媒介報酬</strong><br>依頼者の双方から受け取る報酬の<strong>合計上限＝借賃1か月分＋消費税</strong></div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">【居住用建物の特別ルール】</strong><br>依頼者の<strong>一方</strong>から受け取れるのは原則<strong>借賃の0.5か月分＋消費税</strong>が上限<br><br><strong>例外：</strong>「<strong>媒介の依頼を受けるに当たって</strong>」依頼者の承諾を得ている場合→1か月分まで可</div><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 承諾は「依頼を受けるに当たって」得る必要あり！契約成立後の承諾では遅い！</span><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「居住用は半月が原則、承諾で1か月」「承諾は依頼時に！後出しNG」</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>【居住用以外（店舗・事務所・土地等）】</strong><br>合計1か月分以内であれば<strong>配分は自由</strong>（一方からのみでもOK）<br><span style=\"font-size:12px;color:#555\">※「居住の用に供する建物」＝専ら居住用。居住兼事務所は含まれない</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">🔄 代理の報酬</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>売買の代理は媒介の2倍が上限。ただし賃貸の代理は1か月分のまま（2倍にならない）。</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>売買・交換の代理：</strong>速算式の額の<strong>2倍</strong>が上限<br>※ただし相手方からも受ける場合は、合計が2倍以内</div><div class=\"info-box\" style=\"background:#ffebee;border:2px solid #ef5350\"><strong style=\"color:#c62828\">⚠️ 最重要ひっかけ：賃貸の代理の上限</strong><br>賃貸の代理：依頼者からの上限は<strong>借賃1か月分＋消費税</strong>（2倍にならない！）<br>相手方からも受ける場合の合計も<strong>1か月分＋消費税</strong>が上限</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「売買の代理は2倍OK。賃貸の代理は1か月のまま。ここを間違えると失点！」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">🏘️ 権利金がある場合の特例</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>居住用以外の建物の賃貸で権利金があれば、権利金を売買代金とみなして速算式で計算できる。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>ポイント：</strong><br>・<strong>居住用建物には適用されない</strong>（居住用以外のみ）<br>・権利金を売買代金とみなして速算式で計算する<br>・借賃ベースの計算と比較して<strong>高い方を選択</strong>できる<br>・「権利金」＝返還されない金銭（礼金等）。<strong>敷金は含まれない</strong></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「権利金の特例は居住用以外だけ！居住用で権利金があっても使えない」「権利金＝返さないお金。敷金は返すから対象外」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00838f;color:#00838f\">🏚️ 低廉な空家等の売買・交換の特例</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>800万円以下の物件では、報酬上限が33万円（税込）に引き上げられる特例。2024年改正で拡大。</div><div class=\"info-box\" style=\"background:#e0f7fa\"><strong>特例の内容：</strong><br>・対象：<strong>800万円以下（税抜）</strong>の宅地・建物の売買・交換<br>・媒介の上限：<strong>30万円＋消費税＝33万円</strong><br>・<strong>売主・買主の双方から受領可能</strong>（2024年改正で拡大）<br>・<strong>事前の説明と合意が必要</strong></div><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 2024年改正のポイント：①対象が400万→800万に拡大 ②買主からも受領可能に</span><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「低廉空家＝800万以下で33万まで。双方OK。でも事前合意が必須！」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #455a64;color:#455a64\">💰 報酬以外に受け取れるもの・受け取れないもの</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>告示で定める報酬以外は原則として受け取れない。例外は依頼者の依頼による広告費と特別の費用のみ。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>受け取れるもの：</strong><br>✅ 告示の上限内の報酬<br>✅ <strong>依頼者の依頼による</strong>広告の料金<br>✅ 依頼者の<strong>特別の依頼による</strong>遠隔地の現地調査費用等（事前承諾が必要）<br><br><strong style=\"color:#d32f2f\">受け取れないもの：</strong><br>❌ 案内料、申込料<br>❌ 依頼者の依頼に<strong>よらない</strong>広告費<br>❌ 事前の承諾なく請求する特別費用</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #455a64;color:#455a64\">🔗 参照条文</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>宅建業法46条</strong>（報酬）<br><a href=\"https://laws.e-gov.go.jp/law/327AC1000000176\" target=\"_blank\">e-Gov法令検索：宅地建物取引業法</a></div></div>"
+}
