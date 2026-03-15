@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 用語の定義クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 用語の定義</div>
+    <div class="header-desc">宅地の定義・宅地建物取引業の定義・免許の要否</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_yougo_teigi_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業法上の「宅地」とは、現に建物の敷地に供せられている土地のほか、用途地域内の土地（一定の公共施設用地を除く）も含まれる。",
+    "a": true,
+    "ex": "正しい。宅建業法2条1号により、「宅地」には①建物の敷地に供せられる土地と、②用途地域内の土地（道路・公園・河川・広場・水路を除く）が含まれます。用途地域内であれば、現況が農地や空き地でも原則「宅地」に該当します。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "用途地域外にある空き地は、取引の対象となっていれば、宅建業法上の「宅地」に該当する。",
+    "a": false,
+    "ex": "誤り。用途地域外の土地は、取引の対象であるだけでは「宅地」に該当しません。用途地域外の土地が宅地となるのは、建物の敷地に供せられる場合（または供する目的がある場合）に限られます（宅建業法2条1号）。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "用途地域内であっても、道路・公園・河川・広場・水路の公共施設の用に供されている土地は、宅建業法上の「宅地」に含まれない。",
+    "a": true,
+    "ex": "正しい。宅建業法2条1号は、用途地域内の土地から「道路、公園、河川その他政令で定める公共の用に供する施設の用に供せられているもの」を除外しています。この5つの公共施設用地は宅地から除かれます。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "用途地域外にある土地であっても、建物の敷地に供する目的で取引される場合は、宅建業法上の「宅地」に該当する。",
+    "a": true,
+    "ex": "正しい。「建物の敷地に供せられる土地」には、現に建物が建っている敷地だけでなく、建物の敷地に供する目的で取引される土地も含まれます（宅建業法2条1号、解釈運用の考え方第2条第1号関係）。用途地域の内外を問いません。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "用途地域外にある山林は、建物の敷地に供する目的がなければ、宅建業法上の「宅地」には該当しない。",
+    "a": true,
+    "ex": "正しい。用途地域外の土地は、建物の敷地に供される（または供する目的がある）場合にのみ「宅地」に該当します（宅建業法2条1号）。建物の敷地に供する目的のない山林は宅地ではありません。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "宅地建物取引業には、宅地・建物の売買・交換・貸借のすべてについて、自ら行う場合も含まれる。",
+    "a": false,
+    "ex": "誤り。宅建業法2条2号により、「自ら」行う取引で宅建業に含まれるのは売買と交換のみです。「自ら貸借」（自分が大家として直接貸すこと）は宅建業の定義に含まれていません。",
+    "cat": "宅建業の定義"
+  },
+  {
+    "q": "Aが自己所有のアパートを自ら賃貸人として複数の入居者に貸し出す場合、Aには宅建業の免許が必要である。",
+    "a": false,
+    "ex": "誤り。「自ら貸借」（自分が賃貸人として直接貸すこと）は、宅建業法2条2号の「宅地建物取引業」の定義に含まれていません。大家さんが自分の物件を直接貸す行為には免許は不要です。",
+    "cat": "自ら貸借"
+  },
+  {
+    "q": "B社がマンションの所有者から依頼を受けて、反復継続して賃借人を募集し賃貸借契約の媒介を行う場合、B社は宅建業の免許が必要である。",
+    "a": true,
+    "ex": "正しい。他人の物件の「貸借の媒介」を業として行う場合は、宅建業に該当します（宅建業法2条2号）。免許不要なのは「自ら貸借」であり、他人の物件の貸借の媒介・代理は免許が必要です。",
+    "cat": "宅建業の定義"
+  },
+  {
+    "q": "「業として行う」かどうかの判断は、取引の反復継続性のみによって決まり、他の要素は考慮されない。",
+    "a": false,
+    "ex": "誤り。「業として行う」かどうかは、反復継続性だけでなく、取引の対象者（不特定多数か特定か）、取引の目的（利益目的か資金需要か）、取得経緯、取引態様など複数の要素を総合的に判断します（解釈運用の考え方第2条第2号関係）。",
+    "cat": "業の定義"
+  },
+  {
+    "q": "Cが相続で取得した土地1筆を知人1名に1回だけ売却する行為は、宅建業に該当しない。",
+    "a": true,
+    "ex": "正しい。特定の者（知人1名）に対する1回限りの売却は、「不特定多数」「反復継続」のいずれの要件も満たしません。また取得経緯が相続であることも事業性を低くする要素です（解釈運用の考え方第2条第2号関係）。",
+    "cat": "業の定義"
+  },
+  {
+    "q": "国および地方公共団体が宅地・建物の売買を行う場合、宅建業法の規定は適用されず、免許を取得する必要はない。",
+    "a": true,
+    "ex": "正しい。宅建業法78条1項により、国および地方公共団体には宅建業法の規定が適用されないため、免許なく宅地建物の取引を行うことができます。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "農業協同組合が宅地の売買の媒介を業として行う場合、農業協同組合は公益的な団体であるため宅建業の免許は不要である。",
+    "a": false,
+    "ex": "誤り。宅建業法上、免許なく宅建業を営めるのは国・地方公共団体（78条）と信託会社（77条）のみです。農業協同組合は公益的な団体ですが、宅建業を営む場合は免許が必要です。法人の種類は免許の要否に影響しません。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "Dが自ら所有する複数の土地を区画割りして、広告を出して不特定多数の購入者に販売する場合、宅建業の免許が必要である。",
+    "a": true,
+    "ex": "正しい。自ら宅地の売買を不特定多数に対して反復継続して行う行為は、宅建業に該当します（宅建業法2条2号）。区画割りして複数の者に販売する行為は、1回の販売行為であっても反復継続的な取引に該当します（解釈運用の考え方）。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "自ら所有する建物の賃借人の募集を宅建業者に依頼する場合、建物所有者自身にも宅建業の免許が必要となる。",
+    "a": false,
+    "ex": "誤り。建物所有者は「自ら貸借」を行う立場であり、宅建業には該当しません（宅建業法2条2号）。媒介を業として行う宅建業者には免許が必要ですが、賃貸人（大家）として直接貸す建物所有者には免許は不要です。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "破産管財人が破産財団に属する宅地を裁判所の監督のもとで任意売却する場合、反復継続的に行っても宅建業の免許は不要である。",
+    "a": true,
+    "ex": "正しい。破産管財人による破産財団の換価のための任意売却は、破産法に基づく行為として裁判所の監督下で行われるものであり、宅建業法2条2号の「業として行うもの」には該当しないとされています（解釈運用の考え方第2条第2号関係）。",
+    "cat": "免許の要否"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "用途地域外にある更地を、ソーラーパネル設置の目的で売買する場合、その土地は宅建業法上の「宅地」に該当する。",
+    "a": false,
+    "ex": "誤り。用途地域外の土地が「宅地」に該当するのは、建物の敷地に供せられる（または供する目的がある）場合に限られます（宅建業法2条1号）。ソーラーパネル設置目的は建物の敷地に供する目的ではないため、宅地には該当しません。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "工業専用地域内にある建築資材置場は、現に建物が建っていなくても、宅建業法上の「宅地」に該当する。",
+    "a": true,
+    "ex": "正しい。工業専用地域は用途地域の一つです。用途地域内の土地は、道路・公園・河川・広場・水路以外であれば、現況に関係なく「宅地」に該当します（宅建業法2条1号）。建築資材置場であっても用途地域内であれば宅地です。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "用途地域内にある市道の用に供されている土地は、宅建業法上の「宅地」には該当しない。",
+    "a": true,
+    "ex": "正しい。用途地域内であっても、道路の公共施設用地に供されている土地は「宅地」から除外されます（宅建業法2条1号）。市道は道路に該当するため、その用に供されている土地は宅地ではありません。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "建物の敷地に供されている土地であれば、たとえ公共施設の用にも供されていたとしても、宅建業法上の「宅地」に該当する。",
+    "a": true,
+    "ex": "正しい。「建物の敷地に供せられる土地」（宅建業法2条1号前段）に該当すれば宅地となります。公共施設用地の除外規定は「用途地域内のその他の土地」に対する規定（同号後段）であり、建物の敷地に供される土地には適用されません。",
+    "cat": "宅地の定義"
+  },
+  {
+    "q": "Eが自己所有の10室あるマンションを自ら賃貸人として反復継続して入居者に賃貸する行為は、不特定多数を相手にしているため宅建業に該当する。",
+    "a": false,
+    "ex": "誤り。「自ら貸借」は取引の規模や反復継続性にかかわらず宅建業に該当しません（宅建業法2条2号）。自ら賃貸人として直接貸す行為は、10室であっても100室であっても免許不要です。",
+    "cat": "自ら貸借"
+  },
+  {
+    "q": "F社が自己所有のビルの賃借人を探すため、宅建業者Gに貸借の媒介を依頼した場合、F社自身にも宅建業の免許が必要である。",
+    "a": false,
+    "ex": "誤り。F社は「自ら貸借」を行う立場であり、宅建業には該当しません（宅建業法2条2号）。免許が必要なのは媒介を業として行うG（宅建業者）の方です。大家として自分の物件を貸す行為そのものには免許は不要です。",
+    "cat": "自ら貸借"
+  },
+  {
+    "q": "農業協同組合が組合員所有の宅地について売却の代理を業として行う場合、農業協同組合であっても宅建業の免許が必要である。",
+    "a": true,
+    "ex": "正しい。農業協同組合は公益的な法人ですが、宅建業法上、免許なく宅建業を営めるのは国・地方公共団体（78条）と信託会社（77条）のみです。農業協同組合が宅地の売買の代理を業として行う場合は、免許が必要です。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "社会福祉法人が高齢者向け住宅の貸借の媒介を業として行う場合、公益目的の法人であるため宅建業の免許は不要である。",
+    "a": false,
+    "ex": "誤り。社会福祉法人であっても、宅建業を営む場合は免許が必要です。宅建業法上、免許不要とされるのは国・地方公共団体（78条）と信託会社（77条）だけであり、法人の種類や公益性は免許の要否に影響しません。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "Hが転売利益を得る目的で購入した宅地5区画を、自ら買主を募集して一般消費者に販売する行為は、宅建業に該当する可能性が高い。",
+    "a": true,
+    "ex": "正しい。解釈運用の考え方（第2条第2号関係）によれば、①転売目的での取得（事業性が高い）、②自ら購入者を募集して一般消費者に直接販売（事業性が高い）、③複数区画の販売は反復継続性ありと判断されるため、宅建業に該当する可能性が高いです。",
+    "cat": "業の判断"
+  },
+  {
+    "q": "1回の販売行為であっても、区画割りして複数の者に宅地を販売する行為は、反復継続的な取引に該当する。",
+    "a": true,
+    "ex": "正しい。解釈運用の考え方（第2条第2号関係）では、1回の販売行為として行われるものであっても、区画割りして行う宅地の販売等、複数の者に対して行われるものは反復継続的な取引に該当するとされています。",
+    "cat": "業の判断"
+  },
+  {
+    "q": "NPO法人が被災者支援として宅地の売買の媒介を業として行う場合、非営利法人であるため宅建業の免許は不要である。",
+    "a": false,
+    "ex": "誤り。NPO法人であっても宅建業を営む場合は免許が必要です。宅建業法上、免許不要とされるのは国・地方公共団体（78条）と信託会社（77条）のみであり、非営利法人であることは免許不要の理由にはなりません。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "宅建業者Iが、自ら売主として建物を販売するとともに、他の物件について貸借の媒介も行っている場合、Iの行う貸借の媒介にも宅建業法の規制が及ぶ。",
+    "a": true,
+    "ex": "正しい。貸借の媒介を業として行う行為は宅建業に含まれます（宅建業法2条2号）。宅建業者Iが行う貸借の媒介は宅建業の一部として宅建業法の規制対象となります。免許不要なのは「自ら貸借」であり、「貸借の媒介」は免許が必要です。",
+    "cat": "宅建業の定義"
+  },
+  {
+    "q": "地方公共団体から宅地の売却の媒介を依頼された宅建業者Jは、依頼主が地方公共団体であるため免許がなくても媒介を行うことができる。",
+    "a": false,
+    "ex": "誤り。宅建業法78条で免許不要とされるのは国・地方公共団体自身が宅建業を行う場合です。媒介を行う宅建業者Jには免許が必要であり、依頼主が地方公共団体であることはJの免許の要否に影響しません。",
+    "cat": "免許の要否"
+  },
+  {
+    "q": "相続税の納付資金を確保するために、相続で取得した土地1筆を売却する行為は、宅建業に該当しない。",
+    "a": true,
+    "ex": "正しい。解釈運用の考え方（第2条第2号関係）によれば、①特定の資金需要（相続税納付）が目的で事業性が低い、②相続による取得で事業性が低い、③1筆・1回の売却で反復継続性がないため、宅建業には該当しないと判断されます。",
+    "cat": "業の判断"
+  },
+  {
+    "q": "用途地域外にある倉庫の敷地として使用されている土地は、建物の敷地に供されているため宅建業法上の「宅地」に該当する。",
+    "a": true,
+    "ex": "正しい。倉庫は建物に該当し、その敷地は「建物の敷地に供せられる土地」として宅建業法2条1号前段の「宅地」に該当します。用途地域外であっても、建物の敷地に供されていれば宅地です。",
+    "cat": "宅地の定義"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで用語の定義の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・免許の区分（大臣免許・知事免許）の詳細<br>・免許の基準（欠格事由）の詳細<br>・免許の有効期間・更新<br>・みなし業者・信託会社の詳細な規定<br>・事務所の定義の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 用語の定義の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【免許が必要かどうかの判断フロー】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">①「宅地」に該当するか？</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">②「取引」に該当するか？</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③「業として」行うか？</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">3つ全てYES → 免許が必要！</span><br><br><span style="color:#2e7d32;font-weight:bold;font-family:sans-serif">✅ いずれか1つでもNOなら免許不要</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 用途地域の「内」と「外」の違い</strong><br><strong>用途地域内</strong> → 公共5施設以外は<strong>全て宅地</strong>（現況不問）<br><strong>用途地域外</strong> → <strong>建物の敷地</strong>に供される場合のみ宅地<br><span style="font-size:12px;color:#d32f2f">⚠️「用途地域外の空き地」を宅地とするひっかけに注意！建物目的がなければ宅地ではない</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 「自ら貸借」は宅建業にならない</strong><br>自分の物件を自分で貸す＝宅建業に<strong>該当しない</strong><br>他人の物件の貸借の「媒介」「代理」＝宅建業に<strong>該当する</strong><br><span style="font-size:12px;color:#d32f2f">⚠️「反復継続して賃貸するので宅建業」というひっかけに注意！自ら貸借は規模・頻度に関係なく免許不要</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 法人格と免許の要否</strong><br>免許不要：国・地方公共団体（78条）、信託会社（77条・届出制）<br>免許必要：農協・社会福祉法人・NPO法人・その他すべての法人<br><span style="font-size:12px;color:#555">「公益法人だから免許不要」は誤り！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 区画割り販売の扱い</strong><br>1回の販売行為でも、区画割りして複数の者に販売 → <strong>反復継続に該当</strong><br><span style="font-size:12px;color:#555">「1回の販売だから業ではない」は誤り！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：取引態様と宅建業該当性（宅建業法2条2号）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">取引態様</th><th style="border:1px solid #90caf9;padding:5px">売買</th><th style="border:1px solid #90caf9;padding:5px">交換</th><th style="border:1px solid #90caf9;padding:5px">貸借</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">自ら</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center;color:#d32f2f;font-weight:bold">× ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">代理</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">媒介</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td><td style="border:1px solid #90caf9;padding:5px;text-align:center">○</td></tr></table><div style="font-size:12px;color:#d32f2f;margin-top:4px">○＝宅建業に該当　×＝宅建業に該当しない<br>⚠️ 「自ら貸借」だけが×（免許不要）！</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px">重要：「宅地」の3パターン（宅建業法2条1号）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">パターン</th><th style="border:1px solid #a5d6a7;padding:5px">内容</th><th style="border:1px solid #a5d6a7;padding:5px">用途地域の制限</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">①建物の敷地</td><td style="border:1px solid #a5d6a7;padding:5px">現に建物が建っている敷地</td><td style="border:1px solid #a5d6a7;padding:5px">内外を問わない</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px">②建物目的の土地</td><td style="border:1px solid #a5d6a7;padding:5px">建物の敷地にする目的で取引される土地</td><td style="border:1px solid #a5d6a7;padding:5px">内外を問わない</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">③用途地域内の土地</td><td style="border:1px solid #a5d6a7;padding:5px">用途地域内の土地（公共5施設用地を除く）</td><td style="border:1px solid #a5d6a7;padding:5px;color:#d32f2f;font-weight:bold">用途地域内のみ ⚠️</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「宅地の3パターン＝敷地・目的・用途地域」。①②は場所不問、③だけ用途地域限定。</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px">重要：免許の要否（主体別）</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#fff3e0"><th style="border:1px solid #ffb74d;padding:5px">主体</th><th style="border:1px solid #ffb74d;padding:5px">免許の要否</th><th style="border:1px solid #ffb74d;padding:5px">根拠</th><th style="border:1px solid #ffb74d;padding:5px">宅建業法の適用</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">国・地方公共団体</td><td style="border:1px solid #ffb74d;padding:5px;color:#2e7d32;font-weight:bold">不要</td><td style="border:1px solid #ffb74d;padding:5px">78条1項</td><td style="border:1px solid #ffb74d;padding:5px;color:#1565c0;font-weight:bold">全面適用除外</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">信託会社・信託銀行</td><td style="border:1px solid #ffb74d;padding:5px;color:#2e7d32;font-weight:bold">不要（届出制）</td><td style="border:1px solid #ffb74d;padding:5px">77条</td><td style="border:1px solid #ffb74d;padding:5px;color:#e65100">免許規定のみ除外<br><span style="font-size:11px">（他の規定は適用される）</span></td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">農業協同組合</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">必要 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">例外なし</td><td style="border:1px solid #ffb74d;padding:5px">全面適用</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">社会福祉法人</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">必要 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">例外なし</td><td style="border:1px solid #ffb74d;padding:5px">全面適用</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">NPO法人</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">必要 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">例外なし</td><td style="border:1px solid #ffb74d;padding:5px">全面適用</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「免許不要は国・地公体と信託だけ！農協・社福・NPOは免許が要る」<br><span style="font-size:12px;color:#555">⚠️ 国等（78条）＝宅建業法そのものが適用されない ≠ 信託（77条）＝免許だけ不要で他の規定は適用される</span></div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 宅建業法の用語の定義とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅地とは何か」「宅建業とは何か」を正確に理解することで、免許が必要かどうかを判断できるようになる、宅建業法の入口となる知識です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 「宅地」の定義（宅建業法2条1号）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>宅建業法の「宅地」は日常用語よりもずっと広い概念。3つのパターンで判断します。</div><div class="info-box" style="background:#fff3e0"><strong>「宅地」の3パターン：</strong><br><br><strong style="color:#e65100">パターン①：建物の敷地</strong><br>現に建物が建っている土地。用途地域の内外を問いません。<br><br><strong style="color:#e65100">パターン②：建物目的の土地</strong><br>建物の敷地に供する<strong>目的</strong>で取引される土地。地目や現況は問いません（解釈運用の考え方）。用途地域の内外を問いません。<br><br><strong style="color:#e65100">パターン③：用途地域内の土地</strong><br>用途地域内にある土地は、以下の5つの公共施設用地を除き、<strong>すべて宅地</strong>です。<br>除外されるもの：<strong>道路・公園・河川・広場・水路</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：除外される公共5施設は「<strong>道・公・河・広・水</strong>（みち・こう・かわ・ひろ・みず）」</div><div class="info-box" style="background:#fce4ec"><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！</span><br>「用途地域外の空き地」は、建物の敷地に供する目的がなければ宅地ではありません。<br>「用途地域内の建築資材置場」は宅地です（公共5施設以外は全て宅地）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 「宅地建物取引業」の定義（宅建業法2条2号）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>宅地や建物の「売買・交換」、または「売買・交換・貸借の代理・媒介」を<strong>業として</strong>行うこと。ただし「自ら貸借」だけは含まれません。</div><div class="info-box" style="background:#fff3e0"><strong>宅建業に含まれる取引：</strong><br>✅ 自ら売買・交換<br>✅ 売買・交換・貸借の<strong>代理</strong><br>✅ 売買・交換・貸借の<strong>媒介</strong></div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">宅建業に含まれない取引：</strong><br>❌ <strong>自ら貸借</strong>（自分の物件を自分で貸すこと）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「大家さんは免許いらない」。自分の物件を自分で貸す＝免許不要。</div><div class="info-box" style="background:#fce4ec"><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！</span><br>「自ら貸借」は免許不要ですが、他人の物件の「貸借の媒介・代理」は宅建業です！<br>「賃貸」に関わるから免許不要、ではありません。<strong>「自分が大家として直接貸す」場合だけ</strong>が免許不要です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 「業として行う」とは（解釈運用の考え方）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>社会通念上、事業として行っているとみなせる程度かどうかを、複数の要素から総合的に判断します。</div><div class="info-box" style="background:#fff3e0"><strong>「業」の判断基準（5つの要素）：</strong><br><br><strong>① 取引の対象者</strong><br>広く一般の者を対象 → 事業性<strong>高</strong><br>親族・隣接地所有者等の特定の関係 → 事業性<strong>低</strong><br><br><strong>② 取引の目的</strong><br>利益を目的 → 事業性<strong>高</strong><br>相続税の納付・住替えに伴う処分等 → 事業性<strong>低</strong><br><br><strong>③ 取得経緯</strong><br>転売目的で取得 → 事業性<strong>高</strong><br>相続や自ら使用するために取得 → 事業性<strong>低</strong><br><br><strong>④ 取引の態様</strong><br>自ら購入者を募り一般消費者に直接販売 → 事業性<strong>高</strong><br>宅建業者に代理・媒介を依頼して販売 → 事業性<strong>低</strong><br><br><strong>⑤ 反復継続性</strong><br>反復継続的に取引 → 事業性<strong>高</strong><br>1回限りの取引 → 事業性<strong>低</strong></div><div class="info-box" style="background:#fce4ec"><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！</span><br>1回の販売行為であっても、<strong>区画割りして複数の者に販売</strong>する場合は、反復継続的な取引に該当します！<br>「1回だけだから業ではない」は通りません。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏛️ 免許の要否（特殊な主体）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>免許なしで宅建業ができるのは「国・地方公共団体」と「信託会社」だけ。それ以外は法人の種類に関係なく免許が必要です。</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">免許不要の主体：</strong><br>✅ <strong>国・地方公共団体</strong>（宅建業法78条1項）… 適用除外<br>✅ <strong>信託会社・信託銀行</strong>（宅建業法77条）… 届出制</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">免許が必要な主体（例外なし）：</strong><br>❌ 農業協同組合 → 免許必要<br>❌ 社会福祉法人 → 免許必要<br>❌ NPO法人 → 免許必要<br>❌ 学校法人 → 免許必要</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「免許不要は<strong>お上（国・地公体）</strong>と<strong>信託</strong>だけ！公益法人でも免許が要る」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">用語の定義クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
