@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 8種制限（総合）クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">宅建業法 ＞ 自ら売主8種制限（総合）</div>
+    <div class="header-desc">クーリング・オフ・手付・損害賠償予定・契約不適合責任・保全措置・他人物売買・割賦販売</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_8shu_sogo_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "宅建業法の自ら売主制限（8種制限）は、売主が宅建業者であり、買主が宅建業者でない場合にのみ適用される。",
+    "a": true,
+    "ex": "正しい。8種制限は「宅建業者が自ら売主」で「買主が宅建業者でない者」の場合にのみ適用されます（宅建業法78条2項）。業者間取引では適用されません。買主保護のための制度です。",
+    "cat": "適用場面"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者Bにマンションを売却する場合、8種制限の規定が適用される。",
+    "a": false,
+    "ex": "誤り。売主も買主も宅建業者である場合（業者間取引）には、8種制限は適用されません（宅建業法78条2項）。8種制限は宅建業者でない買主を保護するための規定であり、業者同士の取引では不要とされています。",
+    "cat": "適用場面"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合、事務所等以外の場所で買受の申込みをした買主は、書面により申込みの撤回（クーリング・オフ）ができる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフは、事務所等以外の場所で買受の申込みまたは売買契約をした場合に認められます（宅建業法37条の2第1項）。冷静な判断ができない場所での契約から買主を守る制度です。",
+    "cat": "クーリング・オフ"
+  },
+  {
+    "q": "クーリング・オフは、宅建業者から書面で告知を受けた日から起算して8日を経過するまでの間に、書面で行わなければならない。",
+    "a": true,
+    "ex": "正しい。クーリング・オフの期間は書面告知日から8日間（起算日を含む）で、書面により行います（宅建業法37条の2第1項）。なお、発信主義が採用されており、書面を発した時点で効力が生じます。",
+    "cat": "クーリング・オフ"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合、受領する手付の額は代金の10分の2（20%）を超えてはならない。",
+    "a": true,
+    "ex": "正しい。手付の額は代金の20%（10分の2）が上限です（宅建業法39条1項）。20%を超える部分は無効となります。",
+    "cat": "手付の額の制限"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合に受領した手付は、当事者間の取り決めにかかわらず、すべて解約手付としての性質を持つ。",
+    "a": true,
+    "ex": "正しい。宅建業者が自ら売主の場合、手付は必ず解約手付の性質を持ちます（宅建業法39条2項）。当事者が「違約手付」と定めても、解約手付としての効力が認められます。買主は手付放棄で、売主は手付倍返しで、相手方が履行に着手するまで契約を解除できます。",
+    "cat": "手付の額の制限"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合、損害賠償額の予定と違約金の合計額が代金の10分の2（20%）を超える定めをしたときは、超える部分のみが無効となる。",
+    "a": true,
+    "ex": "正しい。損害賠償額の予定と違約金を合算して代金の20%を超える定めをした場合、20%を超える部分のみが無効となります（宅建業法38条1項）。定め全体が無効になるわけではありません。",
+    "cat": "損害賠償額の予定"
+  },
+  {
+    "q": "損害賠償額の予定の制限において、損害賠償の予定額と違約金はそれぞれ別に代金の20%まで定めることができる。",
+    "a": false,
+    "ex": "誤り。損害賠償額の予定と違約金は合算して代金の20%が上限です（宅建業法38条1項）。例えば、損害賠償予定を15%、違約金を10%と定めた場合、合計25%となり、5%分（超過部分）が無効となります。",
+    "cat": "損害賠償額の予定"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合、買主が契約の内容に適合しないことを売主に通知すべき期間を「引渡しの日から2年以上」とする特約は有効である。",
+    "a": true,
+    "ex": "正しい。契約不適合責任について、通知期間を「引渡しの日から2年以上」とする特約は、例外的に有効です（宅建業法40条1項）。2年未満の特約は買主に不利な特約として無効となり、民法の規定が適用されます。",
+    "cat": "契約不適合責任"
+  },
+  {
+    "q": "宅建業者が自ら売主となる場合、契約不適合責任を一切負わないとする特約は有効である。",
+    "a": false,
+    "ex": "誤り。民法の規定より買主に不利な特約は無効です（宅建業法40条1項）。契約不適合責任を一切負わないとする特約は買主に最も不利な特約であり、無効となります。この場合、民法の規定が適用されます。",
+    "cat": "契約不適合責任"
+  },
+  {
+    "q": "宅建業者が自ら売主として未完成物件を売却する場合、手付金等の額が代金の5%を超えるとき、または1,000万円を超えるときは、受領前に保全措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。未完成物件の場合は、代金の5%超または1,000万円超の手付金等を受領する前に保全措置が必要です（宅建業法41条1項）。未完成物件は完成物件よりリスクが高いため、より厳しい基準が設定されています。",
+    "cat": "手付金等の保全措置"
+  },
+  {
+    "q": "宅建業者が自ら売主として完成物件を売却する場合、手付金等の額が代金の10%を超えるとき、または1,000万円を超えるときは、受領前に保全措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。完成物件の場合は、代金の10%超または1,000万円超の手付金等を受領する前に保全措置が必要です（宅建業法41条の2第1項）。未完成物件（5%超）より基準が緩やかですが、一定額を超える場合は保全が義務付けられます。",
+    "cat": "手付金等の保全措置"
+  },
+  {
+    "q": "宅建業者は、自己の所有に属しない宅地または建物について、自ら売主として売買契約を締結することは一切できない。",
+    "a": false,
+    "ex": "誤り。原則として他人物売買は禁止されますが、例外があります（宅建業法33条の2）。当該物件を取得する契約（予約を含む）を締結しているときは、自ら売主として売買契約を締結することができます。",
+    "cat": "他人物売買の制限"
+  },
+  {
+    "q": "宅建業者が自ら売主として割賦販売をした場合において、買主の賦払金の支払いが遅延したときは、30日以上の期間を定めて書面で催告し、その期間内に支払いがなければ契約を解除できる。",
+    "a": true,
+    "ex": "正しい。割賦販売の契約解除には、30日以上の期間を定めた書面による催告が必要です（宅建業法42条1項）。支払いが遅延したからといって、即座に契約を解除することはできません。",
+    "cat": "割賦販売の解除制限"
+  },
+  {
+    "q": "8種制限のうち、クーリング・オフの規定に反する買主に不利な特約を定めた場合、その特約は無効となる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフに限らず、8種制限の多くの規定において、買主に不利な特約は無効とされています（宅建業法37条の2第4項等）。これは宅建業者でない買主を保護するための強行規定です。",
+    "cat": "買主に不利な特約"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "宅建業者Aが自ら売主として、宅建業者でないBに対し、Aの事務所でBから買受けの申込みを受け、その翌日にBの自宅で契約を締結した場合、Bはクーリング・オフにより契約を解除することができる。",
+    "a": false,
+    "ex": "誤り。クーリング・オフの可否は「申込みの場所」で判断されます（宅建業法37条の2第1項）。Bの申込みは宅建業者Aの事務所で行われているため、契約の締結場所がBの自宅であっても、クーリング・オフはできません。",
+    "cat": "クーリング・オフ応用"
+  },
+  {
+    "q": "宅建業者が自ら売主として宅建業者でない買主との間で売買契約を締結し、クーリング・オフについて書面で告知をしなかった場合、買主は契約締結後何日経過してもクーリング・オフを行うことができる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフの8日間の起算点は「書面で告知された日」です（宅建業法37条の2第1項）。書面による告知がなされていなければ、8日間の期間が開始しないため、買主はいつまでもクーリング・オフを行うことができます。ただし、物件の引渡しを受け、かつ代金全額を支払った場合はクーリング・オフ不可です。",
+    "cat": "クーリング・オフ応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として代金4,000万円のマンション（完成物件）を宅建業者でないBに売却する場合、Aが手付金として800万円を受領しようとするとき、Aは受領前に手付金等の保全措置を講じなければならない。",
+    "a": true,
+    "ex": "正しい。完成物件の場合、代金の10%（4,000万円×10%＝400万円）を超える手付金等を受領する前に保全措置が必要です（宅建業法41条の2第1項）。800万円は400万円を超えるため、保全措置を講じなければなりません。なお、1,000万円の基準は超えていませんが、「代金の10%超」または「1,000万円超」のいずれかに該当すれば保全措置が必要です。",
+    "cat": "保全措置応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として代金5,000万円の建築中のマンション（未完成物件）を宅建業者でないBに売却する場合、手付金として200万円を受領するとき、保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。未完成物件の場合、代金の5%（5,000万円×5%＝250万円）以下で、かつ1,000万円以下であれば保全措置は不要です（宅建業法41条1項）。200万円は250万円以下であり、かつ1,000万円以下のため、保全措置は不要です。",
+    "cat": "保全措置応用"
+  },
+  {
+    "q": "宅建業者が自ら売主となり、代金3,000万円の宅地を宅建業者でない買主に売却する契約において、手付金として700万円を受領することは適法である。",
+    "a": false,
+    "ex": "誤り。手付の額は代金の20%が上限です（宅建業法39条1項）。代金3,000万円の20%は600万円であり、700万円はこれを超えています。600万円を超える部分（100万円分）は無効となるため、有効な手付の額は600万円までです。",
+    "cat": "手付の額応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者でないBに建物を売却し、BがAに手付を交付した場合において、Bが手付を交付したことをもって「履行の着手」があったと判断され、Aは手付倍返しによる解除ができなくなる。",
+    "a": false,
+    "ex": "誤り。手付の交付それ自体は「履行の着手」にはあたりません。手付解除は「相手方が履行に着手するまで」可能です（宅建業法39条2項）。履行の着手の例としては、売主の所有権移転登記の申請や引渡し、買主の中間金の支払い等があります。",
+    "cat": "手付解除応用"
+  },
+  {
+    "q": "宅建業者が自ら売主として宅建業者でない買主に建物を売却する契約において、契約不適合責任の通知期間を「引渡しの日から1年6か月」とする特約を定めた場合、この特約は有効である。",
+    "a": false,
+    "ex": "誤り。契約不適合責任の通知期間を「引渡しの日から2年以上」とする特約のみ有効です（宅建業法40条1項）。1年6か月は2年未満であるため、この特約は買主に不利な特約として無効となります。無効の場合は民法の規定が適用されます。",
+    "cat": "契約不適合責任応用"
+  },
+  {
+    "q": "宅建業者が自ら売主として宅建業者でない買主に建物を売却する契約で、「契約不適合責任の通知期間を引渡しの日から3年とする」旨の特約を定めた場合、この特約は有効であり、買主は引渡しから3年を経過した後は通知できない。",
+    "a": true,
+    "ex": "正しい。通知期間を「引渡しの日から3年」とする特約は、2年以上であるため有効です（宅建業法40条1項）。したがって、買主は引渡しから3年以内に通知しなければならず、3年経過後は通知できません。",
+    "cat": "契約不適合責任応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者でないBとの間で代金2,000万円の売買契約を締結し、損害賠償額の予定を200万円、違約金を300万円と定めた。この場合、損害賠償額の予定と違約金の合計500万円のうち、400万円を超える100万円部分のみが無効となる。",
+    "a": true,
+    "ex": "正しい。損害賠償額の予定と違約金の合計は代金の20%（2,000万円×20%＝400万円）が上限です（宅建業法38条1項）。合計500万円は上限の400万円を100万円超えているため、100万円部分のみが無効となります。定め全体が無効になるのではなく、超過部分のみが無効です。",
+    "cat": "損害賠償予定応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として、他人であるCが所有する宅地について、CからAへの売渡しの予約契約を締結している場合、Aは宅建業者でないBに対して当該宅地の売買契約を締結することができる。",
+    "a": true,
+    "ex": "正しい。宅建業者は原則として他人物売買が禁止されますが、当該物件を取得する契約（予約を含む）を締結しているときは例外的に売買契約を締結できます（宅建業法33条の2第1号）。予約も「取得する契約」に含まれます。",
+    "cat": "他人物売買応用"
+  },
+  {
+    "q": "宅建業者が自ら売主として割賦販売を行い、買主の賦払金の支払いが遅延した場合、宅建業者は20日間の催告期間を定めて書面で催告すれば、期間経過後に契約を解除できる。",
+    "a": false,
+    "ex": "誤り。割賦販売の契約解除の催告は「30日以上」の期間を定めて書面で行わなければなりません（宅建業法42条1項）。20日間では不足しており、この催告に基づく解除は無効です。",
+    "cat": "割賦販売応用"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者でないBにマンションを売却した。Bは喫茶店で買受けの申込みを行い、クーリング・オフについて書面で告知を受けてから5日後に物件の引渡しを受けたが、代金全額の支払いをまだ完了していない。この場合、Bはクーリング・オフにより契約を解除することができる。",
+    "a": true,
+    "ex": "正しい。クーリング・オフができなくなるのは「引渡しを受け、かつ代金全額を支払った」場合です（宅建業法37条の2第1項2号）。Bは引渡しを受けていますが、代金全額の支払いを完了していないため、クーリング・オフの消滅要件を満たしていません。また、書面告知から5日後であり8日以内なので、Bはクーリング・オフが可能です。",
+    "cat": "クーリング・オフ応用"
+  },
+  {
+    "q": "宅建業者が自ら売主として宅建業者でない買主に建物を売却する契約で、買主に不利な特約が無効となった場合、売買契約そのものも無効となる。",
+    "a": false,
+    "ex": "誤り。買主に不利な特約が無効となっても、売買契約全体が無効になるわけではありません。無効となるのはその特約部分だけです。例えば、契約不適合責任を負わないとする特約が無効となった場合は、その特約部分のみが無効となり、民法の規定が適用されます（宅建業法40条1項）。",
+    "cat": "8種制限総合"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者でないBに対して代金5,000万円の完成物件を売却する場合、買主Bが所有権移転登記を受けた後にAが残代金を受領するときは、保全措置は不要である。",
+    "a": true,
+    "ex": "正しい。買主が所有権移転登記を受けた場合、その後に受領する手付金等については保全措置を講じる必要はありません（宅建業法41条の2第1項ただし書）。登記を受けていれば買主の権利は保全されているためです。",
+    "cat": "8種制限総合"
+  },
+  {
+    "q": "宅建業者Aが自ら売主として宅建業者Bに対して建物を売却した場合、Aは手付の額を代金の30%とすることができる。",
+    "a": true,
+    "ex": "正しい。8種制限は「宅建業者が自ら売主＋買主が宅建業者でない者」の場合にのみ適用されます（宅建業法78条2項）。買主Bが宅建業者であるため、8種制限は適用されません。したがって、手付の額は代金の20%を超えることが可能です。",
+    "cat": "8種制限総合"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで8種制限の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・クーリング・オフの「事務所等」の具体的範囲（テント張り案内所等の詳細）<br>・手付金等の保全措置の具体的な方法（銀行保証・保険・保証協会の詳細）<br>・所有権留保等の禁止（法43条）の詳細<br>・割賦販売における所有権移転登記義務（代金の10分の3受領時）<br>・各制度の個別の細かい論点は、それぞれの個別アプリまたは過去問学習で補完してください</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 8種制限の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【8種制限が適用される場面】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">売主 ＝ 宅建業者</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">買主 ＝ 宅建業者でない者</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">8種制限が適用！</span><br><br><span style="color:#2e7d32;font-weight:bold;font-family:sans-serif">✅ 業者間取引（売主も買主も宅建業者）→ 適用なし</span></div><div class="info-box" style="background:#f5f5f5"><strong>8つの制限一覧：</strong><br>① 他人物売買の制限（法33条の2）<br>② クーリング・オフ（法37条の2）<br>③ 損害賠償額の予定の制限（法38条）<br>④ 手付の額の制限・解約手付（法39条）<br>⑤ 契約不適合責任の特約の制限（法40条）<br>⑥ 手付金等の保全措置（法41条・41条の2）<br>⑦ 割賦販売の契約解除の制限（法42条）<br>⑧ 所有権留保等の禁止（法43条）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① クーリング・オフの消滅要件</strong><br>できなくなるのは「<strong>引渡し</strong>を受け、<strong>かつ</strong>代金<strong>全額</strong>を支払った」場合。<br><span style="color:#d32f2f;font-weight:bold">⚠️「代金全額を支払っただけ」ではクーリング・オフは消滅しない！</span><br><span style="font-size:12px;color:#555">引渡しだけ、支払いだけでは不十分。両方そろって初めて不可。</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 手付交付は「履行の着手」ではない</strong><br>手付解除は「相手方が<strong>履行に着手するまで</strong>」可能。<br>✅ 履行着手の例：所有権移転登記の申請、引渡し、中間金の支払い<br>❌ 手付の交付は履行の着手に<strong>あたらない</strong><br><span style="font-size:12px;color:#d32f2f">⚠️「手付を交付した＝履行着手」とするひっかけに注意！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">★最重要③ 特約が無効になっても契約は有効</strong><br>買主に不利な特約が無効 → <strong>特約だけ無効</strong>（契約全体は有効）<br>→ 民法の規定が適用される<br><span style="font-size:12px;color:#555">「特約無効＝契約無効」とするひっかけに注意！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 業者間取引には8種制限は適用されない</strong><br>「買主が宅建業者」と記載されている場合は要注意！<br>→ 手付の額は20%を超えてもOK、損害賠償予定も制限なし<br><span style="font-size:12px;color:#d32f2f">⚠️ 問題文の当事者をよく確認すること！</span></div><div class="info-box" style="background:#fff9c4;border-left:4px solid #f9a825"><strong style="color:#e65100">重要⑤ 書面告知がなければクーリング・オフは消えない</strong><br>8日間の起算点は「書面で告知された日」<br>→ 書面告知がなければ8日間が始まらない<br>→ <strong>いつまでもクーリング・オフが可能</strong>（引渡し＋全額支払いまで）</div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑥ 所有権移転登記後は保全措置不要</strong><br>買主が所有権移転登記を受けた後 → 保全措置は不要<br><span style="font-size:12px;color:#555">登記があれば買主は保護されているため</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📊 表で暗記！8種制限の数字まとめ</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：8種制限の数字一覧</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">制限の種類</th><th style="border:1px solid #90caf9;padding:5px">基準・上限</th><th style="border:1px solid #90caf9;padding:5px">根拠条文</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">手付の額の制限</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">代金の20%（10分の2）</td><td style="border:1px solid #90caf9;padding:5px">法39条</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">損害賠償額の予定</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">代金の20%（予定額＋違約金合計）</td><td style="border:1px solid #90caf9;padding:5px">法38条</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">手付金等の保全（未完成）</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">代金の5%超 or 1,000万円超 ⚠️</td><td style="border:1px solid #90caf9;padding:5px">法41条</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">手付金等の保全（完成）</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">代金の10%超 or 1,000万円超</td><td style="border:1px solid #90caf9;padding:5px">法41条の2</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">契約不適合責任の特約</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">引渡しから2年以上の通知期間</td><td style="border:1px solid #90caf9;padding:5px">法40条</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">クーリング・オフ</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">書面告知から8日間</td><td style="border:1px solid #90caf9;padding:5px">法37条の2</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">割賦販売の解除催告</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">30日以上の催告期間</td><td style="border:1px solid #90caf9;padding:5px">法42条</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:8px 0">💡 覚え方：「手付と損害賠償は<strong>2割</strong>が共通！保全は<strong>未完成5%・完成10%</strong>と<strong>1,000万円</strong>。未完成の方がリスク高い＝基準が厳しい（数字が小さい）」</div><div style="font-size:13px;font-weight:bold;margin:12px 0 8px">重要：「買主に不利な特約は無効」一覧</div><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:5px">制限</th><th style="border:1px solid #ef9a9a;padding:5px">無効となる特約の例</th></tr><tr><td style="border:1px solid #ef9a9a;padding:5px">クーリング・オフ</td><td style="border:1px solid #ef9a9a;padding:5px">期間を5日に短縮する特約</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px">手付の額の制限</td><td style="border:1px solid #ef9a9a;padding:5px">手付を代金の30%とする特約（超過部分無効）</td></tr><tr><td style="border:1px solid #ef9a9a;padding:5px">損害賠償額の予定</td><td style="border:1px solid #ef9a9a;padding:5px">予定額＋違約金を代金の30%とする特約（超過部分無効）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px">契約不適合責任</td><td style="border:1px solid #ef9a9a;padding:5px">通知期間を引渡しから1年とする特約</td></tr><tr><td style="border:1px solid #ef9a9a;padding:5px">割賦販売の解除</td><td style="border:1px solid #ef9a9a;padding:5px">催告なしで即時解除できるとする特約</td></tr></table></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 自ら売主8種制限とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「宅建業者が自ら売主として素人の買主に売るとき、買主を守るために課される8つの制限」です。プロ（業者）と素人の取引では情報格差があるため、素人を保護する制度です。</div><div class="info-box" style="background:#fff3e0"><strong>適用の3条件（すべて必要）：</strong><br>① 売主が<strong>宅建業者</strong>であること<br>② 買主が<strong>宅建業者でない者</strong>であること<br>③ <strong>自ら売主</strong>として行う売買であること（媒介・代理は対象外）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ ここが試験のひっかけ！業者間取引（売主も買主も業者）→ 8種制限は適用されない</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>自ら売主＋素人買主</strong>でのみ発動する保護ルール」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">❄️ クーリング・オフ（法37条の2）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「事務所以外の場所で申し込んだ場合、頭を冷やして撤回できる制度」です。冷静でない場所（喫茶店、自宅への訪問等）での契約から買主を守ります。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・事務所等で申込み → クーリング・オフ<strong>不可</strong><br>・事務所等<strong>以外</strong>で申込み → クーリング・オフ<strong>可能</strong><br>・<strong>書面</strong>で行う（発信主義＝発した時点で効力発生）<br>・書面で<strong>告知された日から8日間</strong>が期限</div><div class="info-box" style="background:#ffebee;border:2px solid #ef5350"><strong style="color:#d32f2f">⚠️ できなくなる場合：</strong><br>① 書面告知から<strong>8日間</strong>が経過<br>② 物件の<strong>引渡し</strong>を受け、<strong>かつ</strong>代金<strong>全額</strong>を支払った<br><span style="color:#d32f2f;font-weight:bold">→ 引渡しだけ、支払いだけでは消滅しない！両方そろって初めて不可</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「事務所<strong>以外</strong>＝冷静で<strong>ない</strong>＝撤回OK。<strong>8日間</strong>、<strong>引渡し＋全額支払い</strong>で消滅」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">💰 手付の額の制限と手付の性質（法39条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「手付は代金の2割まで。必ず解約手付になる」というルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・手付の額は<strong>代金の20%（10分の2）</strong>が上限（超える部分は無効）<br>・手付は必ず<strong>解約手付</strong>の性質を持つ<br>・買主は<strong>手付放棄</strong>、売主は<strong>手付倍返し</strong>で解除可能<br>・相手方が<strong>履行に着手するまで</strong>解除可能</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最重要ひっかけ：手付の交付は「履行の着手」ではない！</strong><br>✅ 履行着手の例：登記申請、引渡し、中間金の支払い<br>❌ 手付の交付 → 着手にあたらない</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>2割</strong>まで。<strong>買主は捨てる、売主は倍返し</strong>。<strong>着手前</strong>まで解除OK」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">⚖️ 損害賠償額の予定等の制限（法38条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「損害賠償の予定と違約金の合計は代金の2割まで」というルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・損害賠償額の予定 ＋ 違約金の<strong>合計</strong>が代金の<strong>20%以下</strong><br>・超える部分<strong>のみ</strong>無効（全部無効ではない）<br>・定めがない場合は実損額を請求可能</div><div class="info-box" style="background:#ffebee"><span style="color:#d32f2f;font-weight:bold">⚠️ ひっかけ：「損害賠償予定額」と「違約金」は別々ではなく合算！</span><br>例：予定額15%＋違約金10%＝合計25% → 5%分が無効</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「手付も損害賠償予定も<strong>2割</strong>が上限。覚えやすい！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔧 契約不適合責任の特約の制限（法40条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「買主に不利な特約は無効。ただし通知期間を引渡しから2年以上とする特約だけはOK」というルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・原則：民法より買主に不利な特約は<strong>無効</strong><br>・例外：通知期間を「<strong>引渡しの日から2年以上</strong>」→ <strong>有効</strong><br>・「引渡しの日から1年」→ <strong>無効</strong>（2年未満だから）<br>・無効の場合 → <strong>民法の規定が適用</strong>される</div><div class="info-box" style="background:#ffebee;border:2px solid #ef5350"><span style="color:#d32f2f;font-weight:bold">⚠️ 特約が無効 ＝ 契約全体が無効 ではない！</span><br>特約だけが無効になり、民法の規定で買主は責任追及できる</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>2年以上ならOK、2年未満はNG</strong>。NGなら民法に戻る」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔒 手付金等の保全措置（法41条・41条の2）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「一定額を超える手付金等を受け取る前に、万一のときの保全策を講じなさい」というルールです。業者が倒産しても買主のお金が守られるようにする制度です。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">物件の状態</th><th style="border:1px solid #90caf9;padding:5px">保全措置が必要な基準</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">未完成物件 ⚠️</td><td style="border:1px solid #90caf9;padding:5px">代金の<strong>5%超</strong> or <strong>1,000万円超</strong></td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">完成物件</td><td style="border:1px solid #90caf9;padding:5px">代金の<strong>10%超</strong> or <strong>1,000万円超</strong></td></tr></table><div class="info-box" style="background:#f5f5f5"><strong>保全措置が不要な場合：</strong><br>・買主が<strong>所有権移転登記</strong>を受けた場合<br>・手付金等の額が基準以下の場合</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「未完成は<strong>5%・1,000万円</strong>、完成は<strong>10%・1,000万円</strong>。未完成の方がリスク高い＝基準が厳しい（数字が小さい）」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🚫 他人物売買の制限（法33条の2）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「自分のものでないのに売るな」が原則。ただし取得する契約があればOK。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・他人物・未取得物件の売買は<strong>原則禁止</strong><br>・<strong>例外</strong>：物件を取得する契約（<strong>予約を含む</strong>）があれば売買可能<br>・未完成物件 → 必要な手付金等の保全措置があれば売買可能</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📝 割賦販売の契約解除の制限（法42条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「分割払いの遅延があっても、すぐには解除できない。30日以上の書面催告が必要」というルールです。</div><div class="info-box" style="background:#f5f5f5"><strong>基本ルール：</strong><br>・<strong>30日以上</strong>の催告期間を定めて<strong>書面</strong>で催告<br>・期間内に支払いがなければ解除可能<br>・即時解除は<strong>不可</strong><br>・買主に不利な特約は無効</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「割賦の解除は<strong>30日以上の書面催告</strong>。即座にはNG」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=327AC0000000176" target="_blank">宅地建物取引業法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">8種制限（総合）クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
