@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 国土利用計画法クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="../hourei_seigen/index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ 国土利用計画法</div>
+    <div class="header-desc">事後届出・届出対象面積・一団の土地・勧告と助言・事前届出</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kokudo_riyou_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "国土利用計画法の事後届出において、届出義務を負うのは土地売買等の契約により権利を取得する者（買主等）であり、権利を譲り渡す者（売主等）には届出義務はない。",
+    "a": true,
+    "ex": "正しい。事後届出の届出義務者は「権利取得者」のみです（国土利用計画法23条1項）。売主には届出義務がありません。「当事者双方が届出」とするのは事前届出（注視区域・監視区域）の場合です。",
+    "cat": "届出義務者"
+  },
+  {
+    "q": "事後届出は、土地売買等の契約を締結した日から起算して3週間以内にしなければならない。",
+    "a": false,
+    "ex": "誤り。事後届出の届出期間は、契約を締結した日から起算して「2週間以内」です（国土利用計画法23条1項）。「3週間」は勧告の期間（知事が届出から3週間以内に勧告する期限：24条2項）であり、届出期間と混同しやすいひっかけです。",
+    "cat": "届出期間"
+  },
+  {
+    "q": "市街化区域内にある面積2,500㎡の土地について売買契約を締結した場合、権利取得者は事後届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。市街化区域では2,000㎡以上の土地取引が届出対象です（国土利用計画法23条2項1号イ）。2,500㎡は2,000㎡以上なので届出が必要です。",
+    "cat": "届出対象面積"
+  },
+  {
+    "q": "市街化調整区域内にある面積4,000㎡の土地について売買契約を締結した場合、権利取得者は事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。市街化区域を除く都市計画区域（市街化調整区域・非線引き区域）では5,000㎡以上が届出対象です（国土利用計画法23条2項1号ロ）。4,000㎡は5,000㎡未満なので届出は不要です。",
+    "cat": "届出対象面積"
+  },
+  {
+    "q": "都市計画区域外にある面積8,000㎡の土地について売買契約を締結した場合、権利取得者は事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。都市計画区域外では10,000㎡（1ヘクタール）以上が届出対象です（国土利用計画法23条2項1号ハ）。8,000㎡は10,000㎡未満なので届出は不要です。",
+    "cat": "届出対象面積"
+  },
+  {
+    "q": "Aが所有する市街化区域内の土地（3,000㎡）をB市（地方公共団体）が購入する売買契約を締結した場合、Bは事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。当事者の一方又は双方が国・地方公共団体等（国等）である場合は、事後届出は不要です（国土利用計画法23条2項3号）。B市は地方公共団体なので、面積にかかわらず届出は不要です。",
+    "cat": "届出不要"
+  },
+  {
+    "q": "C県（地方公共団体）が所有する土地をDに売却する場合、Dは権利取得者として事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。当事者の一方又は双方が国等である場合は届出不要です（国土利用計画法23条2項3号）。売主がC県（地方公共団体）であるため、買主Dも届出は不要です。売主・買主のどちらが国等であっても届出は不要になります。",
+    "cat": "届出不要"
+  },
+  {
+    "q": "都道府県知事は、事後届出があった場合において、届出に係る土地の利用目的だけでなく、対価の額についても変更を勧告することができる。",
+    "a": false,
+    "ex": "誤り。事後届出における勧告の対象は「利用目的」のみであり、対価の額について勧告することはできません（国土利用計画法24条1項）。対価の額は届出事項として記載は必要ですが（23条1項6号）、勧告の対象にはなりません。",
+    "cat": "勧告の対象"
+  },
+  {
+    "q": "土地の売買だけでなく、交換契約も国土利用計画法の「土地売買等の契約」に該当し、面積要件を満たす場合には事後届出が必要となる。",
+    "a": true,
+    "ex": "正しい。「土地売買等の契約」には、売買のほか交換や地上権・賃借権の設定・移転も含まれます（国土利用計画法14条1項）。交換は金銭の授受がなくても、土地同士の対価関係があるため届出対象です。",
+    "cat": "届出対象の契約"
+  },
+  {
+    "q": "監視区域に所在する土地について土地売買等の契約を締結しようとする場合には、契約の締結前に届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。監視区域では事前届出が必要です（国土利用計画法27条の7第1項で27条の4第1項を準用）。通常の区域での事後届出（契約後2週間以内）とは異なり、契約の「前」に届出をする必要があります。",
+    "cat": "事前届出"
+  },
+  {
+    "q": "事後届出は、権利取得者が、土地が所在する市町村の長を経由して、都道府県知事に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。事後届出の届出先は「都道府県知事」ですが、届出書は土地が所在する市町村の長を経由して提出します（国土利用計画法23条1項）。直接都道府県知事に届け出るのではなく、市町村長を経由するルートが法定されています。",
+    "cat": "届出先"
+  },
+  {
+    "q": "事後届出の届出事項には、土地の利用目的や対価の額が含まれるが、都道府県知事が勧告できるのは利用目的についてのみであり、対価の額については勧告できない。",
+    "a": true,
+    "ex": "正しい。届出事項として対価の額の記載は必要です（国土利用計画法23条1項6号）。しかし、知事が勧告できるのは「利用目的」についてのみです（24条1項）。対価の額は届出事項ではあるが勧告の対象ではない、というのが重要な区別です。",
+    "cat": "届出事項と勧告の区別"
+  },
+  {
+    "q": "都道府県知事は、事後届出があった日から起算して3週間以内に、届出に係る土地の利用目的について勧告をすることができる。",
+    "a": true,
+    "ex": "正しい。知事は届出があった日から起算して3週間以内に勧告しなければなりません（国土利用計画法24条2項）。なお、実地調査等の合理的な理由がある場合は、3週間の範囲内でこの期間を延長できます（24条3項）。",
+    "cat": "勧告の期限"
+  },
+  {
+    "q": "土地の抵当権の設定は、国土利用計画法の「土地売買等の契約」に該当するため、面積要件を満たす場合には事後届出が必要となる。",
+    "a": false,
+    "ex": "誤り。「土地売買等の契約」の対象となる権利は、所有権・地上権・賃借権またはこれらの取得を目的とする権利です（国土利用計画法14条1項）。抵当権は「使用及び収益を目的とする権利」ではなく担保権であるため、届出の対象外です。",
+    "cat": "届出対象の契約"
+  },
+  {
+    "q": "土地売買等の契約には、売買契約の予約も含まれるため、予約を締結した時点で届出が必要となる。",
+    "a": true,
+    "ex": "正しい。「土地売買等の契約」には予約も含まれます（国土利用計画法14条1項括弧書「予約を含む」）。したがって、予約を締結した時点で届出義務が発生し、予約の締結日から2週間以内に届出をしなければなりません。",
+    "cat": "届出対象の契約"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "Eは、市街化区域内の甲地（1,200㎡）と乙地（1,000㎡）を、同一の売主Fからそれぞれ別々の売買契約で購入した。甲地と乙地は隣接しており、Eは当初から一体として利用する計画であった。この場合、Eは甲地・乙地のそれぞれについて事後届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。一団の土地として取得する場合、合計面積（1,200㎡＋1,000㎡＝2,200㎡）で届出の要否を判断します（国土利用計画法23条2項1号イ括弧書）。市街化区域の基準面積2,000㎡以上を満たすため、それぞれの契約について個別に事後届出が必要です。「まとめて届出」ではなく、各契約の締結日から2週間以内にそれぞれ届出をします。",
+    "cat": "一団の土地"
+  },
+  {
+    "q": "Gは、市街化区域内の甲地（800㎡）と乙地（700㎡）を、異なる売主からそれぞれ購入する契約を締結した。Gは両土地を一体として利用する計画であるが、合計面積が2,000㎡未満であるため、事後届出は不要である。",
+    "a": true,
+    "ex": "正しい。一団の土地であっても、合計面積（800㎡＋700㎡＝1,500㎡）が市街化区域の基準面積2,000㎡未満であれば、届出は不要です（国土利用計画法23条2項1号イ）。一団の土地の判断は「合計面積で判断」がルールであり、合計しても基準面積に満たなければ届出義務は生じません。",
+    "cat": "一団の土地"
+  },
+  {
+    "q": "Hは、市街化区域内の3,000㎡の土地を購入する売買契約を締結したが、事後届出をしなかった。この場合、Hは都道府県知事から利用目的の変更について勧告を受けることがある。",
+    "a": false,
+    "ex": "誤り。勧告は届出があった場合に行われるものです（国土利用計画法24条1項）。届出をしなかった者に対しては勧告はできません。ただし、届出をしなかったこと自体について罰則（6月以下の拘禁刑又は100万円以下の罰金）が適用されます（47条1号）。「届出しない＝勧告なし・罰則あり」と区別して覚えることが重要です。",
+    "cat": "届出しなかった場合"
+  },
+  {
+    "q": "Iは、都市計画区域外にある12,000㎡の土地を購入する売買契約を締結したが、事後届出を怠った。この場合、Iに罰則が適用されることはない。",
+    "a": false,
+    "ex": "誤り。届出義務があるのに届出をしなかった場合は、6月以下の拘禁刑又は100万円以下の罰金に処せられます（国土利用計画法47条1号）。都市計画区域外で10,000㎡以上の土地取引は届出対象であり（23条2項1号ハ）、12,000㎡のIには届出義務がありますので、届出を怠れば罰則の対象です。",
+    "cat": "届出しなかった場合"
+  },
+  {
+    "q": "都道府県知事が事後届出に係る利用目的について勧告をしたが、届出をした者がその勧告に従わなかった場合、知事はその旨及び勧告の内容を公表しなければならない。",
+    "a": false,
+    "ex": "誤り。勧告に従わない場合、知事はその旨及び勧告の内容を公表「することができる」のであって、公表「しなければならない」（義務）ではありません（国土利用計画法26条）。また、勧告に従わなくても契約の取消しはできず、罰則もありません。",
+    "cat": "勧告に従わなかった場合"
+  },
+  {
+    "q": "準都市計画区域内にある面積6,000㎡の土地について売買契約を締結した場合、権利取得者は事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。準都市計画区域は都市計画区域の「外」に位置づけられるため、届出対象面積は「都市計画区域外」と同じ10,000㎡以上です（国土利用計画法23条2項1号ハ）。6,000㎡は10,000㎡未満なので届出は不要です。「準都市計画区域」という名前から都市計画区域内（5,000㎡以上）と誤解しないよう注意が必要です。",
+    "cat": "届出対象面積"
+  },
+  {
+    "q": "市街化区域を除く都市計画区域（非線引き区域）内にある面積5,000㎡の土地について売買契約を締結した場合、権利取得者は事後届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。市街化区域を除く都市計画区域（市街化調整区域・非線引き区域）では5,000㎡以上が届出対象です（国土利用計画法23条2項1号ロ）。ちょうど5,000㎡の場合は「以上」に該当するため、届出が必要です。",
+    "cat": "届出対象面積"
+  },
+  {
+    "q": "事後届出において、権利取得者は土地の利用目的に加え、対価の額も届出事項として記載しなければならないが、都道府県知事は対価の額についても助言をすることができる。",
+    "a": false,
+    "ex": "誤り。対価の額は届出事項として記載が必要です（国土利用計画法23条1項6号）。しかし、助言の対象は「利用目的」のみであり、対価の額について助言することはできません（27条の2）。「届出事項＝書く必要あり」と「勧告・助言の対象」は別の概念です。",
+    "cat": "対価の額"
+  },
+  {
+    "q": "事後届出における届出義務者は権利取得者のみであるが、監視区域における事前届出では当事者双方が届出をしなければならない。",
+    "a": true,
+    "ex": "正しい。事後届出の届出義務者は権利取得者（買主等）のみです（国土利用計画法23条1項）。一方、監視区域・注視区域における事前届出では、当事者双方（売主と買主の両方）が届出義務を負います（27条の7第1項で27条の4第1項を準用）。この違いは頻出です。",
+    "cat": "事後届出と事前届出の区別"
+  },
+  {
+    "q": "Jは、Kとの間で、Kが所有する市街化区域内の土地（3,000㎡）を対価なく譲り受ける贈与契約を締結した。この場合、Jは事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。「土地売買等の契約」とは「対価を得て行われる権利の移転又は設定」に限られます（国土利用計画法14条1項）。贈与は無償（対価なし）であるため、土地売買等の契約に該当せず、届出は不要です。同様に、相続や遺贈も対価性がないため届出対象外です。",
+    "cat": "届出対象の契約"
+  },
+  {
+    "q": "Lは、注視区域内に所在する土地について土地売買等の契約を締結しようとしている。この場合、Lは契約を締結した日から2週間以内に届出をすれば足りる。",
+    "a": false,
+    "ex": "誤り。注視区域内では事前届出が必要であり、契約を締結する「前に」届出をしなければなりません（国土利用計画法27条の4第1項）。契約後2週間以内の届出（事後届出）は、注視区域・監視区域の指定がない通常の区域に適用される制度です。注視区域・監視区域では事前届出が、通常の区域では事後届出が必要という区別が重要です。",
+    "cat": "事前届出と事後届出の区別"
+  },
+  {
+    "q": "Mが所有する市街化区域内の土地（3,000㎡）について、Mの死亡により相続人Nが相続した。この場合、Nは事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。相続は「契約」ではなく法律上当然に権利が移転するものであるため、「土地売買等の契約」に該当しません。また、相続には対価性もありません。したがって、面積にかかわらず事後届出は不要です。同様に、法人の合併による権利の承継も届出不要です。",
+    "cat": "届出対象の契約"
+  },
+  {
+    "q": "事後届出に係る勧告に従わなかった者に対して、都道府県知事はその者の氏名を公表することができるが、この場合でも土地売買等の契約自体は有効であり、取り消されることはない。",
+    "a": true,
+    "ex": "正しい。勧告に従わない場合、知事はその旨及び勧告の内容を公表「することができ」ます（国土利用計画法26条）。しかし、勧告に従わなくても罰則はなく、また契約の取消しや無効といった効果も生じません。契約はあくまで有効なままです。これは事後届出制の重要なポイントです。",
+    "cat": "勧告に従わなかった場合"
+  },
+  {
+    "q": "監視区域における届出対象面積は、事後届出の面積要件（市街化区域2,000㎡以上等）と同じである。",
+    "a": false,
+    "ex": "誤り。監視区域における届出対象面積は、事後届出の面積要件（23条2項1号イ〜ハ）未満の面積で、都道府県知事が都道府県の規則で定めます（国土利用計画法27条の7第1項・第2項）。つまり、監視区域では通常より小さい面積の取引でも届出が必要となります。なお、注視区域の面積要件は事後届出と同じです。",
+    "cat": "事前届出の面積要件"
+  },
+  {
+    "q": "規制区域内の土地について都道府県知事の許可を受けずに締結した土地売買等の契約は、その効力を生じない。一方、事後届出を怠った場合の土地売買等の契約は、届出をしなくても契約自体は有効である。",
+    "a": true,
+    "ex": "正しい。規制区域（許可制）では、許可を受けずに締結した契約は無効です（国土利用計画法14条3項）。一方、事後届出制では、届出をしなかった場合でも契約自体は有効です。届出をしなかったことに対しては罰則（6月以下の拘禁刑又は100万円以下の罰金：47条1号）が適用されますが、契約の効力には影響しません。",
+    "cat": "届出制と許可制の違い"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで国土利用計画法の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 国土利用計画法の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【区域の種類と届出制度】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">通常の区域</span> → <span style="background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold">事後届出</span><br><span style="background:#ffe0b2;padding:3px 10px;border-radius:4px">注視区域・監視区域</span> → <span style="background:#fff9c4;padding:3px 10px;border-radius:4px;font-weight:bold">事前届出</span><br><span style="background:#ffcdd2;padding:3px 10px;border-radius:4px">規制区域</span> → <span style="background:#ef9a9a;padding:3px 10px;border-radius:4px;font-weight:bold">許可制</span><br><br><span style="color:#d32f2f;font-weight:bold;font-family:sans-serif">⚠️ 宅建試験では「事後届出」が圧倒的に頻出！</span></div><div class="info-box" style="background:#f5f5f5"><strong>事後届出の流れ：</strong><br>① 土地売買等の契約を締結<br>→ ② 面積要件を確認（2,000 / 5,000 / 10,000㎡）<br>→ ③ 届出不要の場合を確認（国等が当事者など）<br>→ ④ 権利取得者が2週間以内に届出<br>→ ⑤ 知事が利用目的を審査<br>→ ⑥ 必要に応じて勧告・助言</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要①「対価の額」は届出事項だが、勧告・助言の対象ではない</strong><br>対価の額は届出書に記載が必要（23条1項6号）。しかし知事が勧告・助言できるのは「利用目的」だけ。<br><span style="font-size:12px;color:#d32f2f">⚠️「対価の額は届出事項ではない」→誤り ／ 「対価の額について助言できる」→誤り</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要②「届出制」に買取請求制度はない</strong><br>規制区域（許可制）では不許可の場合に買取請求ができる。<br>しかし事後届出・事前届出の「届出制」には買取請求は存在しない。<br><span style="font-size:12px;color:#d32f2f">⚠️「勧告を受けた者は知事に買取りを請求できる」→誤り</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 準都市計画区域の面積要件＝「都市計画区域外」と同じ</strong><br>準都市計画区域は都市計画区域の「外」に設定されるため、面積要件は10,000㎡以上。<br>「準都市計画区域」→5,000㎡以上と勘違いしやすい。<br><span style="font-size:12px;color:#d32f2f">⚠️「準都市計画区域内の5,000㎡で届出が必要」→誤り（10,000㎡以上）</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 公表は「できる」であって「しなければならない」ではない</strong><br>勧告に従わない場合、知事は公表「できる」（裁量）。義務ではない（26条）。<br><span style="font-size:12px;color:#d32f2f">⚠️「公表しなければならない」→誤り</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 暗記表</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：区域ごとの届出対象面積</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">区域</th><th style="border:1px solid #90caf9;padding:5px">届出対象面積</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">市街化区域</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">2,000㎡以上</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">市街化区域を除く都市計画区域<br><span style="font-size:11px;color:#555">（市街化調整区域・非線引き区域）</span></td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">5,000㎡以上</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">都市計画区域外<br><span style="font-size:11px;color:#d32f2f">（準都市計画区域を含む ⚠️）</span></td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">10,000㎡以上</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「2・5・10（に・ご・じゅう）」。都市化が進んでいるほど面積が小さい＝厳しい</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">★最重要：届出しなかった場合 vs 勧告に従わなかった場合</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffcdd2"><th style="border:1px solid #ef9a9a;padding:5px">場面</th><th style="border:1px solid #ef9a9a;padding:5px">効果</th></tr><tr><td style="border:1px solid #ef9a9a;padding:5px">届出しなかった</td><td style="border:1px solid #ef9a9a;padding:5px"><span style="color:#d32f2f;font-weight:bold">勧告なし</span>＋<span style="color:#d32f2f;font-weight:bold">罰則あり</span><br><span style="font-size:11px">（6月以下の拘禁刑又は100万円以下の罰金）</span></td></tr><tr style="background:#fafafa"><td style="border:1px solid #ef9a9a;padding:5px">勧告に従わなかった</td><td style="border:1px solid #ef9a9a;padding:5px"><span style="color:#1565c0;font-weight:bold">公表できる</span>＋<span style="color:#1565c0;font-weight:bold">罰則なし</span>＋<span style="color:#1565c0;font-weight:bold">契約取消しなし</span></td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「届出しない＝勧告なし・罰則あり」「勧告無視＝公表できる・罰則なし」</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：事後届出と事前届出の比較</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">事後届出</th><th style="border:1px solid #90caf9;padding:5px">事前届出<br><span style="font-size:11px">（監視区域・注視区域）</span></th></tr><tr><td style="border:1px solid #90caf9;padding:5px">届出のタイミング</td><td style="border:1px solid #90caf9;padding:5px">契約締結後2週間以内</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">契約締結前 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">届出義務者</td><td style="border:1px solid #90caf9;padding:5px">権利取得者（買主）のみ</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">当事者双方 ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">届出先</td><td style="border:1px solid #90caf9;padding:5px">市町村長経由→都道府県知事</td><td style="border:1px solid #90caf9;padding:5px">市町村長経由→都道府県知事</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">勧告対象</td><td style="border:1px solid #90caf9;padding:5px">利用目的のみ<br><span style="font-size:11px">（対価は対象外）</span></td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">利用目的＋対価の額 ⚠️</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">契約制限期間</td><td style="border:1px solid #90caf9;padding:5px">なし</td><td style="border:1px solid #90caf9;padding:5px">注視区域・監視区域とも6週間<br><span style="font-size:11px;color:#d32f2f">⚠️ 届出日から6週間は契約締結不可</span></td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #c62828;color:#c62828">⚠️ カバーできていない論点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでは以下の論点はカバーしていません：</strong><br>・規制区域（許可制）の詳細な手続き<br>・届出書の記載事項の細部<br>・土地利用基本計画の詳細<br>・遊休土地に関する措置（28条〜35条）<br>・注視区域と監視区域の指定要件の詳細<br><br>これらは過去問学習で補ってください。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=349AC0000000092" target="_blank">国土利用計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 国土利用計画法とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「一定面積以上の土地取引をしたら、届出をしなさい」という制度です。土地の投機的取引を防ぎ、適正な土地利用を図ることが目的です（国土利用計画法1条）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 事後届出の基本（届出義務者・届出期間）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>土地を買った人（権利取得者）が、契約してから2週間以内に届け出る制度。売った人には届出義務なし。</div><div class="info-box" style="background:#fff3e0"><strong>事後届出の2大ポイント（国土利用計画法23条1項）：</strong><br>① 届出義務者＝<strong>権利取得者（買主）のみ</strong>。売主には届出義務なし<br>② 届出期間＝契約を<strong>締結した日から起算して2週間以内</strong></div><div class="info-box" style="background:#f5f5f5"><strong>届出先：</strong>市町村長を経由して都道府県知事に届出（23条1項）<br><strong>届出をしなかった場合：</strong>6月以下の拘禁刑又は100万円以下の罰金（47条1号）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「買った人が2週間以内に届出」＝買主・2週間の2つだけ覚える</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><span style="color:#d32f2f;font-weight:bold">⚠️ ひっかけ注意：</span><br>・「3週間以内」→誤り（3週間は勧告の期限）<br>・「翌日から起算」→誤り（締結した日から起算）<br>・「売主にも届出義務がある」→誤り（権利取得者のみ）<br>・「当事者双方が届出」→誤り（事後届出は権利取得者のみ。双方は事前届出）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📐 届出対象面積（区域ごとの面積要件）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>届出が必要な面積は、区域の種類によって異なる。都市化が進んでいる区域ほど小さい面積で届出が必要。</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">区域</th><th style="border:1px solid #90caf9;padding:5px">届出対象面積</th><th style="border:1px solid #90caf9;padding:5px">根拠</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">①市街化区域</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">2,000㎡以上</td><td style="border:1px solid #90caf9;padding:5px;font-size:11px">23条2項1号イ</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">②市街化区域を除く都市計画区域<br><span style="font-size:11px">（市街化調整区域・非線引き区域）</span></td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">5,000㎡以上</td><td style="border:1px solid #90caf9;padding:5px;font-size:11px">23条2項1号ロ</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">③都市計画区域外<br><span style="font-size:11px;color:#d32f2f">（準都市計画区域を含む ⚠️）</span></td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">10,000㎡以上</td><td style="border:1px solid #90caf9;padding:5px;font-size:11px">23条2項1号ハ</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「2・5・10（に・ご・じゅう）」で覚える。都市化が進んでいるほど面積が小さい＝厳しい</div><div class="info-box" style="background:#ffebee"><span style="color:#d32f2f;font-weight:bold">⚠️ 準都市計画区域は都市計画区域の「外」なので10,000㎡！</span><br>「準都市計画区域」という名前に惑わされて5,000㎡以上と間違えるのが典型的なひっかけです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏘️ 一団の土地</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>複数の土地をまとめて買う場合、合計面積で届出の要否を判断する。</div><div class="info-box" style="background:#e8f5e9"><strong>一団の土地のルール（23条2項1号括弧書）：</strong><br>① 合計面積で届出の要否を判断する<br>② 届出はそれぞれの契約ごとに個別に行う<br>③ 順次取引（時間差で購入）でも、当初から一団として購入する予定なら対象<br>④ 「まとめて届出」はできない＝各契約の締結日から2週間以内にそれぞれ届出</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「合計で判断、届出は個別」がルール</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🏛️ 届出不要の場合</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>国や地方公共団体が売主・買主のどちらかであれば、届出は不要。</div><div class="info-box" style="background:#f3e5f5"><strong>届出不要となる主な場合（23条2項3号）：</strong><br>✅ 当事者の一方又は双方が国等（国・地方公共団体等）の場合<br>✅ 民事調停法による調停に基づく場合<br><br><strong>「国等」の範囲：</strong>国・都道府県・市町村・政令で定める法人</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「国や市が絡めば届出不要」。売主でも買主でも、片方が国等なら不要</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">⚖️ 勧告と助言</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>知事は届出内容を審査して、土地の利用目的について勧告や助言ができる。ただし対価の額についてはできない。</div><div class="info-box" style="background:#fff3e0"><strong>勧告（24条）：</strong><br>・土地利用審査会の意見を聴いて、利用目的の変更を勧告できる<br>・対象＝<strong>利用目的のみ</strong>。対価の額は勧告対象外<br>・届出があった日から<strong>3週間以内</strong>に勧告<br><br><strong>助言（27条の2）：</strong><br>・利用目的についてのみ可能。対価の額は助言対象外</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><strong style="color:#d32f2f">勧告に従わない場合（26条）：</strong><br>・公表「<strong>できる</strong>」（義務ではない）<br>・<span style="color:#d32f2f;font-weight:bold">罰則なし</span><br>・<span style="color:#d32f2f;font-weight:bold">契約の取消しはできない</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「勧告・助言は利用目的だけ、対価はノータッチ」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">⚠️ 届出をしなかった場合の効果</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>届出をしなかった場合、勧告は受けないが罰則は受ける。この区別が超重要。</div><div class="info-box" style="background:#ffebee"><strong>届出しなかった場合：</strong><br>・勧告は受けない（勧告は届出があった場合にされるもの）<br>・<strong>罰則は適用される</strong>（6月以下の拘禁刑又は100万円以下の罰金：47条1号）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「届出しない＝勧告なし・罰則あり」。勧告は届出してきた人に対するもの。届出しない人には「罰」で対応。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🔄 事前届出（監視区域・注視区域）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>監視区域・注視区域では、契約の「前」に届出が必要。事後届出とは別の制度。</div><div class="info-box" style="background:#e0f2f1"><strong>事前届出の特徴（27条の7、27条の4）：</strong><br>・届出のタイミング＝契約締結<strong>前</strong><br>・届出義務者＝<strong>当事者双方</strong>（事後届出は権利取得者のみ）<br>・監視区域の届出後、<strong>6週間</strong>は契約締結不可<br>・監視区域の面積要件は事後届出の面積要件未満で都道府県規則で定める</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「監視区域は事前・双方・6週間」。事後届出との違い：事前vs事後、双方vs買主だけ</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#555">📝 届出対象となる契約の種類</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「土地売買等の契約」には売買だけでなく、交換や地上権の設定なども含まれる。</div><div class="info-box" style="background:#f5f5f5"><strong>届出対象の契約（14条1項）：</strong><br>✅ 売買、交換<br>✅ 地上権・賃借権の設定・移転<br>→ いずれも「対価を得て行われる」ものに限る<br><br><strong>届出対象外：</strong><br>❌ 贈与（無償＝対価なし）<br>❌ 相続・遺贈（対価性がない）<br>❌ 法人の合併（対価性がない）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「対価があれば届出対象」。交換はお金のやり取りがなくても、土地同士の対価関係があるから対象。贈与・相続はタダだから対象外。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=349AC0000000092" target="_blank">国土利用計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">国土利用計画法クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
