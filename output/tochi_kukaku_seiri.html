@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 土地区画整理法クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ 土地区画整理法</div>
+    <div class="header-desc">事業の基本・組合・建築行為等の制限・仮換地・換地処分・登記制限</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_tochi_kukaku_seiri_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "土地区画整理事業は、都市計画区域内の土地について、公共施設の整備改善及び宅地の利用増進を図るために行われる事業であり、都市計画区域外の土地では施行できない。",
+    "a": true,
+    "ex": "正しい。土地区画整理事業は「都市計画区域内の土地」について行われる事業です（土地区画整理法2条1項）。都市計画区域外では施行できません。",
+    "cat": "事業の基本"
+  },
+  {
+    "q": "土地区画整理事業の目的は、公共施設の整備改善のみであり、宅地の利用増進は含まれない。",
+    "a": false,
+    "ex": "誤り。土地区画整理事業の目的は「公共施設の整備改善」と「宅地の利用の増進」の2つです（土地区画整理法2条1項）。どちらか一方だけではありません。",
+    "cat": "事業の基本"
+  },
+  {
+    "q": "土地区画整理組合を設立するには、宅地の所有権者又は借地権者が7人以上共同して、定款及び事業計画を定め、都道府県知事の認可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。組合の設立には7人以上が共同して定款及び事業計画を定め、都道府県知事の認可を受ける必要があります（土地区画整理法14条1項）。",
+    "cat": "組合の設立"
+  },
+  {
+    "q": "土地区画整理組合の設立には、施行地区内の宅地について所有権を有するすべての者及び借地権を有するすべての者のそれぞれ3分の2以上の同意が必要である。",
+    "a": true,
+    "ex": "正しい。組合設立の同意要件は、所有権者・借地権者の「それぞれ」3分の2以上の同意です（土地区画整理法18条）。片方だけでは足りません。",
+    "cat": "組合の設立"
+  },
+  {
+    "q": "土地区画整理組合が施行する事業の施行地区内の宅地について所有権又は借地権を有する者は、すべてその組合の組合員となる。",
+    "a": true,
+    "ex": "正しい。施行地区内の宅地の所有権者・借地権者は全員が組合員となります（土地区画整理法25条1項）。任意加入ではなく強制加入です。",
+    "cat": "組合員"
+  },
+  {
+    "q": "土地区画整理事業の施行についての認可等の公告があった日後、換地処分の公告がある日までは、施行地区内で土地の形質変更や建築物の新築等を行うには都道府県知事等の許可が必要である。",
+    "a": true,
+    "ex": "正しい。認可等の公告日後から換地処分の公告日までの間、施行地区内での土地の形質変更・建築物の新築等には都道府県知事等の許可が必要です（土地区画整理法76条1項）。",
+    "cat": "建築行為等の制限"
+  },
+  {
+    "q": "土地区画整理法76条の建築行為等の制限において、制限される行為には、土地の形質変更、建築物の新築・改築・増築のほか、政令で定める移動困難な物件の設置・堆積が含まれる。",
+    "a": true,
+    "ex": "正しい。制限される行為は①土地の形質変更、②建築物その他の工作物の新築・改築・増築、③政令で定める移動困難な物件の設置・堆積の3つです（土地区画整理法76条1項）。",
+    "cat": "建築行為等の制限"
+  },
+  {
+    "q": "仮換地が指定された場合、従前の宅地の所有者は、仮換地の指定の効力発生日から換地処分の公告がある日まで、仮換地を使用・収益することができる。",
+    "a": true,
+    "ex": "正しい。仮換地が指定されると、従前の宅地について使用・収益する権利を有する者は、効力発生日から換地処分の公告日まで仮換地を使用・収益でき、従前の宅地は使用・収益できなくなります（土地区画整理法99条1項）。",
+    "cat": "仮換地"
+  },
+  {
+    "q": "仮換地の指定は、仮換地となるべき土地の所有者及び従前の宅地の所有者に対し、仮換地の位置・地積・効力発生日を通知して行う。",
+    "a": true,
+    "ex": "正しい。仮換地の指定は、仮換地となる土地の所有者と従前の宅地の所有者に対し、仮換地の位置及び地積並びに効力発生日を通知して行います（土地区画整理法98条5項）。",
+    "cat": "仮換地"
+  },
+  {
+    "q": "施行者は、仮換地に使用又は収益の障害となる物件があるときは、仮換地の使用収益開始日を効力発生日とは別に定めることができる。",
+    "a": true,
+    "ex": "正しい。仮換地に障害物件があるときなど特別の事情があるときは、使用収益の開始日を効力発生日とは別に定めることができます（土地区画整理法99条2項）。",
+    "cat": "仮換地"
+  },
+  {
+    "q": "換地処分は、換地計画に係る区域の全部について工事が完了した後に行われるのが原則であるが、定款等に別段の定めがあれば工事完了前でも行うことができる。",
+    "a": true,
+    "ex": "正しい。換地処分は原則として工事完了後に遅滞なく行いますが、規準・規約・定款又は施行規程に別段の定めがある場合は工事完了前でも可能です（土地区画整理法103条2項）。",
+    "cat": "換地処分"
+  },
+  {
+    "q": "換地処分の公告があった日の翌日から、換地は従前の宅地とみなされる。",
+    "a": true,
+    "ex": "正しい。換地処分の公告があった日の翌日から、換地計画で定められた換地は従前の宅地とみなされます（土地区画整理法104条1項）。",
+    "cat": "換地処分の効果"
+  },
+  {
+    "q": "換地計画において換地を定めなかった従前の宅地に存する権利は、換地処分の公告があった日が終了した時に消滅する。",
+    "a": true,
+    "ex": "正しい。換地を定めなかった従前の宅地の権利は、公告日の「終了時」に消滅します（土地区画整理法104条1項）。翌日ではなく「その日の終了時」である点に注意が必要です。",
+    "cat": "換地処分の効果"
+  },
+  {
+    "q": "換地計画を定める場合、施行者が個人施行者・組合・区画整理会社・市町村又は機構等であるときは、都道府県知事の認可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。換地計画について都道府県知事の認可が必要です（土地区画整理法86条1項）。市町村長の認可ではない点に注意してください。",
+    "cat": "換地計画"
+  },
+  {
+    "q": "個人施行者以外の施行者は、換地計画を定めようとする場合、その換地計画を2週間公衆の縦覧に供しなければならない。",
+    "a": true,
+    "ex": "正しい。個人施行者以外の施行者は、換地計画を2週間公衆の縦覧に供する必要があります（土地区画整理法88条2項）。個人施行者にはこの縦覧義務はありません。",
+    "cat": "換地計画"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "土地区画整理法76条の建築行為等の制限において、組合が施行する事業の場合、建築行為等の許可は組合から受けなければならない。",
+    "a": false,
+    "ex": "誤り。建築行為等の許可権者は、国土交通大臣施行の場合は国土交通大臣、それ以外は都道府県知事（市の区域内で個人・組合・区画整理会社・市が施行する場合は市の長）です（土地区画整理法76条1項）。組合の許可ではありません。",
+    "cat": "建築行為等の制限"
+  },
+  {
+    "q": "市の区域内で土地区画整理組合が施行する事業において、建築行為等の許可を受けるには、都道府県知事と当該市の長の両方の許可が必要である。",
+    "a": false,
+    "ex": "誤り。許可権者は1つだけです。市の区域内で個人・組合・区画整理会社・市が施行する場合は「市の長」のみが許可権者であり、都道府県知事の許可は不要です（土地区画整理法76条1項）。",
+    "cat": "建築行為等の制限"
+  },
+  {
+    "q": "換地処分の公告があった日の翌日において、換地計画で定められた清算金が確定する。",
+    "a": true,
+    "ex": "正しい。清算金は換地処分の公告があった日の翌日に確定します（土地区画整理法104条8項）。公告日当日ではなく「翌日」が基準です。",
+    "cat": "換地処分の効果"
+  },
+  {
+    "q": "換地処分の公告があった場合、保留地は公告日の終了時に施行者が取得する。",
+    "a": false,
+    "ex": "誤り。保留地は公告があった日の「翌日」に施行者が取得します（土地区画整理法104条11項）。公告日の「終了時」に消滅するのは、換地を定めなかった従前の宅地の権利です。「翌日」と「終了時」の区別が重要です。",
+    "cat": "換地処分の効果"
+  },
+  {
+    "q": "施行地区内の土地及び建物に関する登記の制限は、仮換地の指定があった日後から開始される。",
+    "a": false,
+    "ex": "誤り。登記制限が開始されるのは「換地処分の公告があった日後」です（土地区画整理法107条3項）。「仮換地の指定があった日後」ではありません。これは頻出のひっかけポイントです。",
+    "cat": "登記制限"
+  },
+  {
+    "q": "土地区画整理組合が仮換地を指定する場合は、土地区画整理審議会の同意を得なければならない。",
+    "a": false,
+    "ex": "誤り。組合が仮換地を指定する場合は「総会若しくはその部会又は総代会の同意」が必要です（土地区画整理法98条3項）。土地区画整理審議会は都道府県・市町村等の公的施行者が設置するものであり、組合には審議会は設置されません。",
+    "cat": "仮換地と同意"
+  },
+  {
+    "q": "宅地の所有者の申出又は同意があった場合、換地計画において換地を定めないことができるが、その宅地に賃借権を有する者がいるときは、その者に補償をすれば足りる。",
+    "a": false,
+    "ex": "誤り。換地を定めない宅地に地上権・賃借権等の使用収益権を有する者がいるときは、補償ではなくその者の「同意」を得なければなりません（土地区画整理法90条）。",
+    "cat": "換地を定めない場合"
+  },
+  {
+    "q": "土地区画整理組合の設立に際し、施行地区内の宅地について未登記の借地権を有する者は、所定の申告手続きをすれば同意要件の対象に含まれる。",
+    "a": true,
+    "ex": "正しい。未登記の借地権者も、市町村長に対して借地権の種類及び内容を申告することにより同意の対象に含まれます（土地区画整理法19条3項・4項）。未登記だからといって同意が不要になるわけではありません。",
+    "cat": "組合の設立要件"
+  },
+  {
+    "q": "土地区画整理組合の参加組合員になるには、独立行政法人都市再生機構や地方住宅供給公社等であることに加え、資力及び信用の要件を満たす必要がある。",
+    "a": false,
+    "ex": "誤り。参加組合員は、独立行政法人都市再生機構・地方住宅供給公社その他政令で定める者であって、事業への参加を希望し定款で定められたものがなります（土地区画整理法25条の2）。参加組合員には資力及び信用の要件は課されていません。",
+    "cat": "組合の設立要件"
+  },
+  {
+    "q": "土地区画整理事業の施行により設置された公共施設は、換地処分の公告があった日の翌日において、すべて国の管理に属する。",
+    "a": false,
+    "ex": "誤り。公共施設は原則として「その公共施設の所在する市町村の管理」に属します（土地区画整理法106条1項）。ただし、他の法律又は定款等に別段の定めがある場合はこの限りではありません。「すべて国の管理」ではありません。",
+    "cat": "公共施設の管理"
+  },
+  {
+    "q": "土地区画整理事業の施行により生じた公共施設の用に供する土地は、換地処分の公告があった日の翌日において、すべて所在する市町村に帰属する。",
+    "a": false,
+    "ex": "誤り。公共施設の用に供する土地は、原則として「その公共施設を管理すべき者」に帰属します（土地区画整理法105条3項）。すべてが市町村に帰属するわけではなく、管理主体が国等の場合もあります。",
+    "cat": "公共施設の管理"
+  },
+  {
+    "q": "施行地区内の宅地について借地権のみを有し所有権を持たない者は、土地区画整理組合の組合員にはならない。",
+    "a": false,
+    "ex": "誤り。施行地区内の宅地について「所有権又は借地権」を有する者はすべて組合員となります（土地区画整理法25条1項）。借地権のみを有する者も組合員です。",
+    "cat": "組合員"
+  },
+  {
+    "q": "組合が組合員から徴収する賦課金の額は、組合員一律に定めなければならない。",
+    "a": false,
+    "ex": "誤り。賦課金の額は、組合員が施行地区内に有する「宅地又は借地の位置、地積等を考慮して公平に定めなければならない」とされています（土地区画整理法40条2項）。全員一律ではありません。",
+    "cat": "組合の運営"
+  },
+  {
+    "q": "換地処分の公告があった日後、施行地区内の土地及び建物については、施行者による変動登記がされるまで原則として他の登記をすることができないが、確定日付のある書類により公告前に登記原因が生じたことを証明した場合は登記が可能である。",
+    "a": true,
+    "ex": "正しい。換地処分の公告後は原則として施行者の変動登記が完了するまで他の登記はできませんが、確定日付のある書類により公告前に登記原因が生じたことを証明した場合は例外として登記可能です（土地区画整理法107条3項）。",
+    "cat": "登記制限"
+  },
+  {
+    "q": "仮換地の指定において、効力発生日と使用収益の開始日は必ず同一の日でなければならない。",
+    "a": false,
+    "ex": "誤り。仮換地に使用又は収益の障害となる物件があるときなど特別の事情がある場合は、使用収益の開始日を効力発生日と別に定めることができます（土地区画整理法99条2項）。同一でなければならないわけではありません。",
+    "cat": "仮換地"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで土地区画整理法の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">このアプリでカバーできていない論点：</strong><br>・施行規程・施行規則の詳細<br>・減価補償金の計算方法<br>・審議会委員の選任手続きの詳細<br>・土地区画整理事業と都市計画決定の関係の詳細<br>これらは過去問での出題頻度が低いため省略していますが、過去問学習の際に出てきたら確認してください。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 土地区画整理事業の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【事業の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">①組合設立等の認可・公告</span><br>↓<br><span style="background:#ffcc80;padding:3px 10px;border-radius:4px">②建築行為等の制限（76条）開始</span><br>↓<br><span style="background:#a5d6a7;padding:3px 10px;border-radius:4px">③仮換地の指定</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④工事の施行</span><br>↓<br><span style="background:#ce93d8;padding:3px 10px;border-radius:4px">⑤換地計画の策定（知事認可・2週間縦覧）</span><br>↓<br><span style="background:#ef9a9a;padding:3px 10px;border-radius:4px;font-weight:bold">⑥換地処分の公告</span><br>↓<br><span style="background:#ef9a9a;padding:3px 10px;border-radius:4px;font-weight:bold">⑦翌日：権利関係一斉確定</span><br>↓<br><span style="background:#b0bec5;padding:3px 10px;border-radius:4px">⑧変動登記・清算金の徴収交付</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 建築行為等の制限の許可権者</strong><br>許可権者は「知事 or 市長 or 大臣」のいずれか<strong>1つ</strong>！<br><span style="color:#d32f2f;font-weight:bold">⚠️「組合の許可」は誤り！「知事と市長の両方」も誤り！</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 登記制限のトリガー</strong><br>登記制限の開始 ＝「<strong>換地処分の公告</strong>があった日後」<br><span style="color:#d32f2f;font-weight:bold">⚠️「仮換地の指定があった日後」は誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 組合に審議会はない</strong><br>土地区画整理審議会 → 公的施行者（都道府県・市町村等）だけ<br>組合が仮換地を指定 → <strong>総会等の同意</strong>が必要<br><span style="color:#d32f2f">⚠️「組合が審議会の同意を得て仮換地を指定」は誤り！</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 換地を定めない場合は「同意」が必要</strong><br>使用収益権者（賃借権者等）がいる場合：<br><span style="color:#d32f2f;font-weight:bold">⚠️「補償すればよい」は誤り！→「同意」が必要（90条）</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ 清算金は所有権移転に伴わない</strong><br>清算金の権利義務は換地処分時点の換地所有者に確定的に発生<br><span style="color:#d32f2f">⚠️ その後の所有権移転により当然には移転しない</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 暗記表</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：換地処分の公告の翌日に起きること一覧</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">事項</th><th style="border:1px solid #ffb74d;padding:5px">タイミング</th><th style="border:1px solid #ffb74d;padding:5px">内容</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">換地の効力</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">翌日</td><td style="border:1px solid #ffb74d;padding:5px">換地は従前の宅地とみなされる</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">換地なしの権利</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#d32f2f">終了時 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">従前の宅地の権利が消滅</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">清算金</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">翌日</td><td style="border:1px solid #ffb74d;padding:5px">確定する</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">保留地</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">翌日</td><td style="border:1px solid #ffb74d;padding:5px">施行者が取得</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">公共施設の管理</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">翌日</td><td style="border:1px solid #ffb74d;padding:5px">原則として所在市町村が管理</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">公共施設用地</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#1565c0">翌日</td><td style="border:1px solid #ffb74d;padding:5px">管理すべき者に帰属</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">行使利益なき地役権</td><td style="border:1px solid #ffb74d;padding:5px;font-weight:bold;color:#d32f2f">終了時 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">消滅</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ほぼ全部「翌日」！例外は「終了時」に消滅する2つだけ：</strong><br>①換地を定めなかった従前の宅地の権利、②行使する利益がなくなった地役権</div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：建築行為等の制限（76条）の許可権者</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">施行者</th><th style="border:1px solid #90caf9;padding:5px">許可権者</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">国土交通大臣</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">国土交通大臣</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">市の区域内で個人・組合・区画整理会社・市が施行</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">市の長</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">上記以外</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">都道府県知事</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 許可権者はいずれか1つだけ！「組合の許可」は誤り！「知事と市長の両方」も誤り！</strong></div><div style="font-size:13px;font-weight:bold;margin:16px 0 8px 0">重要：仮換地指定の同意・意見聴取</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">施行者</th><th style="border:1px solid #a5d6a7;padding:5px">必要な手続き</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">個人施行者</td><td style="border:1px solid #a5d6a7;padding:5px">従前の宅地所有者等・仮換地所有者等の同意</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #a5d6a7;padding:5px">組合</td><td style="border:1px solid #a5d6a7;padding:5px;font-weight:bold;color:#1565c0">総会・部会・総代会の同意</td></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">都道府県・市町村・国土交通大臣・機構等</td><td style="border:1px solid #a5d6a7;padding:5px">土地区画整理審議会の意見聴取</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「審議会は公的施行者だけ。組合は総会で決める！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=329AC0000000119" target="_blank">土地区画整理法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 土地区画整理事業とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>都市計画区域内の土地を整理して、道路・公園などを整備しつつ宅地を使いやすくする事業です（土地区画整理法2条1項）。土地の所有者は「従前の宅地」から「換地（新しい土地）」に権利が移ります。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「区画整理＝都市計画区域内限定！」都市計画区域外は対象外。</div><div class="info-box" style="background:#f5f5f5"><strong>施行者の種類：</strong><br>個人施行者、土地区画整理組合、区画整理会社、市町村、都道府県、国土交通大臣、独立行政法人都市再生機構、地方住宅供給公社</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">👥 土地区画整理組合</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>施行地区内の宅地の所有権者・借地権者が設立する民間の施行者です。所有権者も借地権者も全員が強制加入で組合員になります（土地区画整理法25条1項）。</div><div class="info-box" style="background:#fff3e0"><strong>設立の要件（土地区画整理法14条・18条）</strong><br>① <strong>7人以上</strong>が共同で定款・事業計画を定める<br>② <strong>都道府県知事の認可</strong>を受ける<br>③ 所有権者の<strong>2/3以上</strong> ＋ 借地権者の<strong>2/3以上</strong>の同意が必要</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「7人以上で設立、各2/3の同意、知事の認可」</div><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">⚠️ ひっかけ注意：</strong><br>・借地権<strong>のみ</strong>を有する者も組合員になる！「所有権がないから組合員にならない」は誤り<br>・未登記の借地権者も申告手続きにより同意の対象に含まれる</div><div class="info-box" style="background:#f5f5f5"><strong>参加組合員（土地区画整理法25条の2）</strong><br>独立行政法人都市再生機構・地方住宅供給公社等で、事業参加を希望し定款で定められた者<br><span style="color:#d32f2f;font-weight:bold">⚠️ 資力・信用の要件は不要！</span></div><div class="info-box" style="background:#f5f5f5"><strong>賦課金（土地区画整理法40条）</strong><br>宅地・借地の<strong>位置、地積等を考慮して公平に</strong>定める<br><span style="color:#d32f2f;font-weight:bold">⚠️「一律に定める」は誤り！</span></div><div class="info-box" style="background:#f5f5f5"><strong>総会の運営</strong><br>定足数：組合員の<strong>半数以上</strong>の出席<br>議決：出席組合員の<strong>過半数</strong></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">🚧 建築行為等の制限（76条）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>事業の認可公告後〜換地処分の公告まで、工事の邪魔になる行為には許可が必要です。施行地区内で勝手に建物を建てたり土地を変えたりできません。</div><div class="info-box" style="background:#fff3e0"><strong>制限期間：</strong>設立認可等の公告があった日後 〜 換地処分の公告がある日まで<br><br><strong>制限される行為：</strong><br>① 土地の形質の変更<br>② 建築物その他の工作物の新築・改築・増築<br>③ 政令で定める移動困難な物件の設置・堆積</div><div class="info-box" style="background:#ffebee;border:2px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 超重要：許可権者は誰か？</strong><br><br>・国土交通大臣施行 → <strong>国土交通大臣</strong><br>・市の区域内で個人・組合・区画整理会社・市が施行 → <strong>市の長</strong><br>・上記以外 → <strong>都道府県知事</strong><br><br><span style="color:#d32f2f;font-size:14px;font-weight:bold">許可権者はいずれか1つだけ！</span></div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 頻出ひっかけ：</strong><br>✗「組合の許可が必要」→ 誤り（知事等の許可）<br>✗「知事及び市長の両方の許可が必要」→ 誤り（いずれか1つ）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「許可は行政（知事・市長・大臣）の仕事。組合は施行者であって許可権者ではない！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🔄 仮換地の指定</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>工事中に、将来の換地（新しい土地）の場所をあらかじめ指定すること。指定されると、従前の宅地の代わりに仮換地を使用・収益できるようになります（土地区画整理法98条・99条）。</div><div class="info-box" style="background:#fff3e0"><strong>通知事項（98条5項）：</strong><br>仮換地の<strong>位置</strong>・<strong>地積</strong>・<strong>効力発生日</strong>を、仮換地の所有者と従前の宅地の所有者に通知</div><div class="info-box" style="background:#e8f5e9"><strong>仮換地指定の同意（98条3項・4項）：</strong><br>・<strong>個人施行者</strong>：従前の宅地所有者等・仮換地所有者等の同意<br>・<strong>組合</strong>：総会・部会・総代会の同意<br>・<strong>公的施行者</strong>：土地区画整理審議会の意見聴取</div><div class="info-box" style="background:#ffebee;border:2px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 重要ひっかけ：</strong><br>①「組合は審議会の同意を得て仮換地を指定」→ <span style="color:#d32f2f;font-weight:bold">誤り（組合に審議会はない。総会等の同意が必要）</span><br>②「効力発生日と使用収益開始日は同一でなければならない」→ <span style="color:#d32f2f;font-weight:bold">誤り（障害物がある場合等は別に定められる）</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「仮換地＝工事中の暫定的な土地の割り当て。効力発生＝使用開始とは限らない！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">⚖️ 換地処分とその効果</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>工事完了後に行われる最終手続き。換地処分の公告の「翌日」に、新しい権利関係が一斉に確定します（土地区画整理法103条・104条）。</div><div class="info-box" style="background:#f3e5f5"><strong>換地処分の公告の「翌日」に起きること：</strong><br>・換地 → 従前の宅地とみなされる（104条1項）<br>・清算金 → 確定する（104条8項）<br>・保留地 → 施行者が取得する（104条11項）<br>・公共施設 → 原則として所在市町村の管理に属する（106条1項）<br>・公共施設用地 → 管理すべき者に帰属する（105条3項）</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">「終了時」に消滅するもの（例外）：</strong><br>・換地を定めなかった従前の宅地の権利（104条1項）<br>・行使する利益がなくなった地役権（104条5項）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「翌日に一斉スタート！消えるものだけ終了時」</div><div class="info-box" style="background:#f5f5f5"><strong>換地計画について：</strong><br>・<strong>都道府県知事の認可</strong>が必要（86条1項）<span style="color:#d32f2f;font-weight:bold"> ⚠️市町村長の認可ではない！</span><br>・個人施行者以外は<strong>2週間</strong>公衆の縦覧に供する（88条2項）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">📝 換地処分後の登記制限</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>換地処分の公告後、施行者による変動登記が完了するまで、原則として他の登記はできません。権利関係が混乱しないようにするためです（土地区画整理法107条）。</div><div class="info-box" style="background:#ffebee;border:2px solid #d32f2f"><strong style="color:#d32f2f">⚠️ 超重要ひっかけ：</strong><br>登記制限の開始 ＝ <strong>「換地処分の公告があった日」後</strong><br><span style="color:#d32f2f;font-weight:bold;font-size:14px">✗「仮換地の指定があった日」後ではない！</span></div><div class="info-box" style="background:#e8f5e9"><strong>例外：</strong>確定日付のある書類により、公告前に登記原因が生じたことを証明した場合は登記可能（107条3項ただし書）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「登記ストップは換地処分の公告から。仮換地の指定ではまだ止まらない！」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=329AC0000000119" target="_blank">土地区画整理法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">土地区画整理法クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
