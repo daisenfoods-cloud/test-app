@@ -1,0 +1,193 @@
+{
+  "app_id": "kenchiku_kakunin",
+  "app_title": "建築確認・単体規定クイズ",
+  "header_title": "法令上の制限 ＞ 建築基準法（建築確認・単体規定）",
+  "header_desc": "建築確認の要否・用途変更・完了検査・仮使用・単体規定（居室環境・防火避難）・違反建築物・既存不適格",
+  "quiz_title": "建築確認・単体規定クイズ",
+  "quizzes_l1": [
+    {
+      "q": "建築基準法上、用途に供する部分の床面積の合計が200㎡を超える特殊建築物を新築する場合、建築確認を受けなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法第6条第1項第1号により、別表第一に掲げる用途に供する特殊建築物で、その用途に供する部分の床面積の合計が200㎡を超えるものを建築する場合、建築確認が必要です。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "2階建て・延べ面積150㎡の木造住宅を新築する場合、建築確認は不要である。",
+      "a": false,
+      "ex": "誤り。建築基準法第6条第1項第2号により、2以上の階数を有する建築物は構造種別（木造・非木造）を問わず2号建築物に該当し、建築確認が必要です。「木造だから不要」ではありません。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "都市計画区域内において、1階建て・延べ面積100㎡の事務所を新築する場合、建築確認が必要である。",
+      "a": true,
+      "ex": "正しい。この建物は1号・2号建築物には該当しませんが、都市計画区域内に建築するため、建築基準法第6条第1項第3号の建築物として建築確認が必要です。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "200㎡超の特殊建築物の大規模の修繕をしようとする場合、建築確認を受けなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法第6条第1項により、1号建築物（200㎡超の特殊建築物）の大規模の修繕・大規模の模様替にも建築確認が必要です。新築・増改築だけでなく、大規模修繕・模様替も対象となる点に注意です。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "防火地域および準防火地域外において、増築部分の床面積が10㎡以内である場合、建築確認は不要である。",
+      "a": true,
+      "ex": "正しい。建築基準法第6条第2項により、防火地域および準防火地域外において、増築・改築・移転に係る部分の床面積の合計が10㎡以内であるときは、建築確認の規定は適用されません。",
+      "cat": "10㎡以内の例外"
+    },
+    {
+      "q": "防火地域内において、増築部分の床面積が10㎡以内であれば、建築確認は不要である。",
+      "a": false,
+      "ex": "誤り。10㎡以内の建築確認免除は「防火地域および準防火地域外」に限った特例です（建築基準法第6条第2項）。防火地域・準防火地域内では、たとえ10㎡以内であっても建築確認が必要です。火災リスクが高い地域だから厳しいと覚えましょう。",
+      "cat": "10㎡以内の例外"
+    },
+    {
+      "q": "事務所ビルをホテル（用途部分の床面積500㎡）に用途変更する場合、建築確認が必要である。",
+      "a": true,
+      "ex": "正しい。建築基準法第87条第1項により、200㎡を超える特殊建築物に用途変更する場合は建築確認が必要です。ホテルは特殊建築物に該当し、500㎡は200㎡を超えるため、確認が必要です。",
+      "cat": "用途変更"
+    },
+    {
+      "q": "劇場を映画館に用途変更する場合、建築確認は不要である。",
+      "a": true,
+      "ex": "正しい。建築基準法第87条第1項の括弧書きにより、政令で指定する「類似の用途相互間」の変更は建築確認が不要です。劇場と映画館は類似の用途に該当します。「似た者同士」の変更だから確認不要と覚えましょう。",
+      "cat": "用途変更"
+    },
+    {
+      "q": "居室の天井の高さは、2.1m以上でなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法施行令第21条第1項により、居室の天井の高さは2.1m以上でなければなりません。なお、一室で天井の高さが異なる部分がある場合は「平均の高さ」で判定します（同条第2項）。",
+      "cat": "居室の環境基準"
+    },
+    {
+      "q": "ホルムアルデヒドを発散させる建築材料は、居室の内装には一切使用することができない。",
+      "a": false,
+      "ex": "誤り。ホルムアルデヒドは一定の基準の範囲内であれば使用可能です（建築基準法第28条の2第3号、施行令第20条の7）。「完全禁止」ではなく「基準内ならOK」がポイントです。なお、石綿（アスベスト）を添加した建築材料は原則使用不可です（同法第28条の2第1号・第2号）。",
+      "cat": "居室の環境基準"
+    },
+    {
+      "q": "延べ面積が1,000㎡を超える建築物は、防火壁または防火床により1,000㎡以内に区画しなければならない。ただし、耐火建築物または準耐火建築物にはこの規定は適用されない。",
+      "a": true,
+      "ex": "正しい。建築基準法第26条第1項本文により、延べ面積1,000㎡超の建築物は防火壁等で区画する必要がありますが、同項第1号により耐火建築物・準耐火建築物はこの規定が適用されません。建物自体が燃えにくいので区画不要という趣旨です。",
+      "cat": "防火・避難規定"
+    },
+    {
+      "q": "高さ31mを超える建築物には、非常用の昇降機（エレベーター）を設けなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法第34条第2項により、高さ31mを超える建築物には非常用の昇降機を設置する義務があります。「31mを超える」なので、ちょうど31mの建築物は対象外です。",
+      "cat": "防火・避難規定"
+    },
+    {
+      "q": "高さ20mを超える建築物には、有効に避雷設備を設けなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法第33条により、高さ20mを超える建築物には避雷設備を設けなければなりません。ただし、周囲の状況によって安全上支障がない場合は例外とされています。",
+      "cat": "防火・避難規定"
+    },
+    {
+      "q": "法改正によって現行の建築基準法令の規定に適合しなくなった建築物（既存不適格建築物）は、直ちに改正後の規定に適合させなければならない。",
+      "a": false,
+      "ex": "誤り。建築基準法第3条第2項により、法の施行・適用の際に現に存する建築物が新しい規定に適合しない場合、当該規定は適用されません（既存不適格建築物）。いきなり除却や改修を求められるわけではなく、増改築等を契機に徐々に対応させていきます。",
+      "cat": "既存不適格建築物"
+    },
+    {
+      "q": "建築確認が必要な工事が完了したときは、建築主は完了検査を申請しなければならない。",
+      "a": true,
+      "ex": "正しい。建築基準法第7条第1項により、第6条第1項の規定による工事を完了したときは、建築主事等の検査を申請しなければなりません。完了検査を経て検査済証の交付を受けてから使用開始するのが原則です。",
+      "cat": "完了検査・仮使用"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "2階建ての木造住宅（延べ面積120㎡）の大規模の修繕をしようとする場合、建築確認は不要である。",
+      "a": false,
+      "ex": "誤り。この住宅は2階建てであるため、建築基準法第6条第1項第2号の建築物（2以上の階数を有する建築物）に該当します。2号建築物の大規模修繕には建築確認が必要です。令和4年改正法（2025年4月施行）により、旧4号建築物が廃止され、2号建築物は木造・非木造を問わず「2階以上または延べ面積200㎡超」が基準となりました。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "1階建て・延べ面積250㎡の倉庫を新築する場合、この建築物は建築基準法第6条第1項第2号の建築物に該当する。",
+      "a": false,
+      "ex": "誤り。倉庫は別表第一に掲げる特殊建築物に該当し、用途部分の床面積250㎡は200㎡を超えるため、第6条第1項第1号の建築物に該当します。第2号は「前号に掲げる建築物を除くほか」と規定されているため、1号に該当する建築物は2号からは除外されます。したがって、この倉庫は1号建築物であり、2号建築物には該当しません。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "3階建て・延べ面積180㎡の住宅（特殊建築物に該当しない）を新築する場合、都市計画区域外であっても建築確認が必要である。",
+      "a": true,
+      "ex": "正しい。この建物は3階建て（2以上の階数を有する）であるため、建築基準法第6条第1項第2号の建築物に該当します。2号建築物は都市計画区域の内外を問わず全国どこでも建築確認が必要です。3号建築物と異なり、区域による限定がありません。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "都市計画区域内で1階建て・延べ面積80㎡の一般住宅の大規模の修繕をしようとする場合、建築確認が必要である。",
+      "a": false,
+      "ex": "誤り。この建物は1階建て・延べ面積200㎡以下なので2号建築物に該当せず、特殊建築物でもないため1号にも該当しません。3号建築物（都市計画区域等内の建築物）に該当しますが、3号建築物に建築確認が必要なのは「建築」（新築・増改築・移転）の場合のみで、大規模修繕・模様替は対象外です（建築基準法第6条第1項第3号）。",
+      "cat": "建築確認の要否"
+    },
+    {
+      "q": "準防火地域内において、増築部分の床面積が8㎡である場合、建築確認は不要である。",
+      "a": false,
+      "ex": "誤り。10㎡以内の建築確認免除が適用されるのは「防火地域および準防火地域外」に限られます（建築基準法第6条第2項）。準防火地域内では、増築部分が10㎡以内であっても建築確認が必要です。防火地域だけでなく「準防火地域」も例外が使えない点に注意しましょう。",
+      "cat": "10㎡以内の例外"
+    },
+    {
+      "q": "防火地域にも準防火地域にも指定されていない区域で、既存の住宅を増築する場合で、増築部分の床面積が10㎡以内であるとき、建築確認を受ける必要はない。",
+      "a": true,
+      "ex": "正しい。建築基準法第6条第2項により、防火地域および準防火地域外での増築・改築・移転で、その部分の床面積の合計が10㎡以内であるときは、建築確認の規定が適用されません。ただし、この特例は「増築・改築・移転」に限られ、新築には適用されません。",
+      "cat": "10㎡以内の例外"
+    },
+    {
+      "q": "事務所（用途部分の床面積300㎡）をホテルに用途変更する場合、建築確認は不要である。",
+      "a": false,
+      "ex": "誤り。ホテルは特殊建築物に該当し、用途部分の床面積300㎡は200㎡を超えるため、建築基準法第87条第1項により建築確認が必要です。「200㎡超の特殊建築物への用途変更」は確認必要と覚えましょう。",
+      "cat": "用途変更"
+    },
+    {
+      "q": "映画館を劇場に用途変更する場合であっても、用途部分の床面積が200㎡を超えるときは建築確認が必要である。",
+      "a": false,
+      "ex": "誤り。映画館と劇場は政令で指定する「類似の用途相互間」の変更に該当するため、床面積にかかわらず建築確認は不要です（建築基準法第87条第1項括弧書き）。類似用途間であれば規模を問わず確認不要という点がポイントです。",
+      "cat": "用途変更"
+    },
+    {
+      "q": "高さ30mの建築物には、非常用の昇降機を設けなければならない。",
+      "a": false,
+      "ex": "誤り。非常用の昇降機は「高さ31mを超える建築物」に設置義務があります（建築基準法第34条第2項）。高さ30mの建築物は31mを超えていないため、設置義務はありません。「超える」なので31mちょうどでも不要、31.01m以上で必要です。",
+      "cat": "数値のひっかけ"
+    },
+    {
+      "q": "居室の天井の高さは、その居室の最も低い部分で2.1m以上なければならない。",
+      "a": false,
+      "ex": "誤り。天井の高さは「平均の高さ」で判定します（建築基準法施行令第21条第2項）。一室で天井の高さが異なる部分がある場合、最も低い部分ではなく、室の床面から測った平均の高さが2.1m以上であればよいのです。",
+      "cat": "数値のひっかけ"
+    },
+    {
+      "q": "屋上広場または2階以上の階にあるバルコニーの周囲には、高さ1.5m以上の手すり壁、さくまたは金網を設けなければならない。",
+      "a": false,
+      "ex": "誤り。手すり壁等の高さは「1.1m以上」です（建築基準法施行令第126条第1項）。「1.5m」ではなく「1.1m」が正しい数値です。なお、1.5mは敷地内の避難通路の幅員の原則値です（施行令第128条）。数値の混同に注意しましょう。",
+      "cat": "数値のひっかけ"
+    },
+    {
+      "q": "延べ面積1,500㎡の準耐火建築物は、防火壁または防火床により1,000㎡以内に区画しなければならない。",
+      "a": false,
+      "ex": "誤り。延べ面積1,000㎡超の建築物には防火壁等による区画義務がありますが、耐火建築物・準耐火建築物はこの規定が適用されません（建築基準法第26条第1項第1号）。準耐火建築物は建物自体が燃えにくいため、区画する必要がないのです。",
+      "cat": "防火壁の適用除外"
+    },
+    {
+      "q": "延べ面積1,200㎡の木造建築物（耐火建築物・準耐火建築物のいずれにも該当しない）は、防火壁または防火床により1,000㎡以内に区画しなければならない。",
+      "a": true,
+      "ex": "正しい。延べ面積1,000㎡を超え、かつ耐火建築物・準耐火建築物のいずれにも該当しない建築物には、建築基準法第26条第1項により防火壁等で1,000㎡以内に区画する義務があります。",
+      "cat": "防火壁の適用除外"
+    },
+    {
+      "q": "既存不適格建築物であっても、増築・改築等を行う場合には、改正後の規定に適合させなければならない場合がある。",
+      "a": true,
+      "ex": "正しい。建築基準法第3条第3項第3号により、法の施行・適用の後に着手する増築・改築・移転・大規模修繕・大規模模様替に係る建築物は、既存不適格の保護（第3条第2項）を受けられません。つまり、増改築等を契機に新しい規定への適合が求められます。",
+      "cat": "既存不適格・違反建築物"
+    },
+    {
+      "q": "特定行政庁は、違反建築物に対して使用禁止等の命令を出す場合、緊急の必要があるときでも、あらかじめ意見書の提出先等を記載した通知書を交付する手続を経なければならない。",
+      "a": false,
+      "ex": "誤り。建築基準法第9条第7項により、特定行政庁は緊急の必要がある場合には、通常必要な手続き（通知書の交付、意見書の提出機会の付与等）を経ずに、仮に使用禁止または使用制限の命令をすることができます。緊急時は手続きを省略して迅速に対応できるのです。",
+      "cat": "既存不適格・違反建築物"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで建築確認・単体規定の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 建築確認・単体規定の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6\"><div style=\"font-weight:bold;margin-bottom:6px;font-family:sans-serif\">【建築の流れと建築確認】</div><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">①建築確認（着工前）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">②着工</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">③中間検査（一定の場合）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">④完了検査</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">⑤検査済証の交付</span><br>↓<br><span style=\"background:#c8e6c9;padding:4px 14px;border-radius:4px;font-weight:bold;color:#1b5e20\">⑥使用開始</span><br><br><span style=\"font-size:12px;color:#555;font-family:sans-serif\">※仮使用が認められた場合は⑤の前に使用可</span></div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>建築確認＝「着工前の手続き」</strong><br>建物の計画が法令に適合しているか事前にチェックする制度<br><br><strong>単体規定＝「建物そのものの安全基準」</strong><br>全国どこでも適用される最低基準（天井高さ、防火、避難など）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">★最重要① 2号建築物は構造種別を問わない</strong><br>令和4年改正法（2025年4月施行）により、2号建築物は木造・非木造を問わず「2階以上または延べ面積200㎡超」が基準。<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「2階建ての木造住宅は大規模修繕に確認不要」→ 誤り！2号建築物として確認必要</span></div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #e53935\"><strong style=\"color:#c62828\">★最重要② 防火・準防火地域内では10㎡以内の例外なし</strong><br>防火地域・準防火地域<strong>外</strong>→10㎡以内の増改築・移転は確認不要<br>防火地域・準防火地域<strong>内</strong>→<span style=\"color:#d32f2f;font-weight:bold\">10㎡以内でも確認必要！例外なし</span></div><div class=\"info-box\" style=\"background:#e8f5e9;border-left:4px solid #43a047\"><strong style=\"color:#1b5e20\">重要③ 耐火・準耐火建築物には防火壁等の区画不要</strong><br>延べ面積1,000㎡超でも、耐火・準耐火建築物には防火壁等の区画規定は適用されない<br><span style=\"font-size:12px;color:#555\">建物自体が燃えにくいので区画する必要がないという趣旨</span></div><div class=\"info-box\" style=\"background:#e3f2fd;border-left:4px solid #1976d2\"><strong style=\"color:#0d47a1\">重要④ 緊急時は手続き省略で使用禁止命令OK</strong><br>通常は通知書の交付等の手続きが必要だが、緊急時は省略して仮の命令が可能<br><span style=\"font-size:12px;color:#555\">建築基準法第9条第7項</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">📊 暗記表</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">★最重要：建築確認が必要な場合のまとめ（建築基準法第6条）</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;padding:5px\">建築物の種類</th><th style=\"border:1px solid #90caf9;padding:5px\">建築（新築等）</th><th style=\"border:1px solid #90caf9;padding:5px\">大規模修繕・模様替</th></tr><tr><td style=\"border:1px solid #90caf9;padding:5px\">1号：200㎡超の特殊建築物</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">必要</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">必要</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #90caf9;padding:5px\">2号：2階以上 or 延べ面積200㎡超</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">必要</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">必要</td></tr><tr><td style=\"border:1px solid #90caf9;padding:5px\">3号：都市計画区域等内のその他</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">必要</td><td style=\"border:1px solid #90caf9;padding:5px;color:#1565c0;font-weight:bold\">不要 ⚠️</td></tr></table><span style=\"font-size:12px;color:#d32f2f\">⚠️ 3号建築物は「建築」のみ確認必要。大規模修繕・模様替は不要！</span><div style=\"font-size:13px;font-weight:bold;margin:16px 0 8px 0\">★最重要：防火・避難の数値まとめ</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#ffebee\"><th style=\"border:1px solid #ef9a9a;padding:5px\">規定</th><th style=\"border:1px solid #ef9a9a;padding:5px\">数値</th><th style=\"border:1px solid #ef9a9a;padding:5px\">条文</th></tr><tr><td style=\"border:1px solid #ef9a9a;padding:5px\">天井の高さ</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">2.1m以上（平均で判定）</td><td style=\"border:1px solid #ef9a9a;padding:5px\">施行令第21条</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:5px\">防火壁等の区画</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">延べ面積1,000㎡超</td><td style=\"border:1px solid #ef9a9a;padding:5px\">法第26条</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:5px\">避雷設備</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">高さ20m超</td><td style=\"border:1px solid #ef9a9a;padding:5px\">法第33条</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:5px\">非常用昇降機</td><td style=\"border:1px solid #ef9a9a;padding:5px;color:#d32f2f;font-weight:bold\">高さ31m超 ⚠️</td><td style=\"border:1px solid #ef9a9a;padding:5px\">法第34条第2項</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:5px\">非常用の進入口</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">31m以下の部分の3階以上の階</td><td style=\"border:1px solid #ef9a9a;padding:5px\">施行令第126条の6</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:5px\">手すり壁等</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">1.1m以上</td><td style=\"border:1px solid #ef9a9a;padding:5px\">施行令第126条</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:5px\">階段の手すり不要</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">高さ1m以下の階段</td><td style=\"border:1px solid #ef9a9a;padding:5px\">施行令第25条第4項</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:5px\">敷地内避難通路</td><td style=\"border:1px solid #ef9a9a;padding:5px;font-weight:bold\">幅員1.5m以上（3階以下で200㎡未満は90cm以上）</td><td style=\"border:1px solid #ef9a9a;padding:5px\">施行令第128条</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin:16px 0 8px 0\">重要：石綿とホルムアルデヒドの違い</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e8eaf6\"><th style=\"border:1px solid #9fa8da;padding:5px\">物質</th><th style=\"border:1px solid #9fa8da;padding:5px\">規制内容</th><th style=\"border:1px solid #9fa8da;padding:5px\">条文</th></tr><tr><td style=\"border:1px solid #9fa8da;padding:5px\">石綿（アスベスト）</td><td style=\"border:1px solid #9fa8da;padding:5px;color:#d32f2f;font-weight:bold\">添加した建築材料は原則使用不可</td><td style=\"border:1px solid #9fa8da;padding:5px\">法第28条の2第1号・第2号</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #9fa8da;padding:5px\">ホルムアルデヒド</td><td style=\"border:1px solid #9fa8da;padding:5px;color:#1565c0;font-weight:bold\">基準内なら使用可 ⚠️</td><td style=\"border:1px solid #9fa8da;padding:5px\">法第28条の2第3号、施行令第20条の7</td></tr><tr><td style=\"border:1px solid #9fa8da;padding:5px\">クロルピリホス</td><td style=\"border:1px solid #9fa8da;padding:5px;color:#d32f2f;font-weight:bold\">添加不可</td><td style=\"border:1px solid #9fa8da;padding:5px\">施行令第20条の6</td></tr></table><span style=\"font-size:12px;color:#d32f2f\">⚠️ ホルムアルデヒドだけ「完全禁止ではない」点がひっかけ！</span></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #c62828;color:#c62828\">⚠️ このアプリでカバーできていない論点</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">別途学習が必要な論点：</strong><br>・中間検査の詳細な手続き<br>・確認済証・検査済証の交付手続きの詳細<br>・建築審査会への審査請求の詳細<br>・建築士法との関連<br>・特殊建築物の耐火・準耐火建築物の要否（法第27条）<br>・外壁の耐火構造と隣地境界線の関係</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=325AC0000000201\" target=\"_blank\">建築基準法（e-Gov）</a>で条文を直接確認できます。</div></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 建築確認とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「建築工事に着手する前に、計画が法令に適合しているかチェックする制度」です（建築基準法第6条）。建物の種類・規模・行為の種類によって、確認が必要かどうかが変わります。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🔑 建築確認が必要な建築物（第6条第1項）</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>3つの区分を覚える：</strong><br><br><strong style=\"color:#d32f2f\">1号建築物</strong>：別表第一の特殊建築物で、<strong>用途部分の床面積が200㎡超</strong><br>→ 建築・大規模修繕・模様替で確認必要<br><br><strong style=\"color:#d32f2f\">2号建築物</strong>：<strong>2以上の階数を有する、または延べ面積200㎡超</strong>の建築物<br>→ 建築・大規模修繕・模様替で確認必要（全国どこでも）<br><br><strong style=\"color:#d32f2f\">3号建築物</strong>：上記以外で<strong>都市計画区域・準都市計画区域等内</strong>の建築物<br>→ 建築のみ確認必要（大規模修繕・模様替は不要）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「200㎡」と「2階」が2号建築物のキーワード。1号・2号は修繕・模様替も確認必要、3号は建築のみ！</div><div class=\"info-box\" style=\"background:#fce4ec;border:2px solid #e53935\"><strong style=\"color:#c62828\">⚠️ 最重要ポイント：2号建築物は構造種別を問わない</strong><br>令和4年改正法（2025年4月施行）により、木造・鉄骨造・RC造を問わず「2階以上 or 延べ面積200㎡超」が2号建築物の基準。<br><span style=\"color:#d32f2f;font-weight:bold\">「木造2階建て住宅の大規模修繕は確認不要」は誤り！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🚫 確認不要の例外（第6条第2項）</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>以下の3つの条件を「全て」満たすとき → 建築確認不要</strong><br>① <strong>防火地域・準防火地域「外」</strong>であること<br>② <strong>増築・改築・移転</strong>であること（新築は対象外）<br>③ 床面積の合計が<strong>10㎡以内</strong>であること</div><div style=\"background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0\"><strong style=\"color:#d32f2f\">⚠️ 防火・準防火地域内 → この例外は使えない！10㎡以内でも確認が必要</strong><br>火災リスクが高い地域だから厳しいと覚えましょう。</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「防火地域では火事が怖い→小さな増築でも確認！」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">🔄 用途変更と建築確認（第87条）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「建物の使い方を変えて特殊建築物にする場合にも、建築確認が必要になることがある」制度です。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>確認が必要な場合：</strong><br>→ <strong>200㎡超</strong>の<strong>特殊建築物</strong>に用途変更する場合<br><br><strong>確認が不要な場合：</strong><br>→ <strong>類似の用途相互間</strong>の変更（例：劇場↔映画館）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：特殊建築物＝人がたくさん集まる・火災リスクが高い建物（劇場・病院・ホテル・共同住宅・学校・デパート・倉庫など）。劇場と映画館は「似た者同士」だから確認不要！</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">✅ 完了検査と仮使用（第7条・第7条の6）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「工事が終わったら完了検査を受け、検査済証をもらってから使う」のが原則です。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>原則：</strong>1号・2号建築物の新築等 → 検査済証の交付を受けるまで使用開始不可<br><br><strong>例外（仮使用）：</strong><br>① 特定行政庁が安全上・防火上・避難上支障がないと認めたとき<br>② 建築主事等が国交大臣の定める基準に適合していると認めたとき<br>③ 完了検査申請が受理された日から7日を経過したとき</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：工事が終わったら「完了検査」→「検査済証」→「使用開始」。でも急ぐ場合は「仮使用」もある。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">🏠 単体規定：居室の環境基準</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「建物の安全性・衛生性を確保するための全国共通の最低基準」です。</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>天井の高さ：2.1m以上（施行令第21条）</strong><br>→ 一室で高さが異なる場合は<strong>「平均の高さ」</strong>で判定<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「最も低い部分で2.1m以上」は誤り！平均で判定！</span></div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>有害物質の規制（法第28条の2）：</strong><br>・<strong>石綿（アスベスト）</strong>→ 添加した建築材料は<strong style=\"color:#d32f2f\">原則使用不可</strong><br>・<strong>クロルピリホス</strong>→ <strong style=\"color:#d32f2f\">添加不可</strong>（施行令第20条の6）<br>・<strong>ホルムアルデヒド</strong>→ <strong style=\"color:#1565c0\">基準内なら使用可</strong>（施行令第20条の7）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：天井は「平均」で2.1m。ホルムアルデヒドは「完全禁止ではなく基準内ならOK」がひっかけポイント！</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🔥 単体規定：防火・避難に関する規定</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「火災時の安全確保のための規定」で、数字がたくさん出てくる頻出分野です。</div><div class=\"info-box\" style=\"background:#ffebee\"><strong>防火壁等（法第26条）：</strong><br>延べ面積<strong>1,000㎡超</strong>の建築物 → 防火壁・防火床で1,000㎡以内に区画<br><span style=\"color:#2e7d32;font-weight:bold\">ただし、耐火建築物・準耐火建築物は適用なし！</span></div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>高さに関する数値（頻出！）：</strong><br>・高さ<strong>20m超</strong> → <strong>避雷設備</strong>を設置（法第33条）<br>・高さ<strong>31m超</strong> → <strong>非常用の昇降機</strong>を設置（法第34条第2項）<br>・高さ<strong>31m以下の部分</strong>にある<strong>3階以上の階</strong> → <strong>非常用の進入口</strong>（施行令第126条の6）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「20を超えたら雷（カミナリ）よけ」「31（サイ）を超えたら非常用エレベーター」「進入口は3階以上」</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>その他の数値：</strong><br>・屋上広場・2階以上のバルコニー等 → 手すり壁等<strong>1.1m以上</strong>（施行令第126条）<br>・階段には手すりを設ける。ただし高さ<strong>1m以下</strong>の階段は不要（施行令第25条第4項）<br>・敷地内の避難通路 → 幅員<strong>1.5m以上</strong>（3階以下で200㎡未満は<strong>90cm以上</strong>）（施行令第128条）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00897b;color:#00897b\">📜 違反建築物への措置・既存不適格建築物</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「違反建築物には行政が命令を出せる。法改正で不適合になった建物はいきなり壊せとは言わない」という制度です。</div><div class=\"info-box\" style=\"background:#ffebee\"><strong>違反建築物（法第9条）：</strong><br>特定行政庁は所有者等に使用禁止・制限等を命令できる<br>通常は通知書の交付等の手続きが必要<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 緊急時はこれらの手続きを省略して仮の命令が可能（第9条第7項）</span></div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>既存不適格建築物（法第3条第2項）：</strong><br>法改正により不適合になった建物 → 直ちに違反建築物として扱われない<br>→ 増改築等を契機に、徐々に改正後の規定に適合させていく</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：既存不適格＝「昔は合法だった建物」→ いきなり壊せとは言わない。増改築のタイミングで徐々に対応させる。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=325AC0000000201\" target=\"_blank\">建築基準法（e-Gov）</a>で条文を直接確認できます。</div></div>"
+}
