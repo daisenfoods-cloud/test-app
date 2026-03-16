@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 開発許可制度クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="../hourei_seigen/index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ 開発許可制度</div>
+    <div class="header-desc">開発行為の定義・面積基準・許可不要の例外・手続き・建築制限</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kaihatsu_kyoka_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "都市計画法における「開発行為」とは、主として建築物の建築または特定工作物の建設の用に供する目的で行う土地の区画形質の変更をいう。",
+    "a": true,
+    "ex": "正しい。都市計画法第4条第12項の定義そのものです。「建築物の建築」または「特定工作物の建設」のために行う「土地の区画形質の変更」が開発行為です。単なる土地の造成であっても、建築物等の建設目的がなければ開発行為には該当しません。",
+    "cat": "開発行為の定義"
+  },
+  {
+    "q": "ゴルフコースは、その規模にかかわらず第二種特定工作物に該当する。",
+    "a": true,
+    "ex": "正しい。ゴルフコースは都市計画法第4条第11項で「第二種特定工作物」として明記されており、面積要件はありません。一方、野球場・遊園地等は施行令第1条第2項により1ヘクタール（10,000㎡）以上でなければ第二種特定工作物に該当しません。",
+    "cat": "開発行為の定義"
+  },
+  {
+    "q": "市街化区域内で行う開発行為は、その規模が1,000平方メートル未満であれば開発許可は不要である。",
+    "a": true,
+    "ex": "正しい。都市計画法第29条第1項第1号、施行令第19条により、市街化区域では1,000㎡未満の開発行為は許可不要です。ただし、首都圏整備法の既成市街地等では500㎡未満に引き下げられている場合があります（施行令第19条第2項）。",
+    "cat": "面積基準"
+  },
+  {
+    "q": "区域区分が定められていない都市計画区域（非線引き都市計画区域）内では、5,000平方メートルの開発行為であっても開発許可は不要である。",
+    "a": false,
+    "ex": "誤り。非線引き都市計画区域では3,000㎡未満が許可不要です（施行令第19条）。5,000㎡は3,000㎡以上なので開発許可が必要となります。",
+    "cat": "面積基準"
+  },
+  {
+    "q": "準都市計画区域内で行う開発行為は、その規模が3,000平方メートル未満であれば開発許可は不要である。",
+    "a": true,
+    "ex": "正しい。準都市計画区域の面積基準は、非線引き都市計画区域と同じく3,000㎡未満が許可不要です（施行令第19条）。",
+    "cat": "面積基準"
+  },
+  {
+    "q": "都市計画区域および準都市計画区域の外の区域では、10,000平方メートル（1ヘクタール）未満の開発行為は開発許可が不要である。",
+    "a": true,
+    "ex": "正しい。都市計画区域・準都市計画区域外では、1ヘクタール（10,000㎡）以上の開発行為に限り許可が必要です（都市計画法第29条第2項、施行令第22条の2）。",
+    "cat": "面積基準"
+  },
+  {
+    "q": "市街化調整区域内では、500平方メートルの小規模な開発行為であっても原則として開発許可が必要である。",
+    "a": true,
+    "ex": "正しい。市街化調整区域は市街化を「抑制」する区域であるため、面積にかかわらず原則として開発許可が必要です（都市計画法第29条第1項）。市街化区域のような面積基準による適用除外はありません。",
+    "cat": "面積基準"
+  },
+  {
+    "q": "駅舎、図書館、公民館、変電所などの公益上必要な建築物の建築目的で行う開発行為は、どの区域であっても開発許可が不要である。",
+    "a": true,
+    "ex": "正しい。都市計画法第29条第1項第3号により、駅舎・図書館・公民館・変電所等の公益上必要な建築物（施行令第21条に列挙）の建築目的の開発行為は、区域・面積を問わず許可不要です。",
+    "cat": "許可不要の例外"
+  },
+  {
+    "q": "土地区画整理事業の施行として行う開発行為は、開発許可が不要である。",
+    "a": true,
+    "ex": "正しい。都市計画法第29条第1項第5号により、土地区画整理事業の施行として行う開発行為は許可不要です。同様に、都市計画事業の施行（第4号）、市街地再開発事業の施行（第6号）なども許可不要とされています。",
+    "cat": "許可不要の例外"
+  },
+  {
+    "q": "農業を営む者の居住用住宅の建築目的で行う開発行為は、市街化区域内であっても開発許可が不要である。",
+    "a": false,
+    "ex": "誤り。農林漁業用の建築物・従事者の居住用建築物の例外（都市計画法第29条第1項第2号）は、市街化区域には適用されません。市街化区域では農林漁業の例外は使えず、1,000㎡以上の開発行為であれば許可が必要です。",
+    "cat": "許可不要の例外"
+  },
+  {
+    "q": "非常災害のために必要な応急措置として行う開発行為は、開発許可が不要である。",
+    "a": true,
+    "ex": "正しい。都市計画法第29条第1項第10号により、非常災害のための応急措置として行う開発行為は、どの区域でも許可不要です。",
+    "cat": "許可不要の例外"
+  },
+  {
+    "q": "開発許可を申請しようとする者は、あらかじめ、開発行為に関係がある既存の公共施設の管理者と協議し、その同意を得なければならない。",
+    "a": true,
+    "ex": "正しい。都市計画法第32条第1項により、既存の公共施設の管理者とは「協議」＋「同意」が必要です。一方、新たに設置される公共施設の管理者とは「協議」のみで足り、同意は不要です（同条第2項）。",
+    "cat": "手続き"
+  },
+  {
+    "q": "開発許可を受けた者が工事を完了したときは、都道府県知事に届出をし、知事が検査のうえ検査済証を交付し、知事が工事完了の公告をする。",
+    "a": true,
+    "ex": "正しい。都市計画法第36条の規定どおりです。①開発者が知事に届出（第1項）→②知事が検査し検査済証を交付（第2項）→③知事が工事完了を公告（第3項）という流れです。工事完了の公告は知事がするのであって、開発者ではありません。",
+    "cat": "手続き"
+  },
+  {
+    "q": "開発許可を受けた者の相続人は、都道府県知事の承認を受けなくても開発許可に基づく地位を当然に承継する。",
+    "a": true,
+    "ex": "正しい。都市計画法第44条により、相続人その他の一般承継人（相続・合併による承継）は、知事の承認なく当然に地位を承継します。一方、売買等による特定承継の場合は、知事の承認が必要です（第45条）。",
+    "cat": "地位の承継"
+  },
+  {
+    "q": "開発許可を受けた者から土地の所有権を取得した特定承継人は、都道府県知事の承認を受けて開発許可に基づく地位を承継することができる。",
+    "a": true,
+    "ex": "正しい。都市計画法第45条により、特定承継（売買等）の場合は知事の「承認」が必要です。相続等の一般承継（第44条、承認不要）とは手続きが異なる点が重要です。",
+    "cat": "地位の承継"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "市街化区域において、農業を営む者が自己の居住用住宅を建築する目的で1,500平方メートルの土地について開発行為を行う場合、農林漁業従事者の例外規定により開発許可は不要である。",
+    "a": false,
+    "ex": "誤り。農林漁業用建築物・従事者の居住用建築物の例外（都市計画法第29条第1項第2号）は、市街化区域には適用されません。市街化区域では面積基準（1,000㎡未満なら許可不要）のみが判断基準であり、1,500㎡は1,000㎡以上なので開発許可が必要です。市街化区域では農林漁業の例外が使えないことは、過去問で繰り返し出題されるひっかけです。",
+    "cat": "面積基準（ひっかけ）"
+  },
+  {
+    "q": "市街化調整区域内において、農業を営む者が自己の居住用住宅を建築する目的で開発行為を行う場合、開発許可は不要である。",
+    "a": true,
+    "ex": "正しい。市街化調整区域では面積にかかわらず原則として開発許可が必要ですが、農林漁業用の建築物・従事者の居住用建築物の例外（都市計画法第29条第1項第2号）が適用され、許可不要となります。この例外が「市街化区域以外」で使えることがポイントです。",
+    "cat": "面積基準（ひっかけ）"
+  },
+  {
+    "q": "準都市計画区域において2,000平方メートルの開発行為を行う場合、開発許可が必要である。",
+    "a": false,
+    "ex": "誤り。準都市計画区域の面積基準は3,000㎡未満が許可不要です（施行令第19条）。2,000㎡は3,000㎡未満なので、開発許可は不要です。",
+    "cat": "面積基準（ひっかけ）"
+  },
+  {
+    "q": "病院の建築を目的とする開発行為は、公益上必要な建築物として、区域・面積を問わず開発許可が不要である。",
+    "a": false,
+    "ex": "誤り。病院は「公益上必要な建築物」に含まれません。施行令第21条第26号のイ〜ホで、学校（イ）・社会福祉施設（ロ）・病院（ハ）等は公益的建築物から明確に除外されています。規模が大きく周辺への影響があるため、公益的であっても許可対象です。",
+    "cat": "公益的建築物"
+  },
+  {
+    "q": "学校の建築を目的とする開発行為は、公益上必要な建築物として開発許可が不要である。",
+    "a": false,
+    "ex": "誤り。学校（学校教育法第1条に規定する学校）は、施行令第21条第26号イにより公益上必要な建築物から除外されています。「公益的だから許可不要」とはならない点に注意が必要です。病院・社会福祉施設も同様に除外されています。",
+    "cat": "公益的建築物"
+  },
+  {
+    "q": "8,000平方メートルの野球場を建設する目的で土地の区画形質の変更を行う場合、当該行為は「開発行為」に該当し、開発許可が必要となる。",
+    "a": false,
+    "ex": "誤り。野球場は施行令第1条第2項により、1ヘクタール（10,000㎡）以上でなければ第二種特定工作物に該当しません。8,000㎡の野球場は特定工作物ではないため、その建設目的の土地の区画形質の変更は「開発行為」にすら該当せず、開発許可は不要です。",
+    "cat": "特定工作物"
+  },
+  {
+    "q": "面積が6,000平方メートルの遊園地を建設する目的で行う土地の区画形質の変更は、開発行為に該当する。",
+    "a": false,
+    "ex": "誤り。遊園地も野球場と同様に、施行令第1条第2項により1ヘクタール（10,000㎡）以上でなければ第二種特定工作物に該当しません。6,000㎡は1ha未満なので特定工作物に該当せず、開発行為にはなりません。ゴルフコースだけが面積不問で第二種特定工作物となることとの違いを押さえてください。",
+    "cat": "特定工作物"
+  },
+  {
+    "q": "開発許可を受けた者が開発行為に関する工事を廃止しようとするときは、都道府県知事の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。工事の廃止は「届出」で足ります（都市計画法第38条）。許可ではありません。「廃止→知事の許可」とするひっかけに注意してください。一方、開発行為の「変更」は、重大な変更なら知事の許可が必要、軽微な変更なら知事に届出です（第35条の2）。",
+    "cat": "手続き（許可vs届出）"
+  },
+  {
+    "q": "開発許可を受けた者が開発行為に係る事項について変更をしようとする場合、すべての変更について都道府県知事の許可が必要である。",
+    "a": false,
+    "ex": "誤り。変更のうち、国土交通省令で定める軽微な変更については、知事への届出で足ります（都市計画法第35条の2第1項ただし書、同条第3項）。すべてが許可ではなく、変更の重大さによって「許可」と「届出」に区分されています。",
+    "cat": "手続き（許可vs届出）"
+  },
+  {
+    "q": "開発許可を受けた開発区域内では、工事完了の公告があるまでの間は、いかなる場合であっても建築物を建築することができない。",
+    "a": false,
+    "ex": "誤り。工事完了の公告前は原則として建築禁止ですが、例外があります（都市計画法第37条ただし書）。①工事用の仮設建築物の建築、②知事が支障ないと認めたとき、③開発行為に同意していない土地所有者等がその権利を行使するとき、は建築が認められます。",
+    "cat": "建築制限"
+  },
+  {
+    "q": "開発許可を受けた開発区域内において、工事完了の公告後に予定建築物を建築する場合、改めて都道府県知事の許可が必要である。",
+    "a": false,
+    "ex": "誤り。工事完了の公告後、予定建築物を建築する場合は制限を受けません（都市計画法第42条第1項本文の反対解釈）。知事の許可が必要なのは、予定建築物「以外」の建築物を建築する場合です。",
+    "cat": "建築制限"
+  },
+  {
+    "q": "市街化調整区域のうち開発許可を受けた開発区域以外の区域内では、自己の居住用住宅を建築しようとするすべての者は知事の許可なく建築することができる。",
+    "a": false,
+    "ex": "誤り。市街化調整区域の開発区域以外での建築は、原則として知事の許可が必要です（都市計画法第43条第1項）。許可なしに建築できるのは、農林漁業用建築物・従事者の居住用建築物、公益的建築物、都市計画事業の施行、仮設建築物等の限定された例外のみです。「すべての者」が許可不要というわけではありません。",
+    "cat": "調整区域の建築制限"
+  },
+  {
+    "q": "市街化調整区域のうち開発許可を受けた開発区域以外の区域内では、仮設建築物の新築には知事の許可が不要である。",
+    "a": true,
+    "ex": "正しい。都市計画法第43条第1項第3号により、仮設建築物の新築は許可不要です。市街化調整区域であっても仮設建築物は許可なしに建築できます。これを「誤り」とするひっかけに注意してください。",
+    "cat": "調整区域の建築制限"
+  },
+  {
+    "q": "自己の居住用住宅の建築を目的とする開発行為においても、開発区域内に土砂災害特別警戒区域の土地を含んではならない。",
+    "a": false,
+    "ex": "誤り。都市計画法第33条第1項第8号は「自己の居住の用に供する住宅の建築の用に供する目的で行う開発行為『以外の』開発行為」について、災害危険区域等の土地を含んではならないと定めています。つまり、自己居住用住宅の開発行為には、この制限は適用されません。",
+    "cat": "開発許可基準"
+  },
+  {
+    "q": "開発区域内に土砂災害警戒区域内の土地を含む開発行為は、開発許可基準に違反する。",
+    "a": false,
+    "ex": "誤り。都市計画法第33条第1項第8号で含んではならないとされるのは「土砂災害『特別』警戒区域」です。「土砂災害警戒区域」は対象外です。「警戒区域」と「特別警戒区域」の違いは重要なひっかけポイントです。",
+    "cat": "開発許可基準"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで開発許可制度の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 開発許可制度の全体フロー</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【開発許可が必要かの判定フロー】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 開発行為に該当するか？</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">（建築物or特定工作物 ＋ 土地の区画形質の変更）</span><br>↓ 該当する<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 許可不要の例外に当たるか？</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">（公益的建築物・農林漁業・事業施行・災害応急等）</span><br>↓ 当たらない<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 区域と面積で判定</span><br><span style="font-size:12px;color:#555;font-family:sans-serif">（面積基準未満なら許可不要）</span><br>↓ 基準以上<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">開発許可が必要！</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④ 申請（公共施設管理者と協議・同意）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">⑤ 知事の許可 → 工事着手</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">⑥ 工事完了の届出 → 検査 → 公告</span><br>↓<br><span style="background:#c8e6c9;padding:4px 14px;border-radius:4px;font-weight:bold;color:#1b5e20">建築（予定建築物）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 「公益上必要な建築物」に含まれないものの判別</strong><br>「公益的」と聞くと何でも許可不要と思いがちですが、<strong>病院・学校・社会福祉施設</strong>は含まれません。<br>図書館・公民館・変電所・博物館・公園施設・駅舎 → 許可不要<br>病院・学校・社会福祉施設 → <span style="color:#d32f2f;font-weight:bold">許可必要</span><br><span style="font-size:12px;color:#555">ひっかけ例：「病院の建築目的の開発行為は公益上必要な建築物として許可不要」→ 誤り</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 市街化区域での農林漁業の例外は「ない」</strong><br>農林漁業の例外は市街化区域には適用されません。<br>市街化区域で農業者の居住用住宅 → 1,000㎡以上なら<span style="color:#d32f2f;font-weight:bold">許可必要</span><br><span style="font-size:12px;color:#555">ひっかけ例：「市街化区域で農業を営む者の居住用建築物の建築→許可不要」→ 誤り</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 第二種特定工作物の1ha基準（ゴルフコース以外）</strong><br>8,000㎡の野球場 → 特定工作物でない → 開発行為でない → 許可不要<br>ゴルフコース → 面積不問で特定工作物 → 開発行為に該当<br><span style="font-size:12px;color:#555">ひっかけ例：「8,000㎡の野球場の建設目的で開発許可が必要」→ 誤り</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 変更と廃止の手続きの違い</strong><br>重大な変更 → 知事の<strong>許可</strong><br>軽微な変更 → 知事に<strong>届出</strong><br>工事の廃止 → 知事に<strong>届出</strong>（許可ではない！）<br><span style="font-size:12px;color:#555">ひっかけ例：「工事を廃止するときは知事の許可が必要」→ 誤り</span></div><div class="info-box" style="background:#f3e5f5;border-left:4px solid #7b1fa2"><strong style="color:#4a148c">重要⑤ 市街化調整区域の建築制限</strong><br>開発区域以外で「全ての者」が許可不要ではない<br>許可不要なのは農林漁業者の居住用住宅、公益的建築物、仮設建築物等に限定<br><span style="font-size:12px;color:#555">ひっかけ例：「自己居住用住宅を建築する全ての者は許可不要」→ 誤り</span></div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800"><strong style="color:#e65100">重要⑥ 災害危険区域等のひっかけ</strong><br>含んではならないのは土砂災害<strong>「特別」警戒区域</strong><br>土砂災害「警戒区域」は対象外<br>また、自己居住用住宅の開発行為にはこの制限自体が適用されない<br><span style="font-size:12px;color:#555">ひっかけ例：「土砂災害警戒区域内の土地を含んではならない」→ 誤り（「特別」が必要）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📊 暗記表：開発許可不要の例外パターン</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：例外パターンの整理</div><table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:6px">例外パターン</th><th style="border:1px solid #90caf9;padding:6px">内容</th><th style="border:1px solid #90caf9;padding:6px">注意点</th></tr><tr><td style="border:1px solid #90caf9;padding:6px">公益的建築物</td><td style="border:1px solid #90caf9;padding:6px">駅舎、図書館、公民館、変電所、博物館、公園施設等</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">病院・学校・社会福祉施設は含まれない</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">農林漁業の例外</td><td style="border:1px solid #90caf9;padding:6px">農林漁業用建築物・従事者の居住用</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">市街化区域では適用されない</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">事業の施行</td><td style="border:1px solid #90caf9;padding:6px">土地区画整理事業、市街地再開発事業等</td><td style="border:1px solid #90caf9;padding:6px">区域・面積を問わず許可不要</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">面積基準以下</td><td style="border:1px solid #90caf9;padding:6px">市街化1,000㎡未満、非線引き・準都市3,000㎡未満、区域外10,000㎡未満</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">調整区域は面積基準なし（原則許可必要）</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">非常災害</td><td style="border:1px solid #90caf9;padding:6px">応急措置として行うもの</td><td style="border:1px solid #90caf9;padding:6px">全区域で許可不要</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📊 暗記表：手続きの整理（許可 vs 届出）</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">重要：許可と届出の区別</div><table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:6px">場面</th><th style="border:1px solid #90caf9;padding:6px">手続き</th><th style="border:1px solid #90caf9;padding:6px">根拠条文</th></tr><tr><td style="border:1px solid #90caf9;padding:6px">開発行為をしようとするとき</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">知事の許可</td><td style="border:1px solid #90caf9;padding:6px">法29条</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">重大な変更をしようとするとき</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">知事の許可</td><td style="border:1px solid #90caf9;padding:6px">法35条の2第1項</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">軽微な変更をしたとき</td><td style="border:1px solid #90caf9;padding:6px;color:#1565c0;font-weight:bold">知事に届出</td><td style="border:1px solid #90caf9;padding:6px">法35条の2第3項</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">工事を完了したとき</td><td style="border:1px solid #90caf9;padding:6px;color:#1565c0;font-weight:bold">知事に届出</td><td style="border:1px solid #90caf9;padding:6px">法36条第1項</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">工事を廃止したとき</td><td style="border:1px solid #90caf9;padding:6px;color:#1565c0;font-weight:bold">知事に届出</td><td style="border:1px solid #90caf9;padding:6px">法38条</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">予定建築物以外を建築するとき（公告後）</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">知事の許可</td><td style="border:1px solid #90caf9;padding:6px">法42条第1項</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">調整区域（開発区域以外）で建築するとき</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">知事の許可</td><td style="border:1px solid #90caf9;padding:6px">法43条第1項</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #c62828;color:#c62828">⚠️ このアプリでカバーできていない論点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">以下の論点は過去問学習で補完してください：</strong><br>・開発許可基準の詳細（33条基準・34条基準の細目）<br>・開発登録簿の制度（法46条・47条）<br>・建築物の用途変更の許可等の細かい手続き<br>・条例による面積基準の引き下げ（300㎡まで引き下げ可能等）の詳細<br>・開発審査会の付議手続き</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 開発許可制度とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「一定規模以上の開発行為をするには、事前に知事の許可が必要」という制度です。無秩序な開発を防ぎ、計画的な市街化を実現するための仕組みです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 開発行為とは何か</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>開発許可のスタート地点。「開発行為」に該当しなければ、そもそも開発許可は不要です。</div><div class="info-box" style="background:#fff3e0"><strong>開発行為の定義（都市計画法第4条第12項）</strong><br>開発行為＝<strong>「建築物の建築」</strong>または<strong>「特定工作物の建設」</strong>の用に供する目的で行う<strong>「土地の区画形質の変更」</strong><br><br>この3つの要素がそろって初めて「開発行為」に該当します。</div><div class="info-box" style="background:#f5f5f5"><strong>特定工作物の区別（法第4条第11項・施行令第1条）</strong><br><br><strong style="color:#1565c0">第一種特定工作物</strong>（面積要件なし）：<br>コンクリートプラント、アスファルトプラント、クラッシャープラント等<br>→ 周辺環境の悪化をもたらすおそれがある工作物<br><br><strong style="color:#e65100">第二種特定工作物</strong>（原則：1ヘクタール以上）：<br>ゴルフコース（面積不問）、野球場、テニスコート、遊園地、動物園、墓園等<br>→ 大規模な工作物</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最重要ひっかけ：ゴルフコースと野球場等の違い</strong><br>・<strong>ゴルフコース</strong>→ 面積を問わず第二種特定工作物（法律本体に明記）<br>・<strong>野球場・遊園地等</strong>→ <span style="color:#d32f2f;font-weight:bold">1ha（10,000㎡）以上でないと特定工作物に該当しない</span><br><br>→ 8,000㎡の野球場 → 特定工作物でない → 開発行為でない → <strong>許可不要</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「ゴルフだけは特別待遇（面積不問）。野球場・遊園地は1ha以上でやっと特定工作物」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">📏 開発許可の面積基準（区域別）★最重要</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>開発許可が必要かどうかは「どの区域で」「何㎡の」開発行為をするかで決まります。区域ごとの面積基準を正確に覚えることが合否を分けます。</div><table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:6px">区域</th><th style="border:1px solid #90caf9;padding:6px">許可不要の面積</th><th style="border:1px solid #90caf9;padding:6px">農林漁業の例外</th></tr><tr><td style="border:1px solid #90caf9;padding:6px">市街化区域</td><td style="border:1px solid #90caf9;padding:6px;font-weight:bold">1,000㎡未満</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">なし ⚠️</td></tr><tr style="background:#fff3e0"><td style="border:1px solid #90caf9;padding:6px">市街化調整区域</td><td style="border:1px solid #90caf9;padding:6px;color:#d32f2f;font-weight:bold">面積にかかわらず原則必要 ⚠️</td><td style="border:1px solid #90caf9;padding:6px;color:#2e7d32;font-weight:bold">あり（許可不要）</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">非線引き都市計画区域</td><td style="border:1px solid #90caf9;padding:6px;font-weight:bold">3,000㎡未満</td><td style="border:1px solid #90caf9;padding:6px;color:#2e7d32">あり（許可不要）</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:6px">準都市計画区域</td><td style="border:1px solid #90caf9;padding:6px;font-weight:bold">3,000㎡未満</td><td style="border:1px solid #90caf9;padding:6px;color:#2e7d32">あり（許可不要）</td></tr><tr><td style="border:1px solid #90caf9;padding:6px">都市計画区域・準都市計画区域外</td><td style="border:1px solid #90caf9;padding:6px;font-weight:bold">10,000㎡（1ha）未満</td><td style="border:1px solid #90caf9;padding:6px;color:#2e7d32">あり（許可不要）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「市街化が進んでいるほど基準が厳しい（数字が小さい）」<br>市街化区域<strong>1,000㎡</strong> → 非線引き・準都市<strong>3,000㎡</strong> → 区域外<strong>10,000㎡</strong><br>調整区域は「抑制」だから面積を問わず許可必要！</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">⚠️ 最頻出ひっかけ：市街化区域で農林漁業の例外は使えない！</strong><br>市街化区域は「市街化を促進する区域」→ 農地を守る例外は不要<br>→ 農業者の居住用住宅でも、1,000㎡以上なら許可必要<br><span style="font-size:12px;color:#555">※市街化区域「以外」（調整区域・非線引き・準都市・区域外）では農林漁業の例外が使える</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🏛️ 開発許可が不要となる例外</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>面積基準を超えていても、一定の場合は開発許可が不要になります。この例外パターンは過去問の定番です。</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">① 公益上必要な建築物（法29条1項3号・施行令21条）</strong><br>駅舎、図書館、公民館、変電所、博物館、公園施設、郵便局等<br>→ <strong>どの区域でも許可不要</strong></div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><span style="color:#d32f2f;font-weight:bold">⚠️ 公益的建築物に含まれないもの（施行令21条26号イ〜ハ）：</span><br>・<strong>病院</strong>（ハ）<br>・<strong>学校</strong>（イ）<br>・<strong>社会福祉施設</strong>（ロ）<br>→ これらは規模が大きく周辺への影響があるため、<strong>許可が必要</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「公益的建築物＝みんなが日常的に使う公共的な小規模施設。病院・学校は大きいから含まれない」</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">② 農林漁業の例外（法29条1項2号）</strong><br>農林漁業用の建築物・従事者の居住用建築物 → <strong>市街化区域「以外」で許可不要</strong><br><span style="color:#d32f2f;font-weight:bold">⚠️ 市街化区域では使えない！</span></div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">③ 事業の施行として行う開発行為（法29条1項4号〜8号）</strong><br>都市計画事業、土地区画整理事業、市街地再開発事業等 → <strong>区域・面積を問わず許可不要</strong></div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">④ 非常災害の応急措置（法29条1項10号）</strong><br>→ <strong>全区域で許可不要</strong></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📋 開発許可の手続き</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>開発許可を申請するとき、取得した後の手続きも過去問で問われます。特に「協議・同意」と「変更・廃止」の区別が重要です。</div><div class="info-box" style="background:#f5f5f5"><strong>公共施設管理者との手続き（法32条）</strong></div><table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">対象</th><th style="border:1px solid #90caf9;padding:5px">手続き</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">既存の公共施設の管理者</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">協議＋同意 ⚠️</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">新設される公共施設の管理者</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">協議のみ（同意は不要）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「既存の管理者には影響が直接及ぶから同意まで必要。新設の管理者はまだ施設が存在しないから協議だけ」</div><div class="info-box" style="background:#f5f5f5"><strong>工事完了から公告までの流れ（法36条）</strong></div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.4"><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">開発者が知事に届出</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">知事が検査</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">検査済証を交付</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">知事が工事完了を公告</span></div><div class="info-box" style="background:#ffebee;border-left:4px solid #d32f2f"><strong style="color:#c62828">⚠️ 工事完了の公告は「知事が」する！</strong><br>「開発許可を受けた者がする」は誤りです。</div><div class="info-box" style="background:#f5f5f5"><strong>変更と廃止の手続き</strong></div><table style="width:100%;border-collapse:collapse;margin:6px 0;font-size:13px"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">場面</th><th style="border:1px solid #90caf9;padding:5px">手続き</th><th style="border:1px solid #90caf9;padding:5px">根拠</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">重大な変更</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#d32f2f">知事の許可</td><td style="border:1px solid #90caf9;padding:5px">法35条の2第1項</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #90caf9;padding:5px">軽微な変更</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">知事に届出</td><td style="border:1px solid #90caf9;padding:5px">法35条の2第3項</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">工事の廃止</td><td style="border:1px solid #90caf9;padding:5px;font-weight:bold;color:#1565c0">知事に届出</td><td style="border:1px solid #90caf9;padding:5px">法38条</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「廃止は届出！許可じゃない！変更は重大なら許可、軽微なら届出」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🔄 開発許可に基づく地位の承継</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>開発許可を受けた後に権利が移転する場合の手続きです。</div><table style="width:100%;border-collapse:collapse;margin:8px 0;font-size:13px"><tr style="background:#e0f2f1"><th style="border:1px solid #80cbc4;padding:6px">承継の種類</th><th style="border:1px solid #80cbc4;padding:6px">具体例</th><th style="border:1px solid #80cbc4;padding:6px">手続き</th><th style="border:1px solid #80cbc4;padding:6px">根拠</th></tr><tr><td style="border:1px solid #80cbc4;padding:6px">一般承継</td><td style="border:1px solid #80cbc4;padding:6px">相続・合併</td><td style="border:1px solid #80cbc4;padding:6px;font-weight:bold;color:#2e7d32">当然に承継（承認不要）</td><td style="border:1px solid #80cbc4;padding:6px">法44条</td></tr><tr style="background:#f5f5f5"><td style="border:1px solid #80cbc4;padding:6px">特定承継</td><td style="border:1px solid #80cbc4;padding:6px">売買等</td><td style="border:1px solid #80cbc4;padding:6px;font-weight:bold;color:#d32f2f">知事の承認が必要 ⚠️</td><td style="border:1px solid #80cbc4;padding:6px">法45条</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「相続・合併は本人の意思と無関係に起こる → 承認不要。売買は自由意志 → 知事の承認が必要」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">🏗️ 開発区域内の建築制限</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>開発許可を受けた区域内での建築には、工事完了公告の前後で異なる制限があります。</div><div class="info-box" style="background:#fff3e0"><strong>【工事完了公告前】原則：建築禁止（法37条）</strong><br>例外として建築できる場合：<br>① 工事用の仮設建築物<br>② 知事が支障ないと認めたとき<br>③ 開発行為に同意していない者の権利行使</div><div class="info-box" style="background:#e8f5e9"><strong>【工事完了公告後】予定建築物は制限なし（法42条）</strong><br>予定建築物等<strong>以外</strong>の建築 → <strong>知事の許可が必要</strong><br>予定建築物の建築 → 制限なし</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「公告前は『建てるな』（例外あり）、公告後は『予定通りに建てろ』（予定外は許可必要）」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#555">🏘️ 市街化調整区域の建築制限（開発区域以外）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>市街化調整区域では、開発許可を受けた区域以外でも原則として建築に知事の許可が必要です。</div><div class="info-box" style="background:#ffebee"><strong>原則：知事の許可が必要（法43条第1項）</strong><br><br><strong style="color:#2e7d32">例外（許可不要）：</strong><br>・都市計画事業の施行として行う建築<br>・非常災害の応急措置<br>・仮設建築物の新築<br>・農林漁業用建築物・従事者の居住用建築物<br>・公益的建築物<br><br><span style="color:#d32f2f;font-weight:bold">⚠️「全ての者」が許可不要ではない！限定された例外のみ</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📐 用途地域未指定区域での特則</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>用途地域が定められていない区域で開発許可をする場合、知事が建築物の制限を定めることができます。</div><div class="info-box" style="background:#f3e5f5">都道府県知事は必要がある場合、<strong>建蔽率</strong>、<strong>建築物の高さ</strong>、<strong>壁面の位置</strong>その他建築物の敷地・構造・設備に関する制限を定めることができます（法41条）。<br><br>用途地域がない＝建築のルールがない → 知事が代わりにルールを決める仕組みです。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=343AC0000000100" target="_blank">都市計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">開発許可制度クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
