@@ -1,0 +1,193 @@
+{
+  "app_id": "takuchi_zousei",
+  "app_title": "盛土規制法クイズ",
+  "header_title": "法令上の制限 ＞ 宅地造成及び特定盛土等規制法",
+  "header_desc": "宅地造成の定義・規模要件・3つの区域・許可と届出・保全義務",
+  "quiz_title": "盛土規制法クイズ",
+  "quizzes_l1": [
+    {
+      "q": "宅地造成とは、宅地以外の土地を宅地にするために行う盛土その他の土地の形質の変更で政令で定めるものをいう。",
+      "a": true,
+      "ex": "正しい。宅地造成とは「宅地以外の土地を宅地にするために行う」土地の形質の変更です（法2条2号）。逆に、宅地を宅地以外にする工事は宅地造成に該当しません。この方向性を正確に覚えることが最重要です。",
+      "cat": "宅地造成の定義"
+    },
+    {
+      "q": "既に宅地として利用されている土地を農地に転用するための造成工事は、宅地造成に該当する。",
+      "a": false,
+      "ex": "誤り。宅地造成は「宅地以外→宅地」にする工事が対象です（法2条2号）。宅地を農地にする工事（宅地→宅地以外）は宅地造成の定義に含まれません。方向を逆にするひっかけに注意しましょう。",
+      "cat": "宅地造成の定義"
+    },
+    {
+      "q": "この法律でいう「宅地」とは、農地、採草放牧地、森林及び公共施設用地以外の土地をいう。",
+      "a": true,
+      "ex": "正しい。法2条1号により、「宅地」とは農地・採草放牧地・森林（農地等）及び道路・公園・河川等の公共施設用地以外の土地をいいます。一般的な意味の「住宅地」よりも広い概念です。",
+      "cat": "宅地造成の定義"
+    },
+    {
+      "q": "盛土をした土地の部分に高さが1mを超える崖を生ずることとなる場合、その盛土は宅地造成の規模要件に該当する。",
+      "a": true,
+      "ex": "正しい。盛土で高さ1m超の崖を生ずるものは規模要件に該当します（施行令3条1号）。盛土は崩れやすいため、切土（2m超）よりも厳しい基準が設けられています。",
+      "cat": "規模要件"
+    },
+    {
+      "q": "切土をした土地の部分に高さが1mを超える崖を生ずることとなる場合、その切土は宅地造成の規模要件に該当する。",
+      "a": false,
+      "ex": "誤り。切土の規模要件は「高さ2m超の崖を生ずるもの」です（施行令3条2号）。1m超ではなく2m超が正しい基準です。盛土（1m超）と切土（2m超）の数字の違いは最頻出のひっかけです。",
+      "cat": "規模要件"
+    },
+    {
+      "q": "盛土又は切土をする土地の面積が500平方メートルを超える場合、他の規模要件に該当しなくても宅地造成に該当する。",
+      "a": true,
+      "ex": "正しい。崖の高さに関する要件に該当しなくても、面積が500㎡超であれば宅地造成の規模要件に該当します（施行令3条5号）。面積要件は独立した基準です。",
+      "cat": "規模要件"
+    },
+    {
+      "q": "宅地造成等工事規制区域内において宅地造成等に関する工事を行うには、原則として都道府県知事の許可が必要である。",
+      "a": true,
+      "ex": "正しい。宅地造成等工事規制区域内で宅地造成等に関する工事を行う場合、工事主は工事着手前に都道府県知事の許可を受けなければなりません（法12条1項）。",
+      "cat": "許可・届出"
+    },
+    {
+      "q": "宅地造成等工事規制区域外で宅地造成に関する工事を行う場合にも、都道府県知事への届出が必要である。",
+      "a": false,
+      "ex": "誤り。宅地造成等工事規制区域外では、宅地造成に関する工事について許可も届出も不要です。規制が適用されるのは区域内に限られます。「区域外でも届出が必要」とするひっかけに注意しましょう。",
+      "cat": "許可・届出"
+    },
+    {
+      "q": "都道府県知事は、宅地造成等工事規制区域内の工事の許可に、工事の施行に伴う災害を防止するため必要な条件を付することができる。",
+      "a": true,
+      "ex": "正しい。都道府県知事は許可に条件を付することができます（法12条3項）。災害防止のために必要な限度で付される条件です。",
+      "cat": "許可・届出"
+    },
+    {
+      "q": "宅地造成等工事規制区域は、これからの工事を規制するための区域であり、許可制が適用される。",
+      "a": true,
+      "ex": "正しい。宅地造成等工事規制区域は、宅地造成等に関する工事について規制を行う必要がある区域として都道府県知事が指定するものです（法10条1項）。区域内の工事には都道府県知事の許可が必要です（法12条1項）。",
+      "cat": "3つの区域"
+    },
+    {
+      "q": "造成宅地防災区域は、宅地造成等工事規制区域内の土地にも指定することができる。",
+      "a": false,
+      "ex": "誤り。造成宅地防災区域は、宅地造成等工事規制区域内の土地を除いて指定されます（法45条1項）。両区域は重複しません。「工事規制区域＝これからの工事を規制」「造成宅地防災区域＝既に造成された宅地の防災」と目的が異なります。",
+      "cat": "3つの区域"
+    },
+    {
+      "q": "特定盛土等規制区域は、2022年の法改正で新設された区域であり、特定盛土等又は土石の堆積に関する工事について規制を行う区域である。",
+      "a": true,
+      "ex": "正しい。特定盛土等規制区域は2022年改正で新設されました（法26条）。宅地造成等工事規制区域以外の土地で、特定盛土等又は土石の堆積に伴い災害のおそれがある区域に指定されます。",
+      "cat": "3つの区域"
+    },
+    {
+      "q": "宅地造成等工事規制区域内の土地の所有者、管理者又は占有者は、宅地造成等に伴う災害が生じないよう、その土地を常時安全な状態に維持するように努めなければならない。",
+      "a": true,
+      "ex": "正しい。土地の所有者・管理者・占有者には保全義務（努力義務）が課されています（法22条1項）。この保全義務は、規制区域の指定前に行われた造成についても適用されます。",
+      "cat": "保全義務・勧告"
+    },
+    {
+      "q": "宅地造成等工事規制区域内の土地について、都道府県知事が勧告できる対象者は、土地の所有者、管理者及び占有者に限られる。",
+      "a": false,
+      "ex": "誤り。勧告の対象者は、所有者・管理者・占有者に加えて「工事主」と「工事施行者」も含まれます（法22条2項）。保全義務（所有者・管理者・占有者のみ）よりも勧告の対象は広い点がポイントです。",
+      "cat": "保全義務・勧告"
+    },
+    {
+      "q": "宅地造成等工事規制区域内の土地の保全義務は、規制区域の指定前に行われた宅地造成についても適用される。",
+      "a": true,
+      "ex": "正しい。保全義務は「宅地造成等工事規制区域の指定前に行われたものを含む」と明記されています（法22条1項括弧書）。指定前の造成であっても、現在の土地所有者等は安全維持に努めなければなりません。",
+      "cat": "保全義務・勧告"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "宅地以外の土地において、盛土も切土も行わず、面積が400平方メートルの土地の形質の変更を行う場合、宅地造成の規模要件に該当する。",
+      "a": false,
+      "ex": "誤り。面積要件は「500㎡超」です（施行令3条5号）。400㎡では500㎡を超えないため、他の要件（盛土1m超の崖・切土2m超の崖等）にも該当しなければ規模要件を満たしません。面積の境界値を使ったひっかけです。",
+      "cat": "規模要件の応用"
+    },
+    {
+      "q": "切土をした土地の部分に高さ1mの崖を生じ、かつ面積が400平方メートルの場合、宅地造成の規模要件に該当しない。",
+      "a": true,
+      "ex": "正しい。切土の崖が2m超でなく（施行令3条2号不該当）、面積も500㎡超でない（施行令3条5号不該当）ため、規模要件に該当しません。盛土なら1m超の崖で該当しますが、切土は2m超が基準です。",
+      "cat": "規模要件の応用"
+    },
+    {
+      "q": "盛土と切土を同時に行い、盛土部分に高さ80cmの崖、切土部分に高さ1.5mの崖が生じ、合計で高さ2.3mの崖を生ずる場合、宅地造成の規模要件に該当する。",
+      "a": true,
+      "ex": "正しい。盛土と切土を同時に行う場合、盛土部分が1m以下で合計が2m超の崖を生ずるときは規模要件に該当します（施行令3条3号）。盛土80cm（1m以下）＋合計2.3m（2m超）なので該当します。",
+      "cat": "規模要件の応用"
+    },
+    {
+      "q": "宅地造成等工事規制区域の指定の際、既に区域内で宅地造成等に関する工事を行っている工事主は、改めて都道府県知事の許可を受けなければならない。",
+      "a": false,
+      "ex": "誤り。区域指定の際に既に工事中の場合、許可は不要ですが、指定日から21日以内に都道府県知事に届出をしなければなりません（法21条1項）。「既存工事＝許可が必要」は頻出のひっかけです。",
+      "cat": "許可と届出の混同"
+    },
+    {
+      "q": "宅地造成等工事規制区域内で許可を受けた工事について、計画の変更をする場合は、都道府県知事に届出をすれば足りる。",
+      "a": false,
+      "ex": "誤り。計画変更は原則として都道府県知事の「許可」が必要です（法16条1項）。届出で足りるのは「軽微な変更」の場合のみです（法16条1項ただし書・2項）。「計画変更＝届出」は典型的なひっかけです。",
+      "cat": "許可と届出の混同"
+    },
+    {
+      "q": "許可を受けた工事の計画について軽微な変更をした場合、遅滞なくその旨を都道府県知事に届け出なければならない。",
+      "a": true,
+      "ex": "正しい。軽微な変更については許可は不要ですが、遅滞なく都道府県知事に届出をしなければなりません（法16条2項）。計画変更は原則「許可」、軽微な変更のみ「届出」という使い分けを覚えましょう。",
+      "cat": "許可と届出の混同"
+    },
+    {
+      "q": "宅地造成等工事規制区域内の土地において、擁壁等に関する工事を行おうとする者は、その工事に着手する日の14日前までに都道府県知事に届け出なければならない。",
+      "a": true,
+      "ex": "正しい。許可を受けた者等を除き、擁壁等に関する工事その他政令で定める工事を行おうとする者は、着手日の14日「前」までに届出が必要です（法21条3項）。「14日前まで」と「14日以内」の区別に注意しましょう。",
+      "cat": "届出期限の使い分け"
+    },
+    {
+      "q": "宅地造成等工事規制区域内において公共施設用地を宅地に転用した者は、転用した日の14日前までに都道府県知事に届け出なければならない。",
+      "a": false,
+      "ex": "誤り。公共施設用地の転用届出は「転用した日から14日以内」です（法21条4項）。「14日前まで」ではなく「14日以内」が正しい起算点です。擁壁等除却工事の届出（着手日の14日「前」まで）と混同させるひっかけです。",
+      "cat": "届出期限の使い分け"
+    },
+    {
+      "q": "特定盛土等規制区域内で特定盛土等に関する工事を行う場合、工事主は着手日の30日前までに都道府県知事に届け出なければならない。",
+      "a": true,
+      "ex": "正しい。特定盛土等規制区域内の工事については、工事着手日の30日前までに都道府県知事への届出が必要です（法27条1項）。宅地造成等工事規制区域の既存工事届出（21日以内）と混同しないようにしましょう。",
+      "cat": "届出期限の使い分け"
+    },
+    {
+      "q": "工事主及び工事施行者は、宅地造成等工事規制区域内の土地について、宅地造成等に伴う災害が生じないようその土地を常時安全な状態に維持する保全義務を負う。",
+      "a": false,
+      "ex": "誤り。保全義務（努力義務）の対象者は「土地の所有者、管理者又は占有者」です（法22条1項）。工事主・工事施行者には保全義務は課されていません。ただし、勧告の対象には工事主・工事施行者も含まれます（法22条2項）。",
+      "cat": "保全義務と勧告の混同"
+    },
+    {
+      "q": "造成宅地防災区域は、盛土の高さが5m未満の造成宅地についても指定することができる。",
+      "a": true,
+      "ex": "正しい。造成宅地防災区域の指定基準は施行令35条1項に定められています。同項1号ロでは「盛土前の地盤面が20度以上かつ盛土の高さ5m以上」が一つの要件ですが、同項2号では地盤の滑動・擁壁の沈下・崖の崩落等の事象が生じている区域も指定対象としており、盛土の高さの下限はありません。したがって、5m未満の造成宅地でも指定は可能です。",
+      "cat": "造成宅地防災区域"
+    },
+    {
+      "q": "造成宅地防災区域は、市街地に限って指定することができる。",
+      "a": false,
+      "ex": "誤り。造成宅地防災区域の対象は「既に造成された宅地（造成宅地）」であり、市街地に限定されません（法45条1項）。「市街地」ではなく「一団の造成宅地の区域」であることがポイントです。",
+      "cat": "造成宅地防災区域"
+    },
+    {
+      "q": "宅地造成等工事規制区域内で許可を申請する工事主は、工事に着手した後2週間以内に、周辺地域の住民に対し説明会の開催等により工事内容を周知させなければならない。",
+      "a": false,
+      "ex": "誤り。周辺住民への周知は、許可の申請をするとき「あらかじめ」行わなければなりません（法11条）。「工事着手後2週間以内」ではなく「許可申請前にあらかじめ」が正しいタイミングです。",
+      "cat": "周辺住民への周知"
+    },
+    {
+      "q": "宅地造成等工事規制区域内で盛土又は切土をする土地の面積が600平方メートルである場合、排水施設の設置について有資格者の設計が必要である。",
+      "a": false,
+      "ex": "誤り。有資格者の設計が必要な排水施設の設置は、盛土又は切土をする土地の面積が「1,500㎡超」の場合です（施行令21条2号）。600㎡では基準に満たないため、有資格者の設計は不要です。もう一つの基準は擁壁の高さ「5m超」です（施行令21条1号）。",
+      "cat": "有資格者設計"
+    },
+    {
+      "q": "都道府県知事は、基礎調査のために他人の占有する土地に立ち入って測量又は調査を行うことができるが、土地の占有者の同意がなければ立ち入ることはできない。",
+      "a": false,
+      "ex": "誤り。都道府県知事は基礎調査のために他人の土地に立ち入ることができ、土地の占有者は正当な理由がない限り立入りを拒否できません（法5条1項・5項）。「同意が必要」ではなく「正当な理由がなければ拒否不可」が正しいルールです。",
+      "cat": "基礎調査"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで盛土規制法の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 法律の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6\"><div style=\"font-weight:bold;margin-bottom:6px;font-family:sans-serif\">【宅地造成及び特定盛土等規制法の流れ】</div><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">① 基礎調査（知事が実施）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">② 区域の指定（3種類）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">③ 区域内の規制（許可・届出）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">④ 工事の施工（技術基準・有資格者設計）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">⑤ 完了検査</span><br>↓<br><span style=\"background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c\">⑥ 保全義務・勧告</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">★最重要① 有資格者による設計が必要な場合</strong><br>すべての工事で有資格者の設計が必要なわけではありません。<br>① 高さ<strong>5m超</strong>の擁壁の設置<br>② 盛土・切土の面積が<strong>1,500㎡超</strong>の排水施設の設置<br>この2つの場合のみ必要です（施行令21条）。<br><span style=\"font-size:12px;color:#d32f2f\">⚠️「面積600㎡で有資格者設計が必要」はひっかけ！1,500㎡超で必要</span></div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #e53935\"><strong style=\"color:#c62828\">★最重要② 届出期限の使い分け</strong><br><table style=\"width:100%;border-collapse:collapse;font-size:13px\"><tr style=\"background:#ffcdd2\"><th style=\"border:1px solid #ef9a9a;padding:4px\">届出の種類</th><th style=\"border:1px solid #ef9a9a;padding:4px\">期限</th><th style=\"border:1px solid #ef9a9a;padding:4px\">条文</th></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">擁壁等の除却工事</td><td style=\"border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold\">着手日の14日「前」まで</td><td style=\"border:1px solid #ef9a9a;padding:4px\">法21条3項</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:4px\">公共施設用地の転用</td><td style=\"border:1px solid #ef9a9a;padding:4px;color:#1565c0;font-weight:bold\">転用日から14日「以内」</td><td style=\"border:1px solid #ef9a9a;padding:4px\">法21条4項</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">既存工事の届出</td><td style=\"border:1px solid #ef9a9a;padding:4px;font-weight:bold\">指定日から21日「以内」</td><td style=\"border:1px solid #ef9a9a;padding:4px\">法21条1項</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:4px\">特定盛土等規制区域の届出</td><td style=\"border:1px solid #ef9a9a;padding:4px;color:#d32f2f;font-weight:bold\">着手日の30日「前」まで</td><td style=\"border:1px solid #ef9a9a;padding:4px\">法27条1項</td></tr></table><span style=\"font-size:12px;color:#d32f2f\">⚠️「前」と「以内」の混同に注意！</span></div><div class=\"info-box\" style=\"background:#e8f5e9;border-left:4px solid #43a047\"><strong style=\"color:#1b5e20\">重要③ 造成宅地防災区域の指定要件</strong><br>・対象は「既に造成された宅地」（これから造成する区域ではない）<br>・宅地造成等工事規制区域内の土地は<strong>除かれる</strong>（法45条1項）<br>・盛土の高さに下限はなく、5m未満でも指定できる<br><span style=\"font-size:12px;color:#d32f2f\">⚠️「盛土の高さ5m未満では指定できない」はひっかけ！</span></div><div class=\"info-box\" style=\"background:#e3f2fd;border-left:4px solid #1976d2\"><strong style=\"color:#0d47a1\">重要④ 基礎調査のための立入り</strong><br>・知事は他人の土地に立ち入って測量・調査ができる（法5条1項）<br>・自ら立ち入るほか、命じた者・委任した者に立ち入らせることもできる<br>・土地の占有者は正当な理由がない限り拒否できない（法5条5項）<br><span style=\"font-size:12px;color:#d32f2f\">⚠️「占有者の同意がなければできない」はひっかけ！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">📊 暗記表</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">★最重要：宅地造成の規模要件</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e1bee7\"><th style=\"border:1px solid #ce93d8;padding:5px\">工事の種類</th><th style=\"border:1px solid #ce93d8;padding:5px\">規制がかかる規模</th></tr><tr><td style=\"border:1px solid #ce93d8;padding:5px;font-weight:bold;color:#d32f2f\">盛土</td><td style=\"border:1px solid #ce93d8;padding:5px\">高さ<strong>1m超</strong>の崖を生ずるもの</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ce93d8;padding:5px;font-weight:bold;color:#1565c0\">切土</td><td style=\"border:1px solid #ce93d8;padding:5px\">高さ<strong>2m超</strong>の崖を生ずるもの</td></tr><tr><td style=\"border:1px solid #ce93d8;padding:5px\">盛土＋切土</td><td style=\"border:1px solid #ce93d8;padding:5px\">盛土部分1m以下の崖＋合計<strong>2m超</strong>の崖</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ce93d8;padding:5px\">上記以外の盛土</td><td style=\"border:1px solid #ce93d8;padding:5px\">高さ<strong>2m超</strong></td></tr><tr><td style=\"border:1px solid #ce93d8;padding:5px\">面積</td><td style=\"border:1px solid #ce93d8;padding:5px\"><strong>500㎡超</strong></td></tr></table><div style=\"font-size:13px;font-weight:bold;margin:12px 0 8px\">★最重要：3つの区域の比較</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#b3e5fc\"><th style=\"border:1px solid #81d4fa;padding:5px\">項目</th><th style=\"border:1px solid #81d4fa;padding:5px\">宅地造成等工事規制区域</th><th style=\"border:1px solid #81d4fa;padding:5px\">特定盛土等規制区域</th><th style=\"border:1px solid #81d4fa;padding:5px\">造成宅地防災区域</th></tr><tr><td style=\"border:1px solid #81d4fa;padding:5px;font-weight:bold\">目的</td><td style=\"border:1px solid #81d4fa;padding:5px\">これからの工事を規制</td><td style=\"border:1px solid #81d4fa;padding:5px\">盛土等・土石堆積を規制</td><td style=\"border:1px solid #81d4fa;padding:5px\">既存造成宅地の災害防止</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #81d4fa;padding:5px;font-weight:bold\">規制内容</td><td style=\"border:1px solid #81d4fa;padding:5px;color:#d32f2f;font-weight:bold\">許可制</td><td style=\"border:1px solid #81d4fa;padding:5px\">届出制<br><span style=\"font-size:11px\">（一定規模以上は許可制）</span></td><td style=\"border:1px solid #81d4fa;padding:5px\">勧告・改善命令</td></tr><tr><td style=\"border:1px solid #81d4fa;padding:5px;font-weight:bold\">届出期限</td><td style=\"border:1px solid #81d4fa;padding:5px\">—</td><td style=\"border:1px solid #81d4fa;padding:5px;color:#d32f2f;font-weight:bold\">着手日の30日前まで</td><td style=\"border:1px solid #81d4fa;padding:5px\">—</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #81d4fa;padding:5px;font-weight:bold\">重複関係</td><td style=\"border:1px solid #81d4fa;padding:5px\">造成宅地防災区域と重複しない</td><td style=\"border:1px solid #81d4fa;padding:5px\">—</td><td style=\"border:1px solid #81d4fa;padding:5px\">工事規制区域と重複しない</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin:12px 0 8px\">重要：保全義務と勧告の対象者</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#c8e6c9\"><th style=\"border:1px solid #a5d6a7;padding:5px\">対象者</th><th style=\"border:1px solid #a5d6a7;padding:5px\">保全義務（努力義務）</th><th style=\"border:1px solid #a5d6a7;padding:5px\">勧告の対象</th></tr><tr><td style=\"border:1px solid #a5d6a7;padding:5px\">所有者</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #a5d6a7;padding:5px\">管理者</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td></tr><tr><td style=\"border:1px solid #a5d6a7;padding:5px\">占有者</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #a5d6a7;padding:5px\">工事主</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center;color:#d32f2f;font-weight:bold\">× ⚠️</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td></tr><tr><td style=\"border:1px solid #a5d6a7;padding:5px\">工事施行者</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center;color:#d32f2f;font-weight:bold\">× ⚠️</td><td style=\"border:1px solid #a5d6a7;padding:5px;text-align:center\">○</td></tr></table><span style=\"font-size:12px;color:#d32f2f\">⚠️ 工事主・工事施行者は勧告の対象にはなるが、保全義務は負わない！</span></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #c62828;color:#c62828\">⚠️ カバーできていない論点</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">このアプリでカバーできていない論点：</strong><br>・監督処分（改善命令・工事停止命令等）の詳細<br>・罰則規定<br>・技術基準の細部（擁壁の構造基準等）<br>・国・都道府県等が行う工事の特例<br><br>これらの論点は過去問演習で補ってください。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=336AC0000000191\" target=\"_blank\">宅地造成及び特定盛土等規制法（e-Gov）</a>で条文を直接確認できます。</div></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 宅地造成及び特定盛土等規制法とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「宅地造成・盛土等に伴う崖崩れや土砂流出の災害を防止するための法律」です（法1条）。2022年に旧「宅地造成等規制法」が大幅改正され、盛土や土石の堆積に対する規制が強化されました。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🔑 宅地造成の定義と規模要件</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>宅地造成とは何か（法2条2号・施行令3条）</strong><br>「<strong>宅地以外</strong>の土地を<strong>宅地にする</strong>ために行う盛土その他の土地の形質の変更」が宅地造成です。<br><br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 宅地→宅地以外にする工事は宅地造成ではない！</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「宅造は『外→宅』の一方通行！逆方向は対象外」</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>規模要件（施行令3条）：以下のいずれかに該当すれば規制対象</strong><br><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:6px 0\"><tr style=\"background:#ffcdd2\"><th style=\"border:1px solid #ef9a9a;padding:4px\">工事の種類</th><th style=\"border:1px solid #ef9a9a;padding:4px\">規制がかかる規模</th></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">① 盛土</td><td style=\"border:1px solid #ef9a9a;padding:4px;font-weight:bold;color:#d32f2f\">高さ1m超の崖</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:4px\">② 切土</td><td style=\"border:1px solid #ef9a9a;padding:4px;font-weight:bold;color:#1565c0\">高さ2m超の崖</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">③ 盛土＋切土</td><td style=\"border:1px solid #ef9a9a;padding:4px\">盛土部分1m以下＋合計2m超の崖</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #ef9a9a;padding:4px\">④ 上記以外の盛土</td><td style=\"border:1px solid #ef9a9a;padding:4px\">高さ2m超</td></tr><tr><td style=\"border:1px solid #ef9a9a;padding:4px\">⑤ 面積</td><td style=\"border:1px solid #ef9a9a;padding:4px;font-weight:bold\">500㎡超</td></tr></table></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「盛土は崩れやすいから基準が厳しい（1m）。切土は削るだけなので緩め（2m）。面積は500㎡超。」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🗺️ 3つの規制区域の違い【超重要】</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>この法律には3つの区域があり、それぞれ規制の内容が異なる。区別できることが合格への鍵です。</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>① 宅地造成等工事規制区域（法10条）</strong><br>「これからの工事」を規制する区域。<strong style=\"color:#d32f2f\">許可制</strong>。<br>市街地等の区域で、宅地造成等に伴い災害のおそれが大きい区域に指定。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>② 特定盛土等規制区域（法26条）</strong><br>「盛土等・土石堆積」を規制する区域。<strong>届出制</strong>（一定規模以上は許可制）。<br>2022年法改正で新設。着手日の<strong style=\"color:#d32f2f\">30日前</strong>までに届出が必要（法27条1項）。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>③ 造成宅地防災区域（法45条）</strong><br>「既に造成された宅地」の災害防止が目的。勧告・改善命令。<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 宅地造成等工事規制区域内の土地は除かれる！両区域は重複しない。</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「工事規制区域＝これから工事する区域（許可制）。造成宅地防災区域＝もう造成済みの宅地（災害防止）。この2つは重ならない。」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">📋 宅地造成等工事規制区域内の許可・届出</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>規制区域内で工事するには知事の許可が必要。計画変更も原則許可。ただし既存工事は届出でOK。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>許可が必要な場合：</strong><br>・宅地造成等に関する工事 → <strong>都道府県知事の許可</strong>（法12条1項）<br>・工事の計画変更 → 原則<strong>知事の許可</strong>（法16条1項）<br><span style=\"font-size:12px;color:#555\">軽微な変更のみ届出で足りる（法16条1項ただし書・2項）</span></div><div class=\"info-box\" style=\"background:#fff9c4;border:2px solid #f9a825\"><strong style=\"color:#e65100\">⚠️ 最重要ひっかけ：既存工事の扱い</strong><br>規制区域の指定の際に<strong>既に工事中</strong>の場合：<br>→ <strong>許可は不要</strong>（改めて許可を取り直す必要なし）<br>→ ただし<strong>指定日から21日以内に届出</strong>が必要（法21条1項）<br><span style=\"font-size:12px;color:#d32f2f\">「既存工事に許可が必要」はひっかけ！正しくは届出（21日以内）</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「計画変更は『許可』が原則。軽微な変更だけ『届出』。既存工事は許可不要だが届出は必要（21日以内）。」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00897b;color:#00897b\">🛡️ 土地の保全義務と勧告</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>規制区域内の土地は常時安全に維持する義務がある。知事は必要に応じて勧告できるが、勧告の対象は保全義務より広い。</div><div class=\"info-box\" style=\"background:#e0f2f1\"><strong>保全義務（努力義務）の対象（法22条1項）：</strong><br>土地の<strong>所有者・管理者・占有者</strong><br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 工事主・工事施行者は保全義務の対象ではない！</span></div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>勧告の対象（法22条2項）：</strong><br>所有者・管理者・占有者＋<strong>工事主・工事施行者</strong><br>→ 保全義務よりも対象が<strong>広い</strong></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「保全義務＝土地を持っている人（所有者・管理者・占有者）。勧告＝土地に関わる全員（＋工事主・工事施行者）。保全義務の方が対象が狭い。」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">📄 特定盛土等規制区域の届出・許可制</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>2022年法改正で新設された区域。特定盛土等・土石の堆積の工事に事前届出が必要。一定規模以上は許可制。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>届出のルール（法27条1項）：</strong><br>特定盛土等規制区域内の工事 → 着手日の<strong style=\"color:#d32f2f;font-size:15px\">30日前</strong>までに届出<br>一定規模以上の工事 → <strong>許可</strong>が必要</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「特定盛土等規制区域は30日前届出。宅地造成等工事規制区域の既存工事届出（21日以内）と混同しない！」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #c62828;color:#c62828\">📢 周辺住民への周知義務と標識の掲示</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>許可を申請する前に、事前に周辺住民への説明が必要。許可後は標識を掲げる義務がある。</div><div class=\"info-box\" style=\"background:#ffebee\"><strong>周辺住民への周知（法11条）：</strong><br>許可申請をするとき<strong style=\"color:#d32f2f\">「あらかじめ」</strong>周辺住民に工事内容を周知<br>（説明会の開催等）<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「工事着手後」ではない！「あらかじめ」＝許可申請前が正しいタイミング</span></div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>標識の掲示（法49条）：</strong><br>許可を受けた工事主又は届出をした工事主は、土地の見やすい場所に標識を掲げなければならない。</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「周知は『あらかじめ』＝許可申請前。『工事着手後2週間以内』はひっかけ。」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=336AC0000000191\" target=\"_blank\">宅地造成及び特定盛土等規制法（e-Gov）</a>で条文を直接確認できます。</div></div>"
+}
