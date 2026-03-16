@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 建築基準法（集団規定）クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="../hourei_seigen/index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ 建築基準法（集団規定）</div>
+    <div class="header-desc">用途制限・建蔽率・容積率・道路制限・日影規制</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_kenchiku_shudan_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "第一種低層住居専用地域内では、住宅のほか、小規模な店舗を兼ねた住宅（兼用住宅）も一定の条件のもとで建築することができる。",
+    "a": true,
+    "ex": "正しい。第一種低層住居専用地域内でも、店舗等の部分が50㎡以下かつ延べ面積の1/2以上が居住用である兼用住宅は建築可能です（建築基準法48条1項、別表第二（い）項）。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "工業専用地域内では、住宅や共同住宅を建築することはできない。",
+    "a": true,
+    "ex": "正しい。工業専用地域は最も用途制限が厳しい地域の一つで、住宅・共同住宅・学校・病院・ホテル等の建築が禁止されています（建築基準法48条13項、別表第二（わ）項）。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "ホテル・旅館は、第一種住居地域内において建築することができる。",
+    "a": true,
+    "ex": "正しい。ホテル・旅館は第一種住居地域以上の地域（第一種住居地域、第二種住居地域、準住居地域、近隣商業地域、商業地域、準工業地域）で建築可能です。第二種中高層住居専用地域以下では建築できません（建築基準法48条、別表第二）。なお、第一種住居地域では床面積3,000㎡を超える建築物は建築できない点に注意が必要です（別表第二（ほ）項4号）。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "床面積200㎡以上の映画館は、準住居地域内で建築することができる。",
+    "a": false,
+    "ex": "誤り。床面積200㎡以上の映画館を建築できるのは、近隣商業地域・商業地域・準工業地域の3地域のみです。準住居地域では200㎡未満の映画館しか建築できません（建築基準法48条、別表第二）。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "敷地が2つの用途地域にまたがる場合、その敷地の過半が属する用途地域の制限が敷地全体に適用される。",
+    "a": true,
+    "ex": "正しい。用途制限については「過半主義」が採用されており、敷地の過半が属する用途地域の制限が敷地全体に適用されます（建築基準法91条）。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "建蔽率とは、建築物の延べ面積の敷地面積に対する割合のことである。",
+    "a": false,
+    "ex": "誤り。建蔽率は「建築面積」の敷地面積に対する割合です（建築基準法53条1項）。「延べ面積」の敷地面積に対する割合は容積率です（建築基準法52条1項）。建蔽率と容積率の定義を混同しないよう注意が必要です。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "防火地域内にある耐火建築物等については、建蔽率が1/10緩和される。",
+    "a": true,
+    "ex": "正しい。防火地域内にある耐火建築物等は、建蔽率が1/10緩和されます（建築基準法53条3項1号イ）。ただし、建蔽率の限度が8/10の地域内の耐火建築物等は建蔽率の制限自体が適用除外となります（同条6項1号）。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "街区の角にある敷地で特定行政庁が指定するもの（角地）に建築する場合、建蔽率が1/10緩和される。",
+    "a": true,
+    "ex": "正しい。角地指定を受けた敷地の建築物は、建蔽率が1/10緩和されます（建築基準法53条3項2号）。防火地域内の耐火建築物等であり、かつ角地指定も受けている場合は合計2/10の緩和となります。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "前面道路の幅員が12m未満の場合、指定容積率と前面道路幅員に一定の数値を乗じて得た数値のうち、小さい方が容積率の上限となる。",
+    "a": true,
+    "ex": "正しい。前面道路幅員が12m未満の場合は、都市計画で定められた指定容積率と、前面道路の幅員に一定の数値（住居系は4/10、その他は6/10等）を乗じた数値を比較し、小さい方が容積率の上限となります（建築基準法52条1項、2項）。",
+    "cat": "容積率"
+  },
+  {
+    "q": "共同住宅の共用廊下・階段の床面積は、容積率の算定の基礎となる延べ面積に算入される。",
+    "a": false,
+    "ex": "誤り。共同住宅または老人ホーム等の共用の廊下又は階段の用に供する部分の床面積は、容積率の算定の基礎となる延べ面積に算入しません（建築基準法52条6項2号）。住民の共有部分は延べ面積から除外されます。",
+    "cat": "容積率"
+  },
+  {
+    "q": "エレベーターの昇降路の部分の床面積は、容積率の算定の基礎となる延べ面積に算入しない。",
+    "a": true,
+    "ex": "正しい。政令で定める昇降機の昇降路の部分の床面積は、容積率の算定の基礎となる延べ面積に算入しません（建築基準法52条6項1号）。",
+    "cat": "容積率"
+  },
+  {
+    "q": "建築基準法上の「道路」とは、幅員4m以上のものをいう。",
+    "a": true,
+    "ex": "正しい。建築基準法上の道路は、原則として幅員4m以上のものをいいます（建築基準法42条1項）。ただし、特定行政庁が指定する区域では6mとされる場合があります。",
+    "cat": "道路"
+  },
+  {
+    "q": "道路内に建築物を建築することは一切できない。",
+    "a": false,
+    "ex": "誤り。道路内の建築は原則禁止ですが、例外として①地盤面下に設ける建築物、②公衆便所・巡査派出所等で特定行政庁が許可したもの等があります（建築基準法44条1項各号）。地盤面下の建築物は許可不要です。",
+    "cat": "道路"
+  },
+  {
+    "q": "日影規制における日影時間の測定は、夏至日の真太陽時で行う。",
+    "a": false,
+    "ex": "誤り。日影規制の測定は「冬至日」の真太陽時による午前8時から午後4時までの間に行います（建築基準法56条の2第1項）。冬至日は1年で最も日影が長くなる日であるため、この日に測定します。",
+    "cat": "日影規制"
+  },
+  {
+    "q": "外壁の後退距離の制限は、第一種低層住居専用地域、第二種低層住居専用地域、田園住居地域内に限り適用される。",
+    "a": true,
+    "ex": "正しい。外壁の後退距離の制限は、第一種低層住居専用地域・第二種低層住居専用地域・田園住居地域内のみで適用されます（建築基準法54条1項）。その限度は都市計画で1.5mまたは1mと定められます（同条2項）。",
+    "cat": "外壁後退距離"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "第一種低層住居専用地域内では、大学および高等専門学校を建築することができる。",
+    "a": false,
+    "ex": "誤り。第一種低層住居専用地域・第二種低層住居専用地域・田園住居地域では、高校までは建築可能ですが、大学・高等専門学校は建築できません（建築基準法48条、別表第二）。低層住居地域は特に静かな住環境を保護する地域であり、大規模な教育施設は制限されています。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "幼保連携型認定こども園は、工業地域内でも建築することができる。",
+    "a": true,
+    "ex": "正しい。幼保連携型認定こども園は、学校の一般的な用途制限の例外として、工業地域でも建築可能です（建築基準法48条、別表第二）。工業地域で働く人の子育て支援の観点から認められています。ただし工業専用地域では建築できません。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "床面積10,000㎡を超える大規模な店舗は、準住居地域内でも建築することができる。",
+    "a": false,
+    "ex": "誤り。10,000㎡を超える大規模集客施設（店舗等）を建築できるのは、近隣商業地域・商業地域・準工業地域の3地域のみです（建築基準法48条、別表第二）。準住居地域では建築できません。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "ホテル・旅館は、第二種中高層住居専用地域内でも建築することができる。",
+    "a": false,
+    "ex": "誤り。ホテル・旅館は第一種住居地域以上の地域で建築可能であり、第二種中高層住居専用地域以下では建築できません（建築基準法48条、別表第二）。「中高層」という名前から建築可能と誤解しやすいので注意が必要です。",
+    "cat": "用途制限"
+  },
+  {
+    "q": "防火地域内にある準耐火建築物等については、建蔽率が1/10緩和される。",
+    "a": false,
+    "ex": "誤り。防火地域内で建蔽率1/10の緩和を受けられるのは「耐火建築物等」のみです。「準耐火建築物等」は防火地域内では緩和を受けられません（建築基準法53条3項1号）。準防火地域内であれば準耐火建築物等も1/10緩和されますが、防火地域では耐火レベルが足りないため緩和なしです。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "建蔽率の限度が8/10の地域で、防火地域内にある耐火建築物等については、建蔽率の制限が適用除外となる。",
+    "a": true,
+    "ex": "正しい。建蔽率の限度が8/10とされている地域内の防火地域にある耐火建築物等は、建蔽率の制限自体が適用除外となります（建築基準法53条6項1号）。つまり建蔽率100%（敷地いっぱい）に建築可能です。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "準防火地域内にある準耐火建築物等で、かつ角地指定を受けた敷地に建築する場合、建蔽率は合計2/10緩和される。",
+    "a": true,
+    "ex": "正しい。準防火地域内の準耐火建築物等で1/10の緩和、角地指定で1/10の緩和があり、両方に該当する場合は合計2/10の緩和となります（建築基準法53条3項1号ロ・2号）。",
+    "cat": "建蔽率"
+  },
+  {
+    "q": "前面道路が2つ以上ある場合、容積率の算定に用いる前面道路の幅員は、最も狭い道路の幅員を基準とする。",
+    "a": false,
+    "ex": "誤り。前面道路が2つ以上ある場合は、「幅員の最大のもの」を基準に容積率を算定します（建築基準法52条2項）。つまり最も広い道路の幅員を用います。「最小」ではなく「最大」であることがひっかけポイントです。",
+    "cat": "容積率"
+  },
+  {
+    "q": "老人ホームの共用廊下・階段の床面積は、容積率の算定の基礎となる延べ面積に算入しない。",
+    "a": true,
+    "ex": "正しい。共同住宅だけでなく、老人ホーム等の共用の廊下または階段の用に供する部分の床面積も、容積率の算定の基礎となる延べ面積に算入されません（建築基準法52条6項2号）。",
+    "cat": "容積率"
+  },
+  {
+    "q": "公衆便所は、特定行政庁の許可を得ることなく道路内に建築することができる。",
+    "a": false,
+    "ex": "誤り。道路内に許可不要で建築できるのは「地盤面下に設ける建築物」のみです（建築基準法44条1項1号）。公衆便所・巡査派出所等は「特定行政庁が通行上支障がないと認めて建築審査会の同意を得て許可したもの」でなければ道路内に建築できません（同項2号）。",
+    "cat": "道路"
+  },
+  {
+    "q": "地盤面下に設ける建築物は、特定行政庁の許可を受ければ道路内に建築することができる。",
+    "a": false,
+    "ex": "誤り。地盤面下に設ける建築物は、許可を受けなくても道路内に建築できます（建築基準法44条1項1号）。地下は道路の交通に影響しないため、許可不要とされています。「許可が必要」とする選択肢はひっかけです。",
+    "cat": "道路"
+  },
+  {
+    "q": "商業地域内にある高さ10mを超える建築物が、日影規制の対象区域内の土地に日影を生じさせる場合、当該建築物にも日影規制が適用される。",
+    "a": true,
+    "ex": "正しい。日影規制の対象区域外（商業・工業・工業専用地域等）にある高さ10mを超える建築物であっても、冬至日において対象区域内の土地に日影を生じさせるものは、対象区域内にある建築物とみなして日影規制が適用されます（建築基準法56条の2第4項）。",
+    "cat": "日影規制"
+  },
+  {
+    "q": "敷地が2つの建蔽率制限の異なる地域にまたがる場合、建蔽率の上限は両地域の建蔽率を合計して2分の1としたものとなる。",
+    "a": false,
+    "ex": "誤り。建蔽率が異なる地域にまたがる場合は「按分比例」で計算します。各地域の建蔽率の限度に、敷地のその地域に属する部分の面積の敷地面積全体に対する割合を乗じて得たものの合計が上限です（建築基準法53条2項）。「合計の2分の1」ではありません。",
+    "cat": "建蔽率（按分比例）"
+  },
+  {
+    "q": "防火地域又は準防火地域内にある建築物で、外壁が防火構造のものについては、その外壁を隣地境界線に接して設けることができる。",
+    "a": false,
+    "ex": "誤り。外壁を隣地境界線に接して設けることができるのは、外壁が「耐火構造」の場合のみです（建築基準法63条）。「防火構造」では隣地境界線に接しての建築はできません。耐火構造と防火構造の違いに注意が必要です。",
+    "cat": "隣地境界線"
+  },
+  {
+    "q": "学校は忌避施設（卸売市場・火葬場等）に該当するため、都市計画区域内で新築するには都市計画においてその敷地の位置が決定されていなければならない。",
+    "a": false,
+    "ex": "誤り。忌避施設として都市計画による敷地の位置の決定が必要なのは、卸売市場・火葬場・と畜場・汚物処理場・ごみ焼却場等です（建築基準法51条）。学校は忌避施設に該当しないため、都市計画による敷地の位置の決定は不要です。",
+    "cat": "忌避施設"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで建築基準法（集団規定）の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 集団規定の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【集団規定の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">①用途地域の確認</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">②用途制限（何が建てられるか）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③建蔽率・容積率（どのくらいの大きさか）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④道路との関係</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">⑤日影規制・高さ制限</span><br><br><span style="color:#1565c0;font-weight:bold;font-family:sans-serif">集団規定は都市計画区域・準都市計画区域内に限り適用（法41条の2）</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 過半主義 vs 按分比例（混同注意！）</strong><br>用途制限 → <strong>過半主義</strong>（法91条）<br>建蔽率・容積率 → <strong>按分比例</strong>（法53条2項・52条7項）<br><span style="color:#d32f2f;font-weight:bold">⚠️「建蔽率が2つの地域にまたがる→合計の2分の1以下」は誤り！</span><br><span style="font-size:12px;color:#555">※詳しくは原則タブを参照</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 道路内建築の許可の要否（法44条1項）</strong><br>地盤面下 → <strong style="color:#2e7d32">許可不要</strong>｜公衆便所等 → <strong style="color:#d32f2f">許可＋建築審査会の同意が必要</strong><br><span style="color:#d32f2f;font-weight:bold">⚠️「公衆便所は許可なく建築可」は誤り！</span><br><span style="font-size:12px;color:#555">※詳しくは原則タブを参照</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 日影規制は対象区域外にも及ぶ（法56条の2第4項）</strong><br>高さ10m超の建築物が対象区域内に日影を生じさせる場合 → 規制適用<br><span style="color:#d32f2f;font-weight:bold">⚠️「対象区域外なら一律に適用なし」は誤り！</span><br><span style="font-size:12px;color:#555">※詳しくは原則タブを参照</span></div><div class="info-box" style="background:#e3f2fd;border-left:4px solid #1976d2"><strong style="color:#0d47a1">重要④ 耐火構造 vs 防火構造</strong><br>外壁を隣地境界線に接して設けられるのは「<strong>耐火構造</strong>」の場合のみ（法63条）<br><span style="color:#d32f2f;font-weight:bold">⚠️「防火構造でも隣地境界線に接して建築可」は誤り！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 暗記表</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：建蔽率の緩和措置</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">条件</th><th style="border:1px solid #90caf9;padding:5px">耐火建築物等</th><th style="border:1px solid #90caf9;padding:5px">準耐火建築物等</th></tr><tr><td style="border:1px solid #90caf9;padding:5px">防火地域内</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+1/10（8/10地域なら適用除外）</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">緩和なし ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">準防火地域内</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+1/10</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+1/10</td></tr><tr><td style="border:1px solid #90caf9;padding:5px">角地指定</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+1/10</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+1/10</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px">準防火地域＋角地</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+2/10</td><td style="border:1px solid #90caf9;padding:5px;color:#2e7d32;font-weight:bold">+2/10</td></tr></table><div style="font-size:13px;font-weight:bold;margin:16px 0 8px">重要：容積率の不算入まとめ</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;padding:5px">不算入の対象</th><th style="border:1px solid #a5d6a7;padding:5px">根拠</th></tr><tr><td style="border:1px solid #a5d6a7;padding:5px">昇降機（エレベーター）の昇降路</td><td style="border:1px solid #a5d6a7;padding:5px">法52条6項1号</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:5px">共同住宅・老人ホーム等の共用廊下・階段</td><td style="border:1px solid #a5d6a7;padding:5px">法52条6項2号</td></tr></table><div style="font-size:13px;font-weight:bold;margin:16px 0 8px">重要：映画館の建築可能地域</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;padding:5px">規模</th><th style="border:1px solid #ffcc80;padding:5px">建築可能な地域</th></tr><tr><td style="border:1px solid #ffcc80;padding:5px">200㎡未満</td><td style="border:1px solid #ffcc80;padding:5px">準住居地域・近隣商業・商業・準工業</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffcc80;padding:5px;font-weight:bold">200㎡以上</td><td style="border:1px solid #ffcc80;padding:5px;font-weight:bold">近隣商業・商業・準工業の3地域のみ</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #c62828;color:#c62828">⚠️ このアプリでカバーできていない論点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">以下の論点は別途学習が必要です：</strong><br>・高さ制限（絶対高さ制限・斜線制限）の詳細な計算方法<br>・防火地域・準防火地域の建築物の構造制限の詳細<br>・建築協定の詳細な手続き<br>・用途制限の全13地域の完全な一覧（このアプリでは頻出のものを中心に扱っています）<br><br>これらは過去問で出題されますので、過去問学習の際に重点的に確認してください。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 集団規定とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>「都市計画区域・準都市計画区域内」で適用される、建物の種類・大きさ・配置を総合的にコントロールする規制です（建築基準法41条の2）。個々の建物の安全を守る「単体規定」に対し、集団規定は「街全体の環境」を守ります。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🏠 用途制限（用途地域ごとの建築制限）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>全13種類の用途地域ごとに「建てられる建物」「建てられない建物」が決まっている。住居系地域ほど制限が厳しく、商業系・工業系になるほど緩やかになるのが基本です（建築基準法48条）。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「住居系は住む人を守る→騒がしい施設ほど建てにくい。工業専用は工場だけ→住宅すら不可。」</div><div class="info-box" style="background:#fff3e0"><strong>頻出の用途制限ポイント：</strong><br>・<strong>工業専用地域</strong>：最も制限が厳しい地域の一つ。住宅・共同住宅・学校等が建築不可<br>・<strong>ホテル・旅館</strong>：第一種住居地域以上で建築可。第二種中高層住居専用地域以下は不可<br>・<strong>映画館（200㎡以上）</strong>：近隣商業・商業・準工業の3地域のみ。200㎡未満なら準住居地域でも可<br>・<strong>大規模集客施設（10,000㎡超）</strong>：近隣商業・商業・準工業の3地域のみ<br>・<strong>低層住居地域の学校</strong>：高校は建築可、大学・高等専門学校は不可<br>・<strong>幼保連携型認定こども園</strong>：工業地域でも建築可（学校の例外）</div><div class="info-box" style="background:#f5f5f5"><strong>兼用住宅の特例（第一種低層住居専用地域）：</strong><br>店舗等の部分が<strong>50㎡以下</strong>かつ延べ面積の<strong>1/2以上が居住用</strong> → 第一種低層住居専用地域でも建築可</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">敷地が2つの用途地域にまたがる場合：</strong><br><strong>過半主義</strong> → 敷地の過半が属する用途地域の制限が敷地全体に適用（法91条）<br><span style="font-size:12px;color:#555">※建蔽率・容積率は「按分比例」なので混同しないこと</span></div><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">特定行政庁の許可による例外：</strong><br>本来建築不可の用途地域でも、特定行政庁が許可すれば例外的に建築できる場合があります（建築基準法48条各項ただし書）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">📐 建蔽率</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>敷地面積に対する「建築面積」の割合の上限。火災時の延焼防止、通風・採光の確保が目的です（建築基準法53条）。</div><div class="info-box" style="background:#fff3e0"><strong>建蔽率の緩和（+1/10）：</strong><br>① 防火地域内の<strong>耐火建築物等</strong>（法53条3項1号イ）<br>② 準防火地域内の<strong>耐火建築物等</strong>または<strong>準耐火建築物等</strong>（法53条3項1号イ・ロ）<br>③ 角地指定（法53条3項2号）<br><br>①と③、または②と③に該当すれば → <strong>+2/10</strong></div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ひっかけ注意：防火地域内の「準耐火建築物等」→ 緩和なし！</strong><br>防火地域では耐火レベルが要求される。準耐火ではレベルが足りないため緩和なし。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「防火地域は耐火が必要→耐火なら緩和。準防火で準耐火も緩和。でも防火×準耐火はレベル不足で緩和なし。」</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">建蔽率の適用除外（制限なし）：</strong><br>建蔽率<strong>8/10の地域</strong>＋<strong>防火地域内</strong>＋<strong>耐火建築物等</strong> → 建蔽率の制限なし（法53条6項1号）</div><div class="info-box" style="background:#f5f5f5"><strong>敷地が2つの建蔽率制限地域にまたがる場合：</strong><br><strong>按分比例</strong>（加重平均）で計算する（法53条2項）<br><span style="color:#d32f2f;font-weight:bold">⚠️「合計の1/2」ではない！各地域の面積比率で加重平均する</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📏 容積率</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>敷地面積に対する「延べ面積」（全フロアの合計面積）の割合の上限。建物の規模（ボリューム）を制限します（建築基準法52条）。</div><div class="info-box" style="background:#fff3e0"><strong>前面道路幅員12m未満の場合の制限：</strong><br>①指定容積率 と ②前面道路幅員×一定の数値 を比較し、<strong>小さい方</strong>が上限<br><br><strong>前面道路が2つ以上ある場合：</strong><br>幅員の<strong>最大のもの</strong>（広い方）を使用（法52条2項）</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️「幅員の最小のもの」は誤り！有利な方（広い方）を使う</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「前面道路が2つ以上→有利な方（広い方）を使う。共用廊下・階段は住民の共有部分だから容積率に入れない。」</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">容積率の不算入：</strong><br>① エレベーターの昇降路（法52条6項1号）<br>② 共同住宅・老人ホーム等の共用廊下・階段（法52条6項2号）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🛣️ 道路と建築制限</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>建築基準法上の「道路」は幅員4m以上が原則。道路内の建築は原則禁止ですが、例外があります（建築基準法42条・44条）。</div><div class="info-box" style="background:#fff3e0"><strong>道路内建築の例外：</strong><br>① <strong>地盤面下に設ける建築物</strong> → <strong style="color:#2e7d32">許可不要</strong>（法44条1項1号）<br>② <strong>公衆便所・巡査派出所等</strong> → <strong style="color:#d32f2f">特定行政庁の許可＋建築審査会の同意が必要</strong>（法44条1項2号）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「地下は道路の交通に影響しない→許可なしでOK。地上の公衆便所等は通行に影響しうる→許可が必要。」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🌓 日影規制</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>中高層建築物が周辺の敷地に落とす日影の時間を制限する規定です（建築基準法56条の2）。</div><div class="info-box" style="background:#fff3e0"><strong>測定の基本：</strong><br>・測定日：<strong>冬至日</strong>（夏至日ではない）<br>・測定時間：真太陽時の<strong>午前8時〜午後4時</strong></div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️「夏至日に測定」は誤り！日影が一番長い冬至日に測定する</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「日影が一番長い日＝冬至日に測定（夏至日は日影が短いから意味がない）。」</div><div class="info-box" style="background:#fce4ec"><strong style="color:#d32f2f">対象区域外でも規制が及ぶ場合：</strong><br>対象区域外（商業・工業・工業専用地域）にある<strong>高さ10m超</strong>の建築物が対象区域内に日影を生じさせる場合 → 対象区域内の建築物とみなして規制適用（法56条の2第4項）</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #795548;color:#795548">📏 外壁の後退距離</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>敷地境界線から建物の外壁までの最低距離の制限です（建築基準法54条）。</div><div class="info-box" style="background:#fff3e0"><strong>適用地域（限定的）：</strong><br><strong>第一種・第二種低層住居専用地域、田園住居地域のみ</strong><br>都市計画で限度（1mまたは1.5m）が定められた場合に適用</div><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ 第一種住居地域等には適用されない！低層住居・田園住居のみ</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「低層住居地域＝住宅街の静かな環境を守る→建物同士の距離を確保。」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #546e7a;color:#546e7a">🏛️ 特別用途地区・忌避施設</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>用途制限の付加・緩和の仕組みと、特定の嫌われる施設の敷地決定ルールです。</div><div class="info-box" style="background:#fff3e0"><strong>特別用途地区（法49条）：</strong><br>・用途制限の<strong>付加</strong> → <strong>条例で可能</strong><br>・用途制限の<strong>緩和</strong> → <strong>国土交通大臣の承認を得て条例で可能</strong></div><div class="info-box" style="background:#fce4ec"><strong>忌避施設（法51条）：</strong><br>卸売市場・火葬場・と畜場・汚物処理場・ごみ焼却場等<br>→ 都市計画で<strong>敷地の位置が決定</strong>されていなければ新築・増築不可</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「嫌われる施設→場所を勝手に決められない＝都市計画で位置を決定。学校は嫌われ施設ではない→位置の決定不要。」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">🔒 袋路状道路と接道制限の付加</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>行き止まり道路にのみ接する建築物に対して、地方公共団体が条例で追加の制限を課すことができます（建築基準法43条3項5号）。</div><div class="info-box" style="background:#fff3e0"><strong>制限の対象：</strong><br>袋路状道路にのみ接する、延べ面積<strong>150㎡超</strong>の建築物<br>（ただし<strong>一戸建て住宅は除外</strong>）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「袋路状道路は避難が大変→大きな建物は制限を強化。でも一戸建ては住人が少ないから除外。」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=325AC0000000201" target="_blank">建築基準法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">建築基準法（集団規定）クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
