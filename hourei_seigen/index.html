@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建学習アプリ - 法令上の制限</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .concept-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-left: 6px solid #667eea;
+    }
+    .concept-card h2 {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 16px;
+    }
+    .concept-card p {
+      color: #4a4a4a;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .concept-card p:last-child {
+      margin-bottom: 0;
+    }
+    .tier-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .tier-header {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .tier1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .tier2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .tier3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .app-item {
+      margin-bottom: 12px;
+    }
+    .app-link {
+      display: block;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 2px solid #ecf0f1;
+      position: relative;
+    }
+    .app-link.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+      cursor: pointer;
+    }
+    .app-link.active:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .app-link.inactive {
+      background: #f8f9fa;
+      border-color: #e9ecef;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .app-number {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 32px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 12px;
+    }
+    .app-link.active .app-number {
+      color: #667eea;
+    }
+    .app-link.inactive .app-number {
+      color: #95a5a6;
+    }
+    .app-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .app-link.active .app-title {
+      color: white;
+    }
+    .app-link.inactive .app-title {
+      color: #2c3e50;
+    }
+    .app-subtitle {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    .app-link.active .app-subtitle {
+      color: white;
+    }
+    .app-link.inactive .app-subtitle {
+      color: #7f8c8d;
+    }
+    .freq-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .app-link.active .freq-badge {
+      background: rgba(255,255,255,0.25);
+      color: white;
+    }
+    .app-link.inactive .freq-badge {
+      background: #ecf0f1;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏠 宅建学習アプリ</h1>
+      <p>法令上の制限 - 全9アプリ</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="../index.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 32px; border-radius: 24px; text-decoration: none; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">← トップに戻る</a>
+    </div>
+
+    <div class="concept-card">
+      <h2>法令上の制限を学ぶ前に知っておいてほしいこと</h2>
+      <p>
+        法令上の制限は宅建試験全50問のうち<strong>8問</strong>を占める重要分野です。都市計画法と建築基準法だけで毎年4問（半分）が出題されます。
+      </p>
+      <p>
+        この分野は「街づくりのルール」です。本質は<strong>「どこに、どんな建物を、どうやって建てられるか」</strong>というシンプルな問いです。都市計画法で「どこに何を建てるか」の大枠を決め、建築基準法で「具体的にどう建てるか」の細かいルールを定めています。
+      </p>
+      <p>
+        権利関係と違い、法令上の制限は<strong>「暗記」が得点に直結する</strong>分野です。数字（面積要件、届出期間など）や手続の流れを正確に覚えれば、確実に得点できます。逆に、あいまいな理解では選択肢を絞りきれません。
+      </p>
+      <p>
+        まずはTier 1の都市計画法・建築基準法をしっかり押さえてください。この2つで毎年4点が取れるようになれば、法令上の制限は大きなアドバンテージになります。
+      </p>
+    </div>
+
+    <!-- Tier 1: 超頻出・必須 -->
+    <div class="tier-section">
+      <div class="tier-header tier1">
+        ⭐ Tier 1：超頻出・必須（4個）── 毎年必ず出る
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 都市計画法（毎年2問） ──</div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">1</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">都市計画法①：都市計画の内容 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">都市計画の種類、都市計画区域、用途地域、都市計画事業制限</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">2</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">都市計画法②：開発許可制度 <span class="freq-badge">重要度 A</span></div>
+            <div class="app-subtitle">開発許可の要否、許可の手続、建築制限</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 建築基準法（毎年2問） ──</div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">3</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">建築基準法①：集団規定 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">用途制限、建蔽率・容積率、高さ制限、道路制限</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">4</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">建築基準法②：建築確認・単体規定 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">建築確認の要否、単体規定、建築協定</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Tier 2: 重要 -->
+    <div class="tier-section">
+      <div class="tier-header tier2">
+        💎 Tier 2：重要（4個）── ほぼ毎年出る
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">5</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">宅地造成及び特定盛土等規制法 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">宅地造成工事規制区域、許可制度、届出</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">6</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">土地区画整理法 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">施行者、仮換地、換地処分、建築制限</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">7</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">農地法 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">3条許可（権利移動）、4条許可（転用）、5条許可（転用目的の権利移動）</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">8</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">国土利用計画法 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">事後届出制、届出の対象面積、届出手続</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Tier 3: 補足 -->
+    <div class="tier-section">
+      <div class="tier-header tier3">
+        📚 Tier 3：補足（1個）── 出題頻度は低い
+      </div>
+
+      <div class="app-item">
+        <a class="app-link inactive">
+          <span class="app-number">9</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">諸法令（その他の法令上の制限） <span class="freq-badge">重要度 C</span></div>
+            <div class="app-subtitle">行為の制限、許可・届出の要否</div>
+          </div>
+        </a>
+      </div>
+
+
+    </div>
+
+    <div style="text-align: center; padding: 10px 20px 20px; color: white; font-size: 14px;">
+      <p>© 2026 宅建学習アプリ</p>
+    </div>
+  </div>
+</body>
+</html>
