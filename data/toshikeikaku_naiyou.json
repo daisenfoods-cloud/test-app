@@ -1,5 +1,6 @@
 {
   "app_id": "toshikeikaku_naiyou",
+  "menu_url": "../hourei_seigen/index.html",
   "app_title": "都市計画の内容クイズ",
   "header_title": "法令上の制限 ＞ 都市計画の内容",
   "header_desc": "地域地区・都市施設・地区計画・都市計画事業制限",
