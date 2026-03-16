@@ -1,6 +1,7 @@
 {
   "app_id": "tochi_kukaku_seiri",
   "app_title": "土地区画整理法クイズ",
+  "menu_url": "../hourei_seigen/index.html",
   "header_title": "法令上の制限 ＞ 土地区画整理法",
   "header_desc": "事業の基本・組合・建築行為等の制限・仮換地・換地処分・登記制限",
   "quiz_title": "土地区画整理法クイズ",
