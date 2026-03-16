@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 都市計画の内容クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ 都市計画の内容</div>
+    <div class="header-desc">地域地区・都市施設・地区計画・都市計画事業制限</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_toshikeikaku_naiyou_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "市街化区域とは、すでに市街地を形成している区域、およびおおむね10年以内に優先的かつ計画的に市街化を図るべき区域をいう。",
+    "a": true,
+    "ex": "正しい。市街化区域の定義は都市計画法7条2項に規定されています。「おおむね10年以内」というキーワードが重要で、市街化を積極的に進める区域です。",
+    "cat": "区域区分"
+  },
+  {
+    "q": "市街化調整区域とは、土地利用の整序を図る必要がある区域であり、一定の開発行為は認められる。",
+    "a": false,
+    "ex": "誤り。市街化調整区域は「市街化を抑制すべき区域」です（都市計画法7条3項）。「土地利用の整序を図る」は準都市計画区域の説明であり、市街化調整区域とは異なります。",
+    "cat": "区域区分"
+  },
+  {
+    "q": "区域区分とは、都市計画区域を市街化区域と市街化調整区域に区分することをいう。",
+    "a": true,
+    "ex": "正しい。区域区分（いわゆる「線引き」）とは、都市計画区域を市街化区域と市街化調整区域に分けることです（都市計画法7条1項）。無秩序な市街化を防止し、計画的な市街化を図るための制度です。",
+    "cat": "区域区分"
+  },
+  {
+    "q": "準住居地域は、道路の沿道としての地域の特性にふさわしい業務の利便の増進を図りつつ、これと調和した住居の環境を保護するための地域である。",
+    "a": true,
+    "ex": "正しい。準住居地域は「道路の沿道」というキーワードが特徴です（都市計画法9条）。13種類の用途地域の中で「道路の沿道」が登場するのは準住居地域だけであり、試験で繰り返し問われます。",
+    "cat": "用途地域"
+  },
+  {
+    "q": "用途地域は住居系8種類、商業系2種類、工業系3種類の合計13種類が定められている。",
+    "a": true,
+    "ex": "正しい。用途地域は全部で13種類あります（都市計画法8条1項1号、9条）。住居系8種類（第一種低層住居専用地域〜準住居地域）、商業系2種類（近隣商業地域・商業地域）、工業系3種類（準工業地域・工業地域・工業専用地域）です。",
+    "cat": "用途地域"
+  },
+  {
+    "q": "工業専用地域は、工業の利便を増進するため定める地域であり、住宅の建築も可能である。",
+    "a": false,
+    "ex": "誤り。工業専用地域は工業の利便を増進するための地域ですが、13種類の用途地域の中で唯一、住宅の建築が認められない地域です。「専用」という名のとおり工業に特化した地域であることを覚えておきましょう。",
+    "cat": "用途地域"
+  },
+  {
+    "q": "高度地区は、建築物の高さの最高限度または最低限度を定める地区である。",
+    "a": true,
+    "ex": "正しい。高度地区は用途地域内において、市街地の環境維持や土地利用の増進のために、建築物の「高さ」の最高限度または最低限度を定めます（都市計画法8条1項3号、9条18項）。名前のとおり「高度＝高さ」と覚えましょう。",
+    "cat": "地域地区"
+  },
+  {
+    "q": "高度利用地区は、建築物の高さの最高限度および容積率の最高限度を定める地区である。",
+    "a": false,
+    "ex": "誤り。高度利用地区で定めるのは、容積率の最高限度・最低限度、建蔽率の最高限度、建築面積の最低限度、壁面の位置です（都市計画法8条1項3号、9条19項）。名前に「高度」がありますが、「高さ」は定めません。高度地区との混同に注意してください。",
+    "cat": "地域地区"
+  },
+  {
+    "q": "特定街区では、容積率、建築物の高さの最高限度、壁面の位置の制限が定められる。",
+    "a": true,
+    "ex": "正しい。特定街区は市街地の整備改善を図るために定められ、容積率、建築物の高さの最高限度、壁面の位置の制限が定められます（都市計画法8条1項3号、9条20項）。高度利用地区と異なり「高さの最高限度」を定める点に注意しましょう。",
+    "cat": "地域地区"
+  },
+  {
+    "q": "都市施設は、特に必要があるときは都市計画区域外にも定めることができる。",
+    "a": true,
+    "ex": "正しい。都市施設（道路・公園・下水道等）は、都市計画区域内に定めるのが原則ですが、特に必要があれば都市計画区域外にも定めることができます（都市計画法11条1項）。",
+    "cat": "都市施設"
+  },
+  {
+    "q": "風致地区内における建築物の建築は、都道府県知事の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。風致地区内における建築物の建築等の規制は、都道府県知事の許可ではなく、地方公共団体の「条例」によって行われます（都市計画法58条1項）。風致地区は都市の風致（自然の美しさや趣）を維持するための地区です。",
+    "cat": "地域地区"
+  },
+  {
+    "q": "地区整備計画が定められている区域内で建築物の建築を行おうとする者は、行為に着手する日の30日前までに市町村長に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。地区計画の区域のうち地区整備計画が定められている区域内で土地の区画形質の変更や建築物の建築等を行う場合は、行為に着手する日の30日前までに市町村長に届出が必要です（都市計画法58条の2）。「届出」であって「許可」ではない点に注意してください。",
+    "cat": "地区計画"
+  },
+  {
+    "q": "地区計画の区域内で建築物の建築を行おうとする者は、都道府県知事の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。地区計画の区域内（地区整備計画が定められている区域）での建築等は、都道府県知事の「許可」ではなく、市町村長への「届出」です（都市計画法58条の2）。「届出vs許可」「市町村長vs都道府県知事」の二重のひっかけに注意してください。",
+    "cat": "地区計画"
+  },
+  {
+    "q": "都市計画施設の区域内において建築物の建築をしようとする者は、原則として都道府県知事等の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。都市計画施設の区域内または市街地開発事業の施行区域内で建築物の建築をするには、原則として都道府県知事等の許可が必要です（都市計画法53条1項）。ただし、非常災害のため必要な応急措置として行う場合は許可不要です。",
+    "cat": "都市計画事業制限"
+  },
+  {
+    "q": "都市計画事業の認可等の告示があった後、事業地内の土地建物等を有償で譲り渡そうとする者は、施行者に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。事業地内の土地建物等を有償で譲り渡そうとする場合は、施行者への「届出」が必要です（都市計画法67条1項）。「許可」ではなく「届出」である点がポイントです。建築・形質変更は「許可」、有償譲渡は「届出」と区別しましょう。",
+    "cat": "都市計画事業制限"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "特別用途地区は、用途地域が定められていない土地の区域内において、その良好な環境の形成を図るために定められる地区である。",
+    "a": false,
+    "ex": "誤り。これは「特定用途制限地域」の説明です。特別用途地区は用途地域「内」において、その用途地域を「補完」するために定められる地区です（都市計画法8条1項2号、9条14項）。特定用途制限地域は用途地域が定められていない区域（市街化調整区域を除く）に定められます（都市計画法8条1項2号の2、9条15項）。名前が似ていますが指定場所が真逆です。",
+    "cat": "地域地区の混同"
+  },
+  {
+    "q": "高度利用地区では、容積率の最高限度・最低限度のほか、建築物の高さの最低限度も定められる。",
+    "a": false,
+    "ex": "誤り。高度利用地区で定めるのは、容積率の最高・最低限度、建蔽率の最高限度、建築面積の最低限度、壁面の位置です（都市計画法9条19項）。「高さ」を定めるのは「高度地区」であり、高度利用地区では高さは定めません。名前に「高度」があるのに高さを定めないのが高度利用地区です。",
+    "cat": "地域地区の混同"
+  },
+  {
+    "q": "特定用途制限地域は、用途地域内においてその用途制限を強化するために定められる地域である。",
+    "a": false,
+    "ex": "誤り。特定用途制限地域は、用途地域が定められて「いない」区域（市街化調整区域を除く）に定められるものです（都市計画法9条15項）。用途地域「内」で用途制限を補完するのは「特別用途地区」です。この2つの入れ替えひっかけは定番の出題パターンです。",
+    "cat": "地域地区の混同"
+  },
+  {
+    "q": "準都市計画区域において、市街化区域と市街化調整区域との区域区分を定めることができる。",
+    "a": false,
+    "ex": "誤り。準都市計画区域には区域区分（線引き）を定めることはできません（都市計画法8条2項参照）。区域区分は都市計画区域について定めるものであり、「準」都市計画区域は簡易版のため線引きの対象外です。準都市計画区域で定められるのは用途地域等の一部の都市計画に限られます。",
+    "cat": "準都市計画区域"
+  },
+  {
+    "q": "準都市計画区域において、市街地開発事業に関する都市計画を定めることができる。",
+    "a": false,
+    "ex": "誤り。市街地開発事業は、市街化区域または区域区分が定められていない都市計画区域内に限り定めることができます（都市計画法13条1項13号）。準都市計画区域には定められません。準都市計画区域は「準」＝簡易版であり、市街地開発事業のような大規模な事業は対象外です。",
+    "cat": "準都市計画区域"
+  },
+  {
+    "q": "準都市計画区域においても、用途地域を定めることはできる。",
+    "a": true,
+    "ex": "正しい。準都市計画区域では区域区分や市街地開発事業は定められませんが、用途地域をはじめとする一部の地域地区については定めることができます（都市計画法8条2項）。「準都市計画区域＝何も定められない」ではない点に注意してください。",
+    "cat": "準都市計画区域"
+  },
+  {
+    "q": "地区計画は用途地域が定められている土地の区域内でのみ定めることができ、用途地域が定められていない区域には定められない。",
+    "a": false,
+    "ex": "誤り。地区計画は用途地域が定められている区域に限らず、用途地域が定められていない土地の区域にも、一定の要件のもとで定めることができます（都市計画法12条の5第1項）。「用途地域内のみ」は誤りです。",
+    "cat": "地区計画"
+  },
+  {
+    "q": "開発整備促進区は、第一種低層住居専用地域および第二種低層住居専用地域を含むすべての用途地域内に定めることができる。",
+    "a": false,
+    "ex": "誤り。開発整備促進区を定めることができるのは、第二種住居地域、準住居地域、工業地域、および用途地域が定められていない区域に限られます（都市計画法12条の5第4項）。第一種・第二種低層住居専用地域をはじめ、住居系の多くの地域では定められません。",
+    "cat": "地区計画"
+  },
+  {
+    "q": "地区計画の区域内で土地の区画形質の変更を行おうとする者の届出先は、都道府県知事である。",
+    "a": false,
+    "ex": "誤り。地区整備計画が定められている区域内で土地の区画形質の変更や建築等を行う場合の届出先は「市町村長」です（都市計画法58条の2）。都道府県知事ではありません。都市計画施設の区域内の建築許可の相手方（都道府県知事等）と混同しないよう注意してください。",
+    "cat": "地区計画"
+  },
+  {
+    "q": "都市計画事業の認可等の告示があった後、事業地内の土地建物等を有償で譲り渡そうとする者は、施行者の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。事業地内の土地建物等を有償で譲り渡そうとする場合は、施行者への「届出」が必要です（都市計画法67条1項）。「許可」ではありません。建築や土地の形質変更は都道府県知事等の「許可」ですが、有償譲渡は「届出」にとどまります。行為の重大さで区別しましょう。",
+    "cat": "都市計画事業制限"
+  },
+  {
+    "q": "都市計画施設の区域内で非常災害のため必要な応急措置として行う建築物の建築については、都道府県知事等の許可は不要である。",
+    "a": true,
+    "ex": "正しい。都市計画施設の区域内の建築は原則として知事等の許可が必要ですが、非常災害のため必要な応急措置として行う行為については許可が不要とされています（都市計画法53条1項ただし書）。",
+    "cat": "都市計画事業制限"
+  },
+  {
+    "q": "都市計画施設の区域内で非常災害が発生した場合であっても、応急措置として建築物を建築するには都道府県知事等の許可が必要である。",
+    "a": false,
+    "ex": "誤り。非常災害のため必要な応急措置として行う建築については、都道府県知事等の許可は不要です（都市計画法53条1項ただし書）。「非常災害でも許可が必要」とするのは定番のひっかけです。",
+    "cat": "都市計画事業制限"
+  },
+  {
+    "q": "市町村が定めた都市計画が、都道府県が定めた都市計画と抵触する場合は、市町村の都市計画が優先される。",
+    "a": false,
+    "ex": "誤り。市町村が定めた都市計画が都道府県が定めた都市計画と抵触するときは、都道府県の都市計画が優先します（都市計画法15条4項）。上位の行政機関である都道府県が優先するのが原則です。",
+    "cat": "都市施設・都市計画の決定"
+  },
+  {
+    "q": "市街地開発事業は、市街化区域のほか、準都市計画区域においても定めることができる。",
+    "a": false,
+    "ex": "誤り。市街地開発事業を定めることができるのは、市街化区域または区域区分が定められていない都市計画区域内に限られます（都市計画法13条1項13号）。準都市計画区域には定められません。都市施設が「区域外OK」であるのとは対照的です。",
+    "cat": "都市施設・都市計画の決定"
+  },
+  {
+    "q": "都市計画事業の認可等の告示があったときは、土地収用法の事業認定の告示があったものとみなされる。",
+    "a": true,
+    "ex": "正しい。都市計画事業の認可等の告示があったときは、土地収用法の事業認定の告示があったものとみなされます（都市計画法70条）。これにより、別途土地収用法の事業認定を受ける必要はありません。逆（土地収用法の認定→都市計画事業の認可とみなす）ではない点に注意してください。",
+    "cat": "都市計画事業制限"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで都市計画の内容の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 都市計画の階層構造</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6"><div style="font-weight:bold;margin-bottom:6px;font-family:sans-serif">【都市計画の流れ】</div><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① 都市計画区域・準都市計画区域の指定</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 区域区分（市街化区域・市街化調整区域）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 用途地域の指定（13種類）</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④ 地域地区・地区計画の指定</span><br>↓<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">⑤ 都市施設・市街地開発事業の決定</span><br>↓<br><span style="background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c">⑥ 都市計画事業の施行</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 特別用途地区 vs 特定用途制限地域</strong><br>特別用途地区：用途地域<strong>内</strong>に定める（用途地域を「補完」）<br>特定用途制限地域：用途地域が定められて<strong>いない</strong>区域に定める（市街化調整区域を除く）<br><span style="font-size:12px;color:#d32f2f">⚠️ 名前が似ているが指定場所が真逆！入れ替えひっかけが定番</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 準都市計画区域でできないこと</strong><br>× 区域区分（線引き）を定めること<br>× 市街地開発事業を定めること<br><span style="font-size:12px;color:#d32f2f">⚠️「準都市計画区域で区域区分を定めることができる」は定番のひっかけ</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">★最重要③ 届出 vs 許可の区別</strong><br><table style="width:100%;border-collapse:collapse;font-size:13px"><tr style="background:#c8e6c9"><th style="border:1px solid #a5d6a7;padding:4px">場面</th><th style="border:1px solid #a5d6a7;padding:4px">手続き</th><th style="border:1px solid #a5d6a7;padding:4px">相手方</th></tr><tr><td style="border:1px solid #a5d6a7;padding:4px">地区計画区域内の建築等</td><td style="border:1px solid #a5d6a7;padding:4px;color:#1565c0;font-weight:bold">届出（30日前）</td><td style="border:1px solid #a5d6a7;padding:4px">市町村長</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:4px">都市計画施設の区域内の建築</td><td style="border:1px solid #a5d6a7;padding:4px;color:#d32f2f;font-weight:bold">許可 ⚠️</td><td style="border:1px solid #a5d6a7;padding:4px">都道府県知事等</td></tr><tr><td style="border:1px solid #a5d6a7;padding:4px">事業地内の形質変更・建築</td><td style="border:1px solid #a5d6a7;padding:4px;color:#d32f2f;font-weight:bold">許可 ⚠️</td><td style="border:1px solid #a5d6a7;padding:4px">都道府県知事等</td></tr><tr style="background:#fafafa"><td style="border:1px solid #a5d6a7;padding:4px">事業地内の有償譲渡</td><td style="border:1px solid #a5d6a7;padding:4px;color:#1565c0;font-weight:bold">届出</td><td style="border:1px solid #a5d6a7;padding:4px">施行者</td></tr></table></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📝 暗記表</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">★最重要：紛らわしい地域地区の比較</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">高度地区</th><th style="border:1px solid #90caf9;padding:5px">高度利用地区</th><th style="border:1px solid #90caf9;padding:5px">特定街区</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">定める内容</td><td style="border:1px solid #90caf9;padding:5px">高さの最高・最低限度</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">容積率・建蔽率・建築面積・壁面位置<br>⚠️高さは定めない！</td><td style="border:1px solid #90caf9;padding:5px">容積率・高さの最高限度・壁面位置</td></tr><tr style="background:#fafafa"><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">目的</td><td style="border:1px solid #90caf9;padding:5px">環境維持・土地利用増進</td><td style="border:1px solid #90caf9;padding:5px">高度利用と都市機能更新</td><td style="border:1px solid #90caf9;padding:5px">街区の整備・造成</td></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">指定場所</td><td style="border:1px solid #90caf9;padding:5px">用途地域内</td><td style="border:1px solid #90caf9;padding:5px">用途地域内</td><td style="border:1px solid #90caf9;padding:5px">市街地の整備改善を図る街区</td></tr></table><div style="font-size:13px;font-weight:bold;margin:12px 0 8px 0">重要：都市計画事業制限の段階別まとめ</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">段階</th><th style="border:1px solid #ffb74d;padding:5px">行為</th><th style="border:1px solid #ffb74d;padding:5px">手続き</th><th style="border:1px solid #ffb74d;padding:5px">相手方</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">計画段階（施設の区域内）</td><td style="border:1px solid #ffb74d;padding:5px">建築物の建築</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">許可</td><td style="border:1px solid #ffb74d;padding:5px">都道府県知事等</td></tr><tr style="background:#fff8f0"><td style="border:1px solid #ffb74d;padding:5px">事業段階（事業地内）</td><td style="border:1px solid #ffb74d;padding:5px">形質変更・建築等</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">許可</td><td style="border:1px solid #ffb74d;padding:5px">都道府県知事等</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">事業段階（事業地内）</td><td style="border:1px solid #ffb74d;padding:5px">有償譲渡</td><td style="border:1px solid #ffb74d;padding:5px;color:#1565c0;font-weight:bold">届出</td><td style="border:1px solid #ffb74d;padding:5px">施行者</td></tr></table></div><div class="card"><div class="card-title" style="border-bottom:2px solid #c62828;color:#c62828">⚠️ このアプリでカバーできていない論点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">以下の論点は過去問学習で補完してください：</strong><br>・都市計画の決定手続（案の縦覧、住民参加等）<br>・都市計画提案制度<br>・都市再開発方針等の詳細<br>・用途地域13種類の詳細な建築制限（建築基準法の範囲）<br>・風致地区の条例規制の詳細</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=343AC0000000100" target="_blank">都市計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 都市計画の全体像（区域の種類）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>都市計画法はまず「どの区域か」を理解するのが出発点。都市計画区域→区域区分（市街化区域・市街化調整区域）→用途地域という階層構造になっています。</div><div class="info-box" style="background:#fff3e0"><strong>区域区分（線引き）とは：</strong><br>都市計画区域を<strong>市街化区域</strong>と<strong>市街化調整区域</strong>に分けること。<br><br><strong>市街化区域：</strong>すでに市街地を形成、またはおおむね10年以内に優先的・計画的に市街化を図る区域<br><strong>市街化調整区域：</strong>市街化を<span style="color:#d32f2f;font-weight:bold">抑制すべき</span>区域</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：市街化「調整」区域は「調整＝抑制」。積極的に街を作るのが市街化区域、ブレーキをかけるのが市街化調整区域。</div><div class="info-box" style="background:#f5f5f5"><strong>準都市計画区域：</strong><br>都市計画区域外で、土地利用を放置すると支障が生じるおそれがある区域。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 区域区分（線引き）は定められない。市街地開発事業も定められない。</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：準都市計画区域は「準」＝簡易版。区域区分や市街地開発事業のような大がかりな仕組みは使えない。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🗂️ 用途地域（13種類）の要点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">一言で言うと：</strong>土地の使い方を「住居系」「商業系」「工業系」に分けるルール。13種類あり、各地域のキーワードが試験で問われます。</div><div class="info-box" style="background:#f5f5f5"><strong>住居系（8種類）：</strong>第一種低層住居専用〜準住居地域<br><strong>商業系（2種類）：</strong>近隣商業地域、商業地域<br><strong>工業系（3種類）：</strong>準工業地域、工業地域、工業専用地域</div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最頻出ポイント：準住居地域のキーワード</strong><br><span style="font-size:15px;font-weight:bold;color:#d32f2f">「道路の沿道」= 準住居地域だけ！</span><br>13種類の中で「道路の沿道」が登場するのは準住居地域のみ。過去問で繰り返し問われます。</div><div class="info-box" style="background:#e8f5e9"><strong>用途地域を定められる場所：</strong><br>✅ 都市計画区域内<br>✅ 準都市計画区域内</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">🔍 地域地区（用途地域以外）【超重要・混同注意】</div><div class="info-box" style="background:#f3e5f5"><strong style="color:#7b1fa2">一言で言うと：</strong>用途地域とは別に、特定の目的のために重ねて指定される地区。名前が似ているものの区別が超重要です。</div><div class="info-box" style="background:#fff3e0"><strong>高度地区：</strong>建築物の<span style="color:#d32f2f;font-weight:bold">「高さ」</span>の最高限度・最低限度を定める（用途地域内）</div><div class="info-box" style="background:#ffebee;border:2px solid #ef9a9a"><strong>高度利用地区：</strong>容積率の最高・最低限度、建蔽率の最高限度、建築面積の最低限度、壁面の位置を定める<br><span style="color:#d32f2f;font-weight:bold;font-size:15px">⚠️ 名前に「高度」があるのに「高さ」は定めない！</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「高度地区＝高さ」「高度利用地区＝高さ以外（容積率・建蔽率など）」。高度利用地区は土地の「利用」を高度化するのが目的なので、建物の高さではなく容積率等を定める。</div><div class="info-box" style="background:#f5f5f5"><strong>特定街区：</strong>容積率、高さの最高限度、壁面の位置の制限を定める</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;padding:5px">項目</th><th style="border:1px solid #90caf9;padding:5px">高度地区</th><th style="border:1px solid #90caf9;padding:5px">高度利用地区</th><th style="border:1px solid #90caf9;padding:5px">特定街区</th></tr><tr><td style="border:1px solid #90caf9;padding:5px;font-weight:bold">定める内容</td><td style="border:1px solid #90caf9;padding:5px">高さの最高・最低限度</td><td style="border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold">容積率・建蔽率・建築面積・壁面位置<br>⚠️高さは定めない！</td><td style="border:1px solid #90caf9;padding:5px">容積率・高さの最高限度・壁面位置</td></tr></table><div class="info-box" style="background:#e8f5e9;border:2px solid #66bb6a;margin-top:10px"><strong style="color:#2e7d32">特別用途地区 vs 特定用途制限地域</strong><br><br><strong>特別用途地区：</strong>用途地域<span style="color:#1565c0;font-weight:bold">内</span>に定める → 用途地域を「補完」<br><strong>特定用途制限地域：</strong>用途地域が定められて<span style="color:#d32f2f;font-weight:bold">いない</span>区域に定める（市街化調整区域を除く）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「特<strong>別</strong>用途地区は用途地域の中で<strong>別</strong>のルールを追加」「特<strong>定</strong>用途制限地域は用途地域が<strong>定</strong>められていない区域」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">🏙️ 都市施設と市街地開発事業</div><div class="info-box" style="background:#e0f2f1"><strong style="color:#00695c">一言で言うと：</strong>都市施設（道路・公園・下水道など）と市街地開発事業は、都市計画として定められるもの。どこに定められるかの区別が重要です。</div><div class="info-box" style="background:#f5f5f5"><strong>都市施設：</strong>特に必要があれば<span style="color:#1565c0;font-weight:bold">都市計画区域外にも定められる</span><br><strong>市街地開発事業：</strong>市街化区域または区域区分が定められていない都市計画区域内のみ。<span style="color:#d32f2f;font-weight:bold">準都市計画区域には定められない</span></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：都市施設は「区域外OK」、市街地開発事業は「準都市計画区域NG」。都道府県＞市町村（上位が優先）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #ff6f00;color:#ff6f00">📄 地区計画</div><div class="info-box" style="background:#fff3e0"><strong style="color:#e65100">一言で言うと：</strong>「小さな街づくりのルール」。都市計画区域内で定められ、用途地域の有無を問わない。</div><div class="info-box" style="background:#f5f5f5"><strong>地区計画のポイント：</strong><br>・用途地域が定められていない区域にも定めることができる（一定の場合）<br>・地区整備計画が定められている区域内で建築等→<span style="color:#1565c0;font-weight:bold">市町村長に届出（30日前まで）</span><br>・<span style="color:#d32f2f;font-weight:bold">届出であって「許可」ではない！</span></div><div class="info-box" style="background:#fff9c4;border:2px solid #f9a825"><strong style="color:#e65100">⚠️ 最頻出ひっかけ</strong><br>「地区計画→知事の<strong>許可</strong>」は誤り！→ 正しくは「市町村長への<strong>届出</strong>」<br>「都市計画施設→知事の<strong>許可</strong>」は正しい！<br><br>この「届出vs許可」の区別が過去問で最も繰り返し問われるポイントです。</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：地区計画＝「届出」（市町村長に）。都市計画施設＝「許可」（知事に）。やることの重大さで区別：建築は重大→許可、届出は比較的軽い手続き。</div><div class="info-box" style="background:#f5f5f5"><strong>開発整備促進区：</strong><br>定められる地域は限定的→ 第二種住居地域、準住居地域、工業地域、用途未指定区域</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">⚖️ 都市計画事業制限</div><div class="info-box" style="background:#ffebee"><strong style="color:#c62828">一言で言うと：</strong>都市計画が決まった後の段階ごとに、異なる制限がかかる。段階に応じた「届出か許可か」の区別が問われます。</div><div class="info-box" style="background:#f5f5f5"><strong>【計画段階】都市計画施設の区域・施行区域内：</strong><br>建築物の建築→都道府県知事等の<span style="color:#d32f2f;font-weight:bold">「許可」</span>が必要<br>ただし非常災害の応急措置は許可不要</div><div class="info-box" style="background:#f5f5f5"><strong>【事業段階】事業地内：</strong><br>土地の形質の変更・建築等→都道府県知事等の<span style="color:#d32f2f;font-weight:bold">「許可」</span>が必要<br>有償譲渡→施行者への<span style="color:#1565c0;font-weight:bold">「届出」</span>（許可ではない）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：建築・形質変更→「許可」（知事等）、有償譲渡→「届出」（施行者）。やることの重大さで区別：建築は重大→許可、売却は比較的軽微→届出。</div><div class="info-box" style="background:#e3f2fd"><strong>都市計画事業の認可→土地収用法の事業認定とみなす</strong><br><span style="font-size:12px;color:#555">逆（土地収用法→都市計画事業）ではない点に注意</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=343AC0000000100" target="_blank">都市計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">都市計画の内容クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
