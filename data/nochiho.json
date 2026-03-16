@@ -1,0 +1,193 @@
+{
+  "app_id": "nochiho",
+  "app_title": "農地法クイズ",
+  "header_title": "法令上の制限 ＞ 農地法",
+  "header_desc": "3条許可・4条許可・5条許可・賃貸借の保護・罰則",
+  "quiz_title": "農地法クイズ",
+  "quizzes_l1": [
+    {
+      "q": "農地について所有権を移転する場合、農地のまま利用するときであっても、原則として農業委員会の許可を受けなければならない。",
+      "a": true,
+      "ex": "正しい。農地又は採草放牧地について所有権を移転する場合には、当事者が農業委員会の許可を受けなければなりません（農地法3条1項）。農地を農地のまま人が変わる場合が3条許可の対象です。",
+      "cat": "3条許可"
+    },
+    {
+      "q": "農地の売買について3条の許可を受けずに契約を締結した場合、その契約は有効であるが行政罰の対象となる。",
+      "a": false,
+      "ex": "誤り。3条の許可を受けずにした農地の権利移動は、その効力を生じません（農地法3条6項）。契約自体が無効となるのであり、単に行政罰の対象となるだけではありません。",
+      "cat": "3条許可"
+    },
+    {
+      "q": "農地を相続により取得した場合、3条の許可は不要であるが、農業委員会への届出が必要である。",
+      "a": true,
+      "ex": "正しい。相続により農地の権利を取得した場合は3条の許可は不要ですが、遅滞なく農業委員会にその旨を届け出なければなりません（農地法3条の3）。なお、3条の許可が不要となるのは、相続のほか遺産分割（3条1項12号）、包括遺贈・相続人に対する特定遺贈（施行規則15条5号）なども同様です。",
+      "cat": "3条許可"
+    },
+    {
+      "q": "自分が所有する農地を宅地に転用する場合、都道府県知事等の許可が必要である。",
+      "a": true,
+      "ex": "正しい。農地を農地以外のものにする者は、都道府県知事等の許可を受けなければなりません（農地法4条1項）。自分の農地の用途を変える場合が4条許可の対象です。",
+      "cat": "4条許可"
+    },
+    {
+      "q": "市街化区域内にある農地を転用する場合、あらかじめ農業委員会に届け出れば、4条の許可は不要である。",
+      "a": true,
+      "ex": "正しい。市街化区域内にある農地については、あらかじめ農業委員会に届け出れば、4条の許可を受ける必要はありません（農地法4条1項7号）。市街化区域はもともと市街化を促進する区域であるためです。",
+      "cat": "4条許可"
+    },
+    {
+      "q": "農地を宅地にする目的で売買する場合、3条の許可ではなく、5条の許可が必要である。",
+      "a": true,
+      "ex": "正しい。農地を農地以外のものにするため権利を移転する場合は、5条の許可が必要です（農地法5条1項）。転用目的で人も用途も変わる場合は5条の対象であり、3条ではありません。",
+      "cat": "5条許可"
+    },
+    {
+      "q": "市街化区域内にある農地を転用目的で売買する場合、あらかじめ農業委員会に届け出れば、5条の許可は不要である。",
+      "a": true,
+      "ex": "正しい。市街化区域内にある農地につき、あらかじめ農業委員会に届け出て転用目的で権利を取得する場合は、5条の許可は不要です（農地法5条1項6号）。4条と同様に市街化区域の特例が適用されます。",
+      "cat": "5条許可"
+    },
+    {
+      "q": "遺産分割により農地を取得する場合、3条の許可は不要であるが、届出も不要である。",
+      "a": false,
+      "ex": "誤り。遺産分割により農地を取得する場合は3条の許可は不要ですが、遅滞なく農業委員会への届出が必要です（農地法3条1項12号、3条の3）。許可不要であっても届出は必要という点がポイントです。",
+      "cat": "許可不要の例外"
+    },
+    {
+      "q": "3条の許可が不要となる場合として、相続のほか、包括遺贈や相続人に対する特定遺贈がある。",
+      "a": true,
+      "ex": "正しい。遺産分割は3条1項12号、包括遺贈・相続人に対する特定遺贈は3条1項16号・施行規則15条5号により、それぞれ3条の許可が不要です。ただし、いずれも届出は必要です（農地法3条の3）。",
+      "cat": "許可不要の例外"
+    },
+    {
+      "q": "5条の許可を受けずに転用目的で農地を売買した場合、その売買契約は無効となる。",
+      "a": true,
+      "ex": "正しい。5条の許可を受けないでした行為は、その効力を生じません（農地法5条3項が準用する3条6項）。3条と同様に、無許可の権利移動は無効です。",
+      "cat": "無許可の効力"
+    },
+    {
+      "q": "農地かどうかの判断は、登記簿上の地目ではなく、土地の現況によって行われる。",
+      "a": true,
+      "ex": "正しい。農地とは耕作の目的に供される土地をいい（農地法2条1項）、登記簿の地目ではなく実際の利用状況（現況）で判断されます。登記簿上の地目が「山林」であっても、実際に耕作されていれば農地です。",
+      "cat": "農地の定義"
+    },
+    {
+      "q": "3条の許可の対象となるのは農地の所有権移転だけであり、賃借権の設定は許可不要である。",
+      "a": false,
+      "ex": "誤り。3条の許可は、所有権の移転だけでなく、地上権・永小作権・質権・使用貸借による権利・賃借権等の設定又は移転についても必要です（農地法3条1項）。農地に関する権利の変動全般が対象です。",
+      "cat": "3条許可"
+    },
+    {
+      "q": "自分が所有する農地を駐車場に転用する場合、転用後の所有者が変わらないため、許可は不要である。",
+      "a": false,
+      "ex": "誤り。自分の農地を農地以外のものにする場合は、所有者が変わらなくても4条の許可が必要です（農地法4条1項）。4条は「用途の変更」に着目した許可であり、所有者の変更は関係ありません。",
+      "cat": "4条許可"
+    },
+    {
+      "q": "国又は都道府県等が農地を農地以外のものにしようとする場合、都道府県知事等との協議が成立することをもって4条の許可があったものとみなされる。",
+      "a": true,
+      "ex": "正しい。国又は都道府県等が農地を転用する場合は、都道府県知事等との協議が成立すれば許可があったものとみなされます（農地法4条8項）。「許可不要」ではなく「許可みなし」である点に注意が必要です。",
+      "cat": "国等の特例"
+    },
+    {
+      "q": "農地法に違反して農地の権利移動や転用を行った場合、個人に対しては3年以下の拘禁刑又は300万円以下の罰金が科される。",
+      "a": true,
+      "ex": "正しい。3条、4条、5条又は18条の規定に違反した者は、3年以下の拘禁刑又は300万円以下の罰金に処されます（農地法64条）。これは個人に対する罰則です。",
+      "cat": "罰則"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "相続人以外の第三者に対する特定遺贈により農地を取得する場合、3条の許可は不要である。",
+      "a": false,
+      "ex": "誤り。3条の許可が不要となるのは、相続、遺産分割、包括遺贈、相続人に対する特定遺贈の場合です。相続人以外の第三者への特定遺贈は3条の許可が必要です（農地法3条1項）。「特定遺贈は全て許可不要」と覚えると間違えます。",
+      "cat": "3条の例外"
+    },
+    {
+      "q": "農地の売買について、停止条件付売買契約を締結する時点では、まだ権利移動が生じていないため、3条の許可は不要である。",
+      "a": true,
+      "ex": "正しい。停止条件付売買契約は、条件成就まで権利移動の効力が生じないため、契約締結の時点では3条の許可は不要です。許可が必要となるのは、条件が成就して実際に権利移動が生じる時点です。",
+      "cat": "3条の例外"
+    },
+    {
+      "q": "自己所有の農地のうち4アールを農業用施設（農機具倉庫）の敷地にする場合、4条の許可は不要である。",
+      "a": false,
+      "ex": "誤り。4条の許可が不要となるのは2アール（200㎡）未満の農地を農業用施設にする場合です（農地法4条1項8号、農地法施行規則29条1号）。4アール（400㎡）は2アール以上であるため、許可が必要です。",
+      "cat": "4条の面積要件"
+    },
+    {
+      "q": "仮設工作物の設置を目的として農地の所有権を取得しようとする場合、5条の許可を受けることができる。",
+      "a": false,
+      "ex": "誤り。仮設工作物の設置その他の一時的な利用に供するために所有権を取得しようとする場合は、5条の許可を受けることができません（農地法5条2項6号）。一時利用であれば賃借権等で足りるため、所有権取得までは認められません。",
+      "cat": "5条の不許可基準"
+    },
+    {
+      "q": "農地を一時的に資材置場として借り受ける場合は、一時使用であるため5条の許可は不要である。",
+      "a": false,
+      "ex": "誤り。一時的な利用であっても、農地を農地以外の目的で借り受ける場合は5条の許可が必要です（農地法5条1項）。「一時転用なら許可不要」という理解は誤りです。",
+      "cat": "5条の手続き"
+    },
+    {
+      "q": "農地の賃貸借は、その登記がなくても、農地の引渡しがあったときは、その後にその農地について物権を取得した第三者に対抗することができる。",
+      "a": true,
+      "ex": "正しい。農地の賃貸借は、登記がなくても引渡しがあれば第三者に対抗できます（農地法16条）。通常の不動産賃貸借では対抗要件として登記が必要ですが、農地の賃貸借には特別の保護が与えられています。",
+      "cat": "賃貸借の保護"
+    },
+    {
+      "q": "農地の使用貸借についても、農地の引渡しがあれば、その後にその農地について物権を取得した第三者に対抗することができる。",
+      "a": false,
+      "ex": "誤り。引渡しにより第三者に対抗できるのは「賃貸借」のみです（農地法16条）。使用貸借にはこの特例は適用されません。「賃貸借」と「使用貸借」を混同しないことが重要です。",
+      "cat": "賃貸借の保護"
+    },
+    {
+      "q": "農地の賃貸借の当事者が、賃貸借を合意解約する場合、都道府県知事の許可は不要である。",
+      "a": false,
+      "ex": "誤り。農地の賃貸借の解除、解約の申入れ、合意による解約、更新しない旨の通知をするには、原則として都道府県知事の許可が必要です（農地法18条1項）。ただし、引渡し期限前6か月以内に成立した書面による合意解約等は許可不要です（同条1項ただし書2号）。原則として合意解約にも知事の許可が必要な点がポイントです。",
+      "cat": "賃貸借の保護"
+    },
+    {
+      "q": "4条又は5条に違反して農地を転用した場合の原状回復命令の対象者には、違反者本人のほか、工事を請け負った者やその下請人も含まれる。",
+      "a": true,
+      "ex": "正しい。原状回復命令の対象者には、違反した者又はその一般承継人だけでなく、当該違反に係る土地について工事その他の行為を請け負った者又はその下請人も含まれます（農地法51条1項3号）。",
+      "cat": "罰則・命令"
+    },
+    {
+      "q": "法人が4条又は5条に違反して農地を転用した場合、当該法人に対して科される罰金は300万円以下である。",
+      "a": false,
+      "ex": "誤り。相続により農地の権利を取得した場合は3条の許可は不要ですが、遅滞なく農業委員会への届出が必要です（農地法3条の3）。届出を怠ると10万円以下の過料に処されることがあります（農地法69条）。",
+      "cat": "罰則・命令"
+    },
+    {
+      "q": "農地の賃貸借について期間の定めがある場合、当事者が期間満了の6か月前から3か月前までの間に更新しない旨の通知をしないと、自動更新される。",
+      "a": false,
+      "ex": "誤り。更新拒絶の通知期間は「期間満了の1年前から6か月前まで」です（農地法17条）。「6か月前から3か月前」ではありません。この通知をしないと、従前と同一条件で更に賃貸借をしたものとみなされます。",
+      "cat": "賃貸借の保護"
+    },
+    {
+      "q": "農地所有適格法人でない一般の株式会社は、いかなる場合においても耕作目的で農地を借り入れることができない。",
+      "a": false,
+      "ex": "誤り。農地所有適格法人でない法人であっても、一定の要件を満たせば農地の賃借権や使用貸借による権利を取得することができます（農地法3条3項）。ただし、所有権の取得は原則としてできません（農地法3条2項2号）。",
+      "cat": "法人の特例"
+    },
+    {
+      "q": "5条の許可を申請する場合、申請書には原則として当事者が連署しなければならない。",
+      "a": true,
+      "ex": "正しい。5条の許可申請は、農地法5条3項が4条2項を準用しており、申請書は農業委員会を経由して都道府県知事等に提出します。この申請は当事者双方（売主と買主等）の連署が原則です。",
+      "cat": "5条の手続き"
+    },
+    {
+      "q": "市街化区域内にある農地について、農地のまま売買する場合（3条）も、あらかじめ農業委員会に届け出れば許可は不要となる。",
+      "a": false,
+      "ex": "誤り。市街化区域内の届出による許可不要の特例があるのは、4条（転用）と5条（転用目的の権利移動）だけです（農地法4条1項7号、5条1項6号）。3条（農地のままの権利移動）には市街化区域の届出特例はなく、許可が必要です。",
+      "cat": "3条の例外"
+    },
+    {
+      "q": "3条の許可が不要となる相続の場合、農業委員会への届出も一切不要である。",
+      "a": false,
+      "ex": "誤り。相続により農地の権利を取得した場合は3条の許可は不要ですが、遅滞なく農業委員会への届出が必要です（農地法3条の3）。届出を怠ると10万円以下の過料に処されることがあります（農地法69条）。",
+      "cat": "罰則・命令"
+    }
+  ],
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 農地法とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>「農地を守るための法律」です。農地を勝手に売ったり、宅地に変えたりできないようにするルールです（農地法1条）。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>農地かどうかは「現況」で判断する</strong><br>登記簿の地目が「田」や「畑」でなくても、実際に耕作されていれば「農地」です。<br>逆に、登記簿の地目が「田」でも、現在耕作されていなければ農地に該当しないこともあります。<br><span style=\"font-size:12px;color:#555\">農地＝耕作の目的に供される土地（農地法2条1項）</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「農地かどうかは見た目（現況）で決まる！登記簿の地目ではない」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🔑 3条許可（権利移動）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>農地を農地のまま、所有者や使用者を変える場合に必要な許可です。許可権者は<strong>農業委員会</strong>（農地法3条1項）。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>3条許可が必要な場面：</strong><br>✅ 農地の売買（農地→農地のまま所有者が変わる）<br>✅ 農地の賃貸借の設定<br>✅ 農地の使用貸借の設定<br><br><strong>3条許可が不要の場合（主なもの）：</strong><br>✅ 相続・遺産分割・包括遺贈・相続人への特定遺贈<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ ただし届出は必要！（農地法3条の3）</span><br><br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 相続人以外への特定遺贈 → 3条許可が必要！</span></div><div class=\"info-box\" style=\"background:#ffebee\"><strong style=\"color:#c62828\">無許可の効力：</strong>3条の許可を受けずにした行為は<strong>効力を生じない＝無効</strong>（農地法3条6項）</div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「3条＝農地のまま人が変わる。許可権者は農業『委員会』（地元の委員会が農家を管理）。相続は届出だけでOK」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🏗️ 4条許可（転用）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>自分の農地を農地以外（宅地・駐車場など）に変える場合に必要な許可です。許可権者は<strong>都道府県知事等</strong>（農地法4条1項）。</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>4条許可のポイント：</strong><br>✅ 自分の農地を自分で転用する場合 → 都道府県知事等の許可<br>✅ <strong>市街化区域内</strong>の農地 → あらかじめ<strong>農業委員会に届出</strong>でOK（許可不要）<br>✅ <strong>2アール（200㎡）未満</strong>の農地を農業用施設にする場合 → 許可不要</div><div class=\"info-box\" style=\"background:#fff9c4;border:2px solid #f9a825\"><strong style=\"color:#e65100\">⚠️ ひっかけ注意：面積要件</strong><br>許可不要なのは「<strong>2アール未満</strong>」です。<br><span style=\"color:#d32f2f;font-weight:bold\">4アール（400㎡）は許可が必要！「2アール」を「4アール」にすり替える問題に注意</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「4条＝『用途』が変わる（田んぼ→宅地）。市街化区域内は届出だけ（もともと市街化を促進する区域だから）」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">🔄 5条許可（転用目的の権利移動）</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>農地を農地以外に変える目的で、所有者や使用者も変える場合の許可です。3条＋4条の合体。許可権者は<strong>都道府県知事等</strong>（農地法5条1項）。</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>5条許可のポイント：</strong><br>✅ 転用目的で農地を売買・賃借する場合 → 都道府県知事等の許可<br>✅ <strong>市街化区域内</strong> → あらかじめ<strong>農業委員会に届出</strong>でOK<br>✅ 無許可の売買 → <strong>効力を生じない＝無効</strong><br>✅ 申請書は原則として当事者が<strong>連署</strong>して提出<br>✅ <strong>一時的に借りる場合も許可が必要</strong>（一時転用でも例外なし）</div><div class=\"info-box\" style=\"background:#ffebee;border:2px solid #e53935\"><strong style=\"color:#c62828\">⚠️ 最重要ひっかけ：仮設工作物＋所有権取得</strong><br>仮設工作物の設置など一時的利用のために農地の<strong>「所有権」</strong>を取得しようとする場合<br>→ <span style=\"color:#d32f2f;font-weight:bold\">5条の許可を受けることができない！（不許可基準：農地法5条2項6号）</span><br><span style=\"font-size:12px;color:#555\">理由：一時利用なら賃借権等で足りるため、所有権取得までは認められない</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「5条＝『人』も『用途』も変わる（農家Aの田んぼ→業者Bの宅地）。3条と4条の両方の要素がある」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">🏛️ 国・都道府県等の特例</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">一言で言うと：</strong>国や都道府県等が農地を転用する場合は、許可ではなく「協議」が成立すれば許可があったものとみなされます。</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>特例のルール：</strong><br>国・都道府県等が転用目的で権利取得する場合<br>→ 都道府県知事等との<strong>協議が成立</strong>すれば<strong>許可があったものとみなす</strong>（農地法4条8項、5条4項）<br><br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 「許可不要」ではなく「許可みなし」！試験では「許可不要」とする選択肢に注意</span></div><div style=\"background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0\">💡 覚え方：「国や県は『許可』ではなく『協議』でOK（自分で自分に許可するのはおかしいから）」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📊 3条・4条・5条の比較表</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">★最重要：3条・4条・5条の違いを正確に区別する</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;padding:5px\">項目</th><th style=\"border:1px solid #90caf9;padding:5px\">3条（権利移動）</th><th style=\"border:1px solid #90caf9;padding:5px\">4条（転用）</th><th style=\"border:1px solid #90caf9;padding:5px\">5条（転用目的の権利移動）</th></tr><tr><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">内容</td><td style=\"border:1px solid #90caf9;padding:5px\">農地のまま人が変わる</td><td style=\"border:1px solid #90caf9;padding:5px\">自分の農地の用途を変える</td><td style=\"border:1px solid #90caf9;padding:5px\">人も用途も変わる</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">具体例</td><td style=\"border:1px solid #90caf9;padding:5px\">農地の売買・賃貸借</td><td style=\"border:1px solid #90caf9;padding:5px\">自分の田→自分の駐車場</td><td style=\"border:1px solid #90caf9;padding:5px\">農地を買って家を建てる</td></tr><tr><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">許可権者</td><td style=\"border:1px solid #90caf9;padding:5px;color:#1565c0;font-weight:bold\">農業委員会</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">都道府県知事等 ⚠️</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">都道府県知事等 ⚠️</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">市街化区域の特例</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">なし（許可必要）⚠️</td><td style=\"border:1px solid #90caf9;padding:5px\">届出でOK</td><td style=\"border:1px solid #90caf9;padding:5px\">届出でOK</td></tr><tr><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">無許可の効力</td><td style=\"border:1px solid #90caf9;padding:5px\">無効</td><td style=\"border:1px solid #90caf9;padding:5px\">—</td><td style=\"border:1px solid #90caf9;padding:5px\">無効</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">罰則（個人）</td><td style=\"border:1px solid #90caf9;padding:5px\">3年以下の拘禁刑 or 300万円以下の罰金</td><td style=\"border:1px solid #90caf9;padding:5px\">3年以下の拘禁刑 or 300万円以下の罰金</td><td style=\"border:1px solid #90caf9;padding:5px\">3年以下の拘禁刑 or 300万円以下の罰金</td></tr><tr><td style=\"border:1px solid #90caf9;padding:5px;font-weight:bold\">罰則（法人）</td><td style=\"border:1px solid #90caf9;padding:5px\">300万円以下の罰金</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">1億円以下の罰金 ⚠️</td><td style=\"border:1px solid #90caf9;padding:5px;color:#d32f2f;font-weight:bold\">1億円以下の罰金 ⚠️</td></tr></table><div style=\"background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0\"><strong style=\"color:#d32f2f\">⚠️ 最重要ポイント3つ：</strong><br>①許可権者：3条だけ「農業委員会」、4条・5条は「都道府県知事等」<br>②市街化区域：3条には届出の特例がない！（4条・5条のみ届出でOK）<br>③法人の罰金：3条違反は300万円以下、4条・5条違反は1億円以下</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #555;color:#333\">🔗 参考：e-Gov法令検索</div><div class=\"info-box\" style=\"background:#f5f5f5\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=327AC0000000229\" target=\"_blank\">農地法（e-Gov）</a>で条文を直接確認できます。</div></div>",
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで農地法の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">このアプリでカバーできていない論点：</strong><br>・農地の定義の詳細（休耕地の扱い等）<br>・農地中間管理機構の制度<br>・農業経営基盤強化促進法との関係<br>・農地の相続税納税猶予制度<br>これらは過去問で確認してください。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 農地法の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.6\"><div style=\"font-weight:bold;margin-bottom:6px;font-family:sans-serif\">【農地の取引・転用を検討】</div><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">人が変わる？</span> → <span style=\"background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold\">3条許可</span><br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">用途が変わる？</span> → <span style=\"background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold\">4条許可</span><br><span style=\"background:#bbdefb;padding:3px 10px;border-radius:4px\">両方変わる？</span> → <span style=\"background:#c8e6c9;padding:3px 10px;border-radius:4px;font-weight:bold\">5条許可</span><br>↓<br><span style=\"background:#ef9a9a;padding:4px 14px;border-radius:4px;font-weight:bold;color:#b71c1c\">許可なし → 無効！（3条・5条）</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">★最重要① 賃貸借の特別保護</strong><br>農地の賃貸借には3つの特別ルールがある：<br>❶ <strong>引渡しだけで第三者に対抗できる</strong>（登記不要）（農地法16条）<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️ 使用貸借にはこの特例はない！</span><br>❷ 期間の定めがある賃貸借の更新拒絶通知は<strong>満了の1年前〜6か月前</strong>（農地法17条）<br>❸ 賃貸借の解除・合意解約には<strong>都道府県知事の許可</strong>が必要（農地法18条1項）</div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #e53935\"><strong style=\"color:#c62828\">★最重要② 農地所有適格法人以外でも借りられる</strong><br>農地所有適格法人でない法人（一般の株式会社など）でも、一定要件を満たせば農地を<strong>借りることはできる</strong>（賃借権・使用貸借）。<br>ただし<strong>所有権の取得は原則不可</strong>（農地法3条2項2号）。<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「農地所有適格法人でない株式会社は農地を借りられない」→ 誤り！</span></div><div class=\"info-box\" style=\"background:#e8f5e9;border-left:4px solid #43a047\"><strong style=\"color:#1b5e20\">重要③ 違反転用の原状回復命令の対象者</strong><br>4条・5条に違反した場合の原状回復命令の対象者は：<br>✅ 違反者本人・一般承継人<br>✅ <strong>工事を請け負った者（下請人含む）</strong>（農地法51条1項3号）<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「工事請負人は対象に含まれない」→ 誤り！</span></div><div class=\"info-box\" style=\"background:#e3f2fd;border-left:4px solid #1976d2\"><strong style=\"color:#0d47a1\">重要④ 転用の不許可基準（所有権取得）</strong><br>仮設工作物の設置など一時的利用のために農地の<strong>所有権</strong>を取得 → <strong>5条許可を受けられない</strong>（農地法5条2項6号）<br>住宅用地の造成のみが目的で確実性がない場合も不許可。<br><span style=\"color:#d32f2f;font-weight:bold\">⚠️「仮設工作物目的で所有権取得→5条許可OK」→ 誤り！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ff6f00;color:#ff6f00\">📝 許可不要となる場合のまとめ</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">★最重要：許可不要でも届出が必要な場合がある！</div><table style=\"width:100%;border-collapse:collapse;font-size:13px;margin:8px 0\"><tr style=\"background:#ffe0b2\"><th style=\"border:1px solid #ffb74d;padding:5px\">場面</th><th style=\"border:1px solid #ffb74d;padding:5px\">許可不要の条件</th><th style=\"border:1px solid #ffb74d;padding:5px\">注意点</th></tr><tr><td style=\"border:1px solid #ffb74d;padding:5px\">相続・遺産分割</td><td style=\"border:1px solid #ffb74d;padding:5px\">3条許可不要</td><td style=\"border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold\">届出は必要 ⚠️<br>相続人以外への特定遺贈は許可必要</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:5px\">市街化区域内の転用</td><td style=\"border:1px solid #ffb74d;padding:5px\">4条・5条は届出でOK</td><td style=\"border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold\">3条は届出の特例なし（許可必要）⚠️</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:5px\">2アール未満の農業用施設</td><td style=\"border:1px solid #ffb74d;padding:5px\">4条許可不要</td><td style=\"border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold\">4アールは許可必要 ⚠️</td></tr><tr style=\"background:#fff8f0\"><td style=\"border:1px solid #ffb74d;padding:5px\">国・都道府県等の転用</td><td style=\"border:1px solid #ffb74d;padding:5px\">知事等との協議成立で許可みなし</td><td style=\"border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold\">「許可不要」ではなく「許可みなし」⚠️</td></tr><tr><td style=\"border:1px solid #ffb74d;padding:5px\">停止条件付売買契約の締結</td><td style=\"border:1px solid #ffb74d;padding:5px\">3条許可不要</td><td style=\"border:1px solid #ffb74d;padding:5px\">まだ権利移動がないため</td></tr></table></div>"
+}
