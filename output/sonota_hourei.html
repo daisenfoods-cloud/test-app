@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 その他の法令上の制限クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="../hourei_seigen/index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">法令上の制限 ＞ その他の法令上の制限</div>
+    <div class="header-desc">国土利用計画法・諸法令の許可権者・届出制の法令</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_sonota_hourei_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "国土利用計画法に基づく事後届出は、土地売買等の契約を締結した場合に、権利取得者（買主）が契約締結日から2週間以内に都道府県知事に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。事後届出の届出義務者は「権利取得者」（買主側）であり、届出先は都道府県知事、届出期限は契約締結日から2週間以内です（国土利用計画法23条1項）。売主ではなく買主が届け出る点がポイントです。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "国土利用計画法の事後届出が必要となる面積要件は、市街化区域では2,000㎡以上、市街化調整区域では5,000㎡以上、都市計画区域外では10,000㎡以上である。",
+    "a": true,
+    "ex": "正しい。面積要件は「に・ご・いち」（2,000・5,000・10,000）で覚えます。市街化区域が最も厳しく（面積が小さい）、都市計画区域外が最もゆるい（面積が大きい）設定です（国土利用計画法23条2項1号イ〜ハ）。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "国土利用計画法の事後届出では、土地の利用目的だけでなく対価の額も届出事項に含まれる。",
+    "a": true,
+    "ex": "正しい。届出事項には、当事者の氏名・契約締結日・土地の所在及び面積・権利の種別及び内容・利用目的・対価の額が含まれます（国土利用計画法23条1項各号）。対価の額も届出が必要です。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "国土利用計画法の事後届出において、当事者の一方又は双方が国又は地方公共団体等である場合には、届出は不要である。",
+    "a": true,
+    "ex": "正しい。当事者の一方又は双方が国等である場合は、事後届出の適用除外となります（国土利用計画法23条2項3号）。国・地方公共団体が関わる取引は公共性が高いため規制対象外です。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "保安林において立木を伐採しようとする者は、都道府県知事の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。保安林における立木の伐採は、原則として都道府県知事の許可が必要です（森林法34条1項）。ただし、法令に基づく義務としての伐採や、非常災害の応急措置などの例外があります。",
+    "cat": "森林法"
+  },
+  {
+    "q": "海岸保全区域内において土石の採取や土地の掘削等をしようとする者は、海岸管理者の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。海岸保全区域内での土石採取・施設の新設改築・土地の掘削盛土切土等は、海岸管理者の許可が必要です（海岸法8条1項）。都道府県知事ではなく「海岸管理者」である点に注意してください。",
+    "cat": "海岸法"
+  },
+  {
+    "q": "河川保全区域内において土地の掘削や工作物の新築等をしようとする者は、河川管理者の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。河川保全区域内での土地の形状変更や工作物の新築・改築は、河川管理者の許可が必要です（河川法55条1項）。「河川管理者」が許可権者であり、都道府県知事ではありません。",
+    "cat": "河川法"
+  },
+  {
+    "q": "特別緑地保全地区内において建築物の新築や宅地の造成等をしようとする者は、都道府県知事等の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。特別緑地保全地区内では、建築物等の新築・改築・増築、宅地の造成、土石の採取、木竹の伐採等について、都道府県知事等の許可が必要です（都市緑地法14条1項）。",
+    "cat": "都市緑地法"
+  },
+  {
+    "q": "地すべり防止区域内において地表水の放流や停滞等の行為をしようとする者は、都道府県知事の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。地すべり防止区域内では、地下水の排除を阻害する行為、地表水の放流・停滞等、のり切・切土、施設や工作物の新築・改良など、地すべりを助長する行為には都道府県知事の許可が必要です（地すべり等防止法18条1項）。",
+    "cat": "地すべり等防止法"
+  },
+  {
+    "q": "津波防護施設区域内において工作物の新築や土地の掘削等をしようとする者は、津波防護施設管理者の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。津波防護施設区域内での施設・工作物の新築・改築や土地の掘削・盛土・切土等には、津波防護施設管理者の許可が必要です（津波防災地域づくり法23条1項）。「知事」ではなく「津波防護施設管理者」が許可権者です。",
+    "cat": "津波防災地域づくり法"
+  },
+  {
+    "q": "道路区域内において土地の形質変更や工作物の新築等をしようとする者は、道路管理者の許可を受けなければならない。",
+    "a": true,
+    "ex": "正しい。道路区域（道路予定区域を含む）内での土地の形質変更・工作物の新築等には、道路管理者の許可が必要です（道路法91条）。「道路管理者」が許可権者です。",
+    "cat": "道路法"
+  },
+  {
+    "q": "景観計画区域内において建築物の新築等をしようとする者は、あらかじめ景観行政団体の長に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。景観計画区域内での建築物の新築・増築・改築・移転等は、あらかじめ（事前に）景観行政団体の長への届出が必要です（景観法16条1項）。「許可」ではなく「届出」であること、「事前届出」であることがポイントです。",
+    "cat": "景観法"
+  },
+  {
+    "q": "土壌汚染対策法に基づき、形質変更時要届出区域内で土地の形質の変更をしようとする者は、着手日の14日前までに都道府県知事に届け出なければならない。",
+    "a": true,
+    "ex": "正しい。形質変更時要届出区域内での土地の形質変更は、着手する日の14日前までに都道府県知事への届出が必要です（土壌汚染対策法12条1項）。「14日前まで」という期限と「事前届出」であることを押さえましょう。",
+    "cat": "土壌汚染対策法"
+  },
+  {
+    "q": "国土利用計画法の事後届出は、届出をしなかった場合でも契約自体が無効になるわけではない。",
+    "a": true,
+    "ex": "正しい。事後届出を怠った場合には罰則の適用がありますが、届出をしなかったことによって売買契約自体が無効となるものではありません。届出義務違反は行政罰の対象ですが、私法上の契約の効力には影響しません。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "特別緑地保全地区内においては、非常災害のため必要な応急措置として行う行為であっても、都道府県知事等の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。非常災害のため必要な応急措置として行う行為は、許可不要です（都市緑地法14条1項ただし書）。緊急時の対応を許可で止めるわけにはいかないという趣旨です。",
+    "cat": "都市緑地法"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "Aが市街化区域内の1,500㎡の土地を贈与により取得した場合、Aは国土利用計画法に基づく事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。2つの理由で届出不要です。①贈与は対価を伴わない取引であり、「土地売買等の契約」に該当しないため、そもそも届出対象外です。②仮に売買であっても1,500㎡は市街化区域の面積要件（2,000㎡以上）を満たしません（国土利用計画法23条2項1号イ）。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "国土利用計画法の事後届出において、届出先は市町村長を経由して都道府県知事に届け出ることとされている。",
+    "a": true,
+    "ex": "正しい。事後届出は「当該土地が所在する市町村の長を経由して、都道府県知事に届け出なければならない」とされています（国土利用計画法23条1項）。直接知事に届けるのではなく、市町村長を経由する点に注意してください。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "Bが都市計画区域外の8,000㎡の土地を売買により取得した場合、Bは国土利用計画法に基づく事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。都市計画区域外の面積要件は10,000㎡以上です（国土利用計画法23条2項1号ハ）。8,000㎡は10,000㎡未満のため、届出は不要です。面積要件を「に・ご・いち」（2,000・5,000・10,000）で覚えておきましょう。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "特別緑地保全地区内において木竹の伐採をしようとする者は、公園管理者の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。特別緑地保全地区内の行為制限の許可権者は「都道府県知事等」であり、公園管理者ではありません（都市緑地法14条1項）。「特別緑地」という名前から公園管理者を連想させるひっかけですが、正しくは知事等の許可です。",
+    "cat": "都市緑地法"
+  },
+  {
+    "q": "地すべり防止区域内において施設や工作物の新築をしようとする者は、市町村長の許可を受けなければならない。",
+    "a": false,
+    "ex": "誤り。地すべり防止区域内の行為制限の許可権者は「都道府県知事」であり、市町村長ではありません（地すべり等防止法18条1項）。許可権者を市町村長にすり替えるのは頻出のひっかけパターンです。",
+    "cat": "地すべり等防止法"
+  },
+  {
+    "q": "河川保全区域内において工作物の新築をしようとする者は、河川管理者と協議をしなければならない。",
+    "a": false,
+    "ex": "誤り。河川保全区域内での工作物の新築等に必要なのは「河川管理者の許可」であり、「協議」ではありません（河川法55条1項）。「許可」を「協議」にすり替えるのは過去問でも出題されたひっかけパターンです。",
+    "cat": "河川法"
+  },
+  {
+    "q": "景観計画区域内で建築物の新築をする場合、工事着手後30日以内に景観行政団体の長に届け出ればよい。",
+    "a": false,
+    "ex": "誤り。景観法の届出は「あらかじめ」届け出る事前届出制です（景観法16条1項）。工事着手後の事後届出ではありません。事前届出か事後届出かのすり替えは頻出のひっかけです。",
+    "cat": "景観法"
+  },
+  {
+    "q": "土壌汚染対策法に基づく形質変更時要届出区域内において、非常災害のために必要な応急措置として土地の形質変更を行う場合でも、着手14日前までの届出が必要である。",
+    "a": false,
+    "ex": "誤り。通常の管理行為や軽易な行為、形質変更時要届出区域が指定された際既に着手していた行為などは届出が不要です（土壌汚染対策法12条1項ただし書）。緊急時の応急措置については届出義務が免除されています。",
+    "cat": "土壌汚染対策法"
+  },
+  {
+    "q": "道路の区域が決定された後、道路管理者がまだその土地の権原を取得していない段階であっても、当該区域内で土地の形質変更等をするには道路管理者の許可が必要である。",
+    "a": true,
+    "ex": "正しい。道路法では、道路の区域が決定された段階（道路予定区域）で、道路管理者がその土地の権原をまだ取得していなくても許可が必要です（道路法91条）。「権原取得前だから許可不要」という主張は誤りです。",
+    "cat": "道路法"
+  },
+  {
+    "q": "保安林における立木の伐採について許可権者は農林水産大臣であり、都道府県知事ではない。",
+    "a": false,
+    "ex": "誤り。保安林における立木の伐採の許可権者は都道府県知事です（森林法34条1項）。農林水産大臣は保安林の「指定」に関与しますが（森林法25条1項）、日常的な伐採の許可は知事が行います。",
+    "cat": "森林法"
+  },
+  {
+    "q": "海岸保全区域内の行為制限について、許可権者は海岸管理者であるが、海岸管理者とは常に都道府県知事のことである。",
+    "a": false,
+    "ex": "誤り。海岸管理者は原則として都道府県知事ですが、知事が指定した場合は市町村長が管理者となることもあります。また、港湾区域・漁港区域と重複する場合は港湾管理者の長や漁港管理者である地方公共団体の長が海岸管理者となります（海岸法5条1項〜4項）。",
+    "cat": "海岸法"
+  },
+  {
+    "q": "津波防護施設区域内で国又は地方公共団体が事業を行う場合には、津波防護施設管理者との協議が成立すれば許可があったものとみなされる。",
+    "a": true,
+    "ex": "正しい。国又は地方公共団体が行う事業については、津波防護施設管理者との協議が成立することをもって許可があったものとみなされます（津波防災地域づくり法25条）。公共事業の円滑な実施のための規定です。",
+    "cat": "津波防災地域づくり法"
+  },
+  {
+    "q": "Cが相続により市街化区域内の3,000㎡の土地を取得した場合、Cは国土利用計画法に基づく事後届出をしなければならない。",
+    "a": false,
+    "ex": "誤り。相続は「土地売買等の契約」に該当しないため、面積要件を満たしていても届出は不要です。事後届出が必要なのは売買・交換など対価を伴う契約の場合であり、相続や贈与のような無償の権利移転は対象外です（国土利用計画法23条1項）。",
+    "cat": "国土利用計画法"
+  },
+  {
+    "q": "景観計画区域内における届出について、国の機関が行う行為の場合は届出不要であるが、その行為をしようとするときはあらかじめ景観行政団体の長に通知しなければならない。",
+    "a": true,
+    "ex": "正しい。国の機関又は地方公共団体が行う行為については届出不要ですが、届出を要する行為をしようとするときは、あらかじめ景観行政団体の長にその旨を通知しなければなりません（景観法16条5項）。届出不要でも通知は必要です。",
+    "cat": "景観法"
+  },
+  {
+    "q": "地すべり防止区域の指定の際、現に権原に基づいて施設を設置している者は、改めて都道府県知事の許可を受ける必要がある。",
+    "a": false,
+    "ex": "誤り。地すべり防止区域の指定の際、現に当該区域内において権原に基づき施設等を設置している者は、従前と同様の条件により許可を受けたものとみなされます（地すべり等防止法19条）。既存の適法な権利は保護されます。",
+    "cat": "地すべり等防止法"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリでその他の法令上の制限の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ その他の法令上の制限の全体像</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">出題の特徴：</strong>この分野は「<strong>1問＝4法令</strong>」の横断型出題です。各選択肢で異なる法令の知識を問い、<strong>許可権者のすり替え</strong>や<strong>届出の要否</strong>で誤りの肢を作ります。</div><div class="info-box" style="background:#f5f5f5"><strong>攻略のコツ（4点セット）：</strong><br>各法令について以下の4点を整理すれば、確実に得点できます。<br><br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">① どの区域で</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">② 何をするとき</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">③ 誰の許可/届出が必要か</span><br>＋<br><span style="background:#bbdefb;padding:3px 10px;border-radius:4px">④ 例外はあるか</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">★最重要① 許可権者のすり替え</strong><br>過去問のひっかけの大半がこのパターンです。下の暗記表と「原則」タブを組み合わせて完璧に覚えましょう。<br><span style="color:#d32f2f;font-weight:bold">⚠️ よくある誤りの肢：知事→管理者、管理者→知事、許可→協議 にすり替える</span></div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e53935"><strong style="color:#c62828">★最重要② 道路法の「予定区域」のワナ</strong><br>道路の区域が決定されただけで、まだ供用開始されていなくても<strong>許可が必要</strong>。<br>さらに、道路管理者がその土地の<strong>権原をまだ取得していなくても許可が必要</strong>。<br><span style="color:#d32f2f;font-weight:bold">⚠️「権原取得前だから許可不要」→ 誤り！</span></div><div class="info-box" style="background:#e8f5e9;border-left:4px solid #43a047"><strong style="color:#1b5e20">重要③ 国土利用計画法の届出不要パターン</strong><br>詳細は「原則」タブ参照。<strong>贈与・相続・国等</strong>は届出対象外。<br><span style="color:#d32f2f;font-weight:bold">⚠️「贈与で3,000㎡取得→届出必要」は典型的なひっかけ！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #7b1fa2;color:#7b1fa2">📊 暗記表：主要法令の許可権者・届出先一覧</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#7b1fa2">★最重要：この表を完璧に覚えることが得点の鍵</div><table style="width:100%;border-collapse:collapse;font-size:12px;margin:8px 0"><tr style="background:#e1bee7"><th style="border:1px solid #ce93d8;padding:5px">法令</th><th style="border:1px solid #ce93d8;padding:5px">区域・対象</th><th style="border:1px solid #ce93d8;padding:5px">主な行為</th><th style="border:1px solid #ce93d8;padding:5px">許可権者/届出先</th></tr><tr><td style="border:1px solid #ce93d8;padding:5px">国土利用計画法</td><td style="border:1px solid #ce93d8;padding:5px">一定面積以上の土地</td><td style="border:1px solid #ce93d8;padding:5px">土地売買等の契約</td><td style="border:1px solid #ce93d8;padding:5px;color:#1565c0;font-weight:bold">知事に届出（事後・2週間以内）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ce93d8;padding:5px">森林法</td><td style="border:1px solid #ce93d8;padding:5px">保安林</td><td style="border:1px solid #ce93d8;padding:5px">立木の伐採</td><td style="border:1px solid #ce93d8;padding:5px;font-weight:bold">知事の許可</td></tr><tr><td style="border:1px solid #ce93d8;padding:5px">海岸法</td><td style="border:1px solid #ce93d8;padding:5px">海岸保全区域</td><td style="border:1px solid #ce93d8;padding:5px">土石採取・掘削等</td><td style="border:1px solid #ce93d8;padding:5px;color:#e65100;font-weight:bold">海岸管理者の許可 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ce93d8;padding:5px">都市緑地法</td><td style="border:1px solid #ce93d8;padding:5px">特別緑地保全地区</td><td style="border:1px solid #ce93d8;padding:5px">建築物の新築等</td><td style="border:1px solid #ce93d8;padding:5px;font-weight:bold">知事等の許可</td></tr><tr><td style="border:1px solid #ce93d8;padding:5px">地すべり等防止法</td><td style="border:1px solid #ce93d8;padding:5px">地すべり防止区域</td><td style="border:1px solid #ce93d8;padding:5px">地表水の放流等</td><td style="border:1px solid #ce93d8;padding:5px;font-weight:bold">知事の許可</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ce93d8;padding:5px">津波防災地域づくり法</td><td style="border:1px solid #ce93d8;padding:5px">津波防護施設区域</td><td style="border:1px solid #ce93d8;padding:5px">工作物の新築等</td><td style="border:1px solid #ce93d8;padding:5px;color:#e65100;font-weight:bold">津波防護施設管理者の許可 ⚠️</td></tr><tr><td style="border:1px solid #ce93d8;padding:5px">道路法</td><td style="border:1px solid #ce93d8;padding:5px">道路区域（予定区域含む）</td><td style="border:1px solid #ce93d8;padding:5px">土地の形質変更等</td><td style="border:1px solid #ce93d8;padding:5px;color:#e65100;font-weight:bold">道路管理者の許可 ⚠️</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ce93d8;padding:5px">河川法</td><td style="border:1px solid #ce93d8;padding:5px">河川保全区域</td><td style="border:1px solid #ce93d8;padding:5px">工作物の新築等</td><td style="border:1px solid #ce93d8;padding:5px;color:#e65100;font-weight:bold">河川管理者の許可 ⚠️</td></tr><tr><td style="border:1px solid #ce93d8;padding:5px">景観法</td><td style="border:1px solid #ce93d8;padding:5px">景観計画区域</td><td style="border:1px solid #ce93d8;padding:5px">建築物の新築等</td><td style="border:1px solid #ce93d8;padding:5px;color:#1565c0;font-weight:bold">景観行政団体の長に届出（事前）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ce93d8;padding:5px">土壌汚染対策法</td><td style="border:1px solid #ce93d8;padding:5px">形質変更時要届出区域</td><td style="border:1px solid #ce93d8;padding:5px">土地の形質変更</td><td style="border:1px solid #ce93d8;padding:5px;color:#1565c0;font-weight:bold">知事に届出（事前・14日前）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>知事の許可</strong>」が多数派（保安林・特別緑地・地すべり）。それ以外は「<strong>○○管理者</strong>」（海岸・河川・津波防護施設・道路）。管理者系は施設名がそのまま管理者名になる。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00897b;color:#00897b">📊 暗記表：国土利用計画法の面積要件</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#00897b">★最重要：「に・ご・いち」で覚える</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#b2dfdb"><th style="border:1px solid #80cbc4;padding:5px">区域</th><th style="border:1px solid #80cbc4;padding:5px">面積要件</th><th style="border:1px solid #80cbc4;padding:5px">ポイント</th></tr><tr><td style="border:1px solid #80cbc4;padding:5px">市街化区域</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold;color:#d32f2f">2,000㎡以上</td><td style="border:1px solid #80cbc4;padding:5px">一番厳しい（面積が小さい）</td></tr><tr style="background:#fafafa"><td style="border:1px solid #80cbc4;padding:5px">市街化調整区域・非線引き都市計画区域</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">5,000㎡以上</td><td style="border:1px solid #80cbc4;padding:5px">中間</td></tr><tr><td style="border:1px solid #80cbc4;padding:5px">都市計画区域外</td><td style="border:1px solid #80cbc4;padding:5px;font-weight:bold">10,000㎡以上</td><td style="border:1px solid #80cbc4;padding:5px">一番ゆるい（面積が大きい）</td></tr></table><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>に・ご・いち</strong>（2,000・5,000・10,000）」。市街化区域が一番厳しい＝面積が一番小さい。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">📊 暗記表：届出制の法令（事前vs事後）</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px;color:#e65100">重要：事前か事後かの混同に注意</div><table style="width:100%;border-collapse:collapse;font-size:13px;margin:8px 0"><tr style="background:#ffe0b2"><th style="border:1px solid #ffb74d;padding:5px">法令</th><th style="border:1px solid #ffb74d;padding:5px">届出タイミング</th><th style="border:1px solid #ffb74d;padding:5px">届出期限</th><th style="border:1px solid #ffb74d;padding:5px">届出先</th></tr><tr><td style="border:1px solid #ffb74d;padding:5px">景観法</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">事前届出 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">「あらかじめ」</td><td style="border:1px solid #ffb74d;padding:5px">景観行政団体の長</td></tr><tr style="background:#fafafa"><td style="border:1px solid #ffb74d;padding:5px">土壌汚染対策法</td><td style="border:1px solid #ffb74d;padding:5px;color:#d32f2f;font-weight:bold">事前届出 ⚠️</td><td style="border:1px solid #ffb74d;padding:5px">着手14日前まで</td><td style="border:1px solid #ffb74d;padding:5px">知事</td></tr><tr><td style="border:1px solid #ffb74d;padding:5px">国土利用計画法</td><td style="border:1px solid #ffb74d;padding:5px;color:#1565c0;font-weight:bold">事後届出</td><td style="border:1px solid #ffb74d;padding:5px">契約締結日から2週間以内</td><td style="border:1px solid #ffb74d;padding:5px">知事（市町村長を経由）</td></tr></table><div style="background:#ffcdd2;border-left:4px solid #d32f2f;padding:8px;margin:6px 0"><strong style="color:#d32f2f">⚠️ ひっかけ注意：</strong>景観法と土壌汚染対策法は「事前」、国土利用計画法は「事後」。<br>「景観法→事後届出」とする選択肢は誤りです！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">⚠️ このアプリでカバーできていない論点</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">以下の法令・論点はこのアプリでは扱っていません：</strong><br>・自然公園法、生産緑地法、密集市街地整備法、文化財保護法など未出題・出題頻度が極めて低い法令<br>・国土利用計画法の注視区域・監視区域（事前届出制）<br>・各法令の罰則規定の詳細<br>・各法令の例外規定の全てのパターン<br><br>これらは過去問で実際に出題された際に、その都度確認してください。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=349AC0000000092" target="_blank">国土利用計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 国土利用計画法（事後届出制）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>一定面積以上の土地売買をしたら、買主が2週間以内に知事に届け出るルール。過去問では毎回のように出題される最重要法令です（国土利用計画法23条）。</div><div class="info-box" style="background:#fff3e0"><strong>事後届出の基本ルール：</strong><br>① 届出義務者：<strong>権利取得者</strong>（買主側）<br>② 届出先：<strong>都道府県知事</strong>（市町村長を経由）<br>③ 届出期限：<strong>契約締結日から2週間以内</strong><br>④ 届出事項：当事者の氏名・契約日・土地の所在及び面積・権利の種別・利用目的・<strong>対価の額</strong></div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「買った人が2週間以内に知事に届ける」</div><div class="info-box" style="background:#f5f5f5"><strong>面積要件（届出が必要になる面積）：</strong><br>市街化区域：<strong>2,000㎡以上</strong> ／ 市街化調整区域・非線引き：<strong>5,000㎡以上</strong> ／ 都市計画区域外：<strong>10,000㎡以上</strong><br>※詳しい暗記表は「説明」タブを参照</div><div class="info-box" style="background:#ffebee"><strong style="color:#d32f2f">⚠️ 届出不要の例外（超重要）：</strong><br>① <strong>贈与・相続</strong>：対価を伴わない取引は「土地売買等の契約」に該当しない<br>② <strong>国・地方公共団体等が当事者</strong>：当事者の一方又は双方が国等であれば届出不要<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ ひっかけパターン：「贈与により3,000㎡取得→届出必要」→ 誤り！贈与はそもそも届出対象外</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">🔑 諸法令の許可権者まとめ（最頻出パターン）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>この分野の核心。「どの区域で、何をするとき、誰の許可が必要か」を正確に覚えることが全て。過去問のひっかけは、ほぼ全て許可権者のすり替えです。</div><div class="info-box" style="background:#fff3e0"><strong>都道府県知事の許可が必要な法令：</strong><br>① <strong>保安林</strong>での立木の伐採（森林法34条1項）<br>② <strong>特別緑地保全地区</strong>での建築物の新築等（都市緑地法14条1項）<br>③ <strong>地すべり防止区域</strong>での地下水の排除阻害等（地すべり等防止法18条1項）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>知事の許可</strong>」→「<strong>保（安林）・特（別緑地）・す（べり）</strong>」の3つ</div><div class="info-box" style="background:#fce4ec"><strong>「○○管理者」の許可が必要な法令：</strong><br>① <strong>海岸保全区域</strong>→<strong>海岸管理者</strong>の許可（海岸法8条1項）<br>② <strong>河川保全区域</strong>→<strong>河川管理者</strong>の許可（河川法55条1項）<br>③ <strong>津波防護施設区域</strong>→<strong>津波防護施設管理者</strong>の許可（津波防災地域づくり法23条1項）<br>④ <strong>道路区域</strong>（予定区域含む）→<strong>道路管理者</strong>の許可（道路法91条）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「<strong>○○管理者</strong>」系は施設名がそのまま管理者名になる。海岸→海岸管理者、河川→河川管理者、道路→道路管理者。</div><div class="info-box" style="background:#ffebee;border:2px solid #e53935"><span style="color:#d32f2f;font-weight:bold">⚠️ 最頻出ひっかけ：許可権者のすり替え</span><br>・「特別緑地保全地区→<strong>公園管理者</strong>の許可」→ <strong>誤り</strong>。正しくは<strong>知事等</strong>の許可<br>・「地すべり防止区域→<strong>市町村長</strong>の許可」→ <strong>誤り</strong>。正しくは<strong>知事</strong>の許可<br>・「河川保全区域→河川管理者と<strong>協議</strong>」→ <strong>誤り</strong>。正しくは<strong>許可</strong></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">📝 届出制の法令（許可ではなく届出）</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">一言で言うと：</strong>許可が必要な法令と違い、「届出」で足りる法令もある。届出のタイミング（事前か事後か）がひっかけポイントです。</div><div class="info-box" style="background:#e8f5e9"><strong>① 景観法（事前届出）：</strong><br>景観計画区域内で建築物の新築等→<strong>「あらかじめ」景観行政団体の長に届出</strong>（景観法16条1項）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ ひっかけ：「着手後30日以内に届出」→ 誤り！事前届出です</span></div><div class="info-box" style="background:#e8f5e9"><strong>② 土壌汚染対策法（事前届出）：</strong><br>形質変更時要届出区域内で土地の形質変更→<strong>着手14日前までに知事に届出</strong>（土壌汚染対策法12条1項）<br><br><strong>例外：</strong>通常の管理行為・軽易な行為、指定の際既に着手していた行為は届出不要<br><span style="color:#d32f2f;font-weight:bold">⚠️ ひっかけ：「非常災害の応急措置でも届出必要」→ 誤り！</span></div><div class="info-box" style="background:#e8f5e9"><strong>③ 国土利用計画法（事後届出）：</strong><br>土地売買等の契約→<strong>2週間以内に知事に届出</strong>（国土利用計画法23条1項）</div><div style="background:#fff9c4;border-left:4px solid #f9a825;padding:8px;margin:6px 0">💡 覚え方：「景観法と土壌汚染対策法は<strong>事前</strong>、国土利用計画法だけ<strong>事後</strong>」</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #555;color:#333">🔗 参考：e-Gov法令検索</div><div class="info-box" style="background:#f5f5f5"><a href="https://elaws.e-gov.go.jp/document?lawid=349AC0000000092" target="_blank">国土利用計画法（e-Gov）</a>で条文を直接確認できます。</div></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">その他の法令上の制限クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
