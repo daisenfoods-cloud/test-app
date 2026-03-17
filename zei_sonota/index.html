@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建学習アプリ - 税・その他</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .header h1 {
+      font-size: 28px;
+      color: #2c3e50;
+      margin-bottom: 8px;
+    }
+    .header p {
+      color: #7f8c8d;
+      font-size: 14px;
+    }
+    .concept-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-left: 6px solid #667eea;
+    }
+    .concept-card h2 {
+      font-size: 18px;
+      color: #2c3e50;
+      margin-bottom: 16px;
+    }
+    .concept-card p {
+      color: #4a4a4a;
+      font-size: 14px;
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .concept-card p:last-child {
+      margin-bottom: 0;
+    }
+    .tier-section {
+      background: white;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .tier-header {
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+    .tier1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .tier2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .tier3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+
+    .app-item {
+      margin-bottom: 12px;
+    }
+    .app-link {
+      display: block;
+      padding: 16px;
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+      border: 2px solid #ecf0f1;
+      position: relative;
+    }
+    .app-link.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-color: #667eea;
+      cursor: pointer;
+    }
+    .app-link.active:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+    .app-link.inactive {
+      background: #f8f9fa;
+      border-color: #e9ecef;
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+    .app-number {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      background: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 32px;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 12px;
+    }
+    .app-link.active .app-number {
+      color: #667eea;
+    }
+    .app-link.inactive .app-number {
+      color: #95a5a6;
+    }
+    .app-title {
+      font-size: 16px;
+      font-weight: bold;
+      margin-bottom: 4px;
+    }
+    .app-link.active .app-title {
+      color: white;
+    }
+    .app-link.inactive .app-title {
+      color: #2c3e50;
+    }
+    .app-subtitle {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    .app-link.active .app-subtitle {
+      color: white;
+    }
+    .app-link.inactive .app-subtitle {
+      color: #7f8c8d;
+    }
+    .freq-badge {
+      display: inline-block;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: bold;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    .app-link.active .freq-badge {
+      background: rgba(255,255,255,0.25);
+      color: white;
+    }
+    .app-link.inactive .freq-badge {
+      background: #ecf0f1;
+      color: #7f8c8d;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🏠 宅建学習アプリ</h1>
+      <p>税・その他 - 全11アプリ</p>
+    </div>
+
+    <div style="text-align: center; margin-bottom: 24px;">
+      <a href="../index.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 32px; border-radius: 24px; text-decoration: none; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">← トップに戻る</a>
+    </div>
+
+    <div class="concept-card">
+      <h2>税・その他を学ぶ前に知っておいてほしいこと</h2>
+      <p>
+        税・その他は宅建試験全50問のうち<strong>8問</strong>を占める分野です。税から2問、地価公示法・鑑定評価から1問、住宅金融支援機構から1問、景品表示法から1問、土地・建物から2問、統計から1問が出題されます。
+      </p>
+      <p>
+        この分野の特徴は、出題範囲が広い一方で<strong>各テーマの出題パターンが比較的固定されている</strong>ことです。税の問題は税額計算そのものではなく、各税の構造（課税対象・納税義務者・課税標準・税率）と、住宅用地・居住用財産に対する<strong>特例の適用要件</strong>が中心です。
+      </p>
+      <p>
+        まずはTier 1の不動産取得税・固定資産税と、毎年確実に出る住宅金融支援機構・景品表示法を押さえてください。これだけで毎年4〜5点分の土台ができます。統計は試験直前に最新データを確認すれば対応できるため、このアプリでは扱いません。
+      </p>
+    </div>
+
+    <!-- Tier 1: 超頻出・必須 -->
+    <div class="tier-section">
+      <div class="tier-header tier1">
+        ⭐ Tier 1：超頻出・必須（6個）── 毎年必ず出る
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 土地・建物に関する税（毎年2問） ──</div>
+
+      <div class="app-item">
+        <a href="../output/fudousan_shutokuzei.html" class="app-link inactive">
+          <span class="app-number">1</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">不動産取得税 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">課税対象、税率、課税標準の特例、免税点</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/kotei_shisanzei.html" class="app-link inactive">
+          <span class="app-number">2</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">固定資産税 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">納税義務者、課税標準、住宅用地の特例、免税点</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 住宅金融支援機構（毎年1問） ──</div>
+
+      <div class="app-item">
+        <a href="../output/jutaku_kinyu.html" class="app-link inactive">
+          <span class="app-number">3</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">住宅金融支援機構 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">証券化支援業務（買取型）、直接融資業務、業務の範囲</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 景品表示法（毎年1問） ──</div>
+
+      <div class="app-item">
+        <a href="../output/kousei_kyousou.html" class="app-link inactive">
+          <span class="app-number">4</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">公正競争規約（景品表示法） <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">不動産の表示に関する公正競争規約、広告表示の基準</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 土地・建物（毎年2問） ──</div>
+
+      <div class="app-item">
+        <a href="../output/tochi.html" class="app-link inactive">
+          <span class="app-number">5</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">土地 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">宅地としての適性、地形・地質、災害リスク</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/tatemono.html" class="app-link inactive">
+          <span class="app-number">6</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">建物 <span class="freq-badge">重要度 S</span></div>
+            <div class="app-subtitle">建築構造、木造・鉄骨造・RC造の特徴</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Tier 2: 重要 -->
+    <div class="tier-section">
+      <div class="tier-header tier2">
+        💎 Tier 2：重要（4個）── 頻出または交互に出る
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── その他の税 ──</div>
+
+      <div class="app-item">
+        <a href="../output/shotokuzei.html" class="app-link inactive">
+          <span class="app-number">7</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">所得税（譲渡所得） <span class="freq-badge">重要度 B</span></div>
+            <div class="app-subtitle">譲渡所得の計算、居住用財産の特例、3,000万円特別控除</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/touroku_menkyo_zei.html" class="app-link inactive">
+          <span class="app-number">8</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">登録免許税 <span class="freq-badge">重要度 B</span></div>
+            <div class="app-subtitle">課税対象、税率、住宅用家屋の軽減税率</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/inshi_zei.html" class="app-link inactive">
+          <span class="app-number">9</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">印紙税 <span class="freq-badge">重要度 B</span></div>
+            <div class="app-subtitle">課税文書、納付方法、過怠税</div>
+          </div>
+        </a>
+      </div>
+
+      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 地価公示法・鑑定評価（毎年1問） ──</div>
+
+      <div class="app-item">
+        <a href="../output/chika_kouji.html" class="app-link inactive">
+          <span class="app-number">10</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">地価公示法・鑑定評価 <span class="freq-badge">重要度 A</span></div>
+            <div class="app-subtitle">地価公示の手続、不動産鑑定評価基準、鑑定評価の方式</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <!-- Tier 3: 補足 -->
+    <div class="tier-section">
+      <div class="tier-header tier3">
+        📚 Tier 3：補足（1個）── 出題頻度は低い
+      </div>
+
+      <div class="app-item">
+        <a href="../output/zouyozei.html" class="app-link inactive">
+          <span class="app-number">11</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">贈与税 <span class="freq-badge">重要度 C</span></div>
+            <div class="app-subtitle">贈与税の課税、住宅取得等資金の非課税措置</div>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 4px 16px rgba(0,0,0,0.1); border-left: 6px solid #95a5a6;">
+      <h2 style="font-size: 16px; color: #2c3e50; margin-bottom: 12px;">📊 統計（毎年1問）について</h2>
+      <p style="color: #4a4a4a; font-size: 14px; line-height: 1.8;">
+        統計の問題は、地価公示・住宅着工統計・法人企業統計・土地取引件数・宅地建物取引業者数から出題されます。毎年最新のデータに基づいて出題されるため、<strong>試験直前（8月以降）に最新データを確認する</strong>のが最も効率的です。このアプリでは扱いません。
+      </p>
+    </div>
+
+    <div style="text-align: center; padding: 20px 20px 10px;">
+      <a href="../index.html" style="display: inline-block; background: white; color: #667eea; padding: 12px 32px; border-radius: 24px; text-decoration: none; font-weight: bold; font-size: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">← トップに戻る</a>
+    </div>
+
+    <div style="text-align: center; padding: 10px 20px 20px; color: white; font-size: 14px;">
+      <p>© 2026 宅建学習アプリ</p>
+    </div>
+  </div>
+</body>
+</html>
