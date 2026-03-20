@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>宅建 地価公示・鑑定評価クイズ</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color: #f8f9fa; }
+    #root { max-width: 420px; margin: 0 auto; min-height: 100vh; }
+    .header { background-color: #2c3e50; color: white; padding: 16px; text-align: center; }
+    .header-sub { font-size: 11px; opacity: 0.8; }
+    .header-title { font-size: 16px; font-weight: bold; margin-top: 2px; }
+    .header-desc { font-size: 12px; margin-top: 4px; opacity: 0.9; }
+    .tab-bar { display: flex; background-color: #ecf0f1; }
+    .tab-btn { flex: 1; padding: 12px; border: none; font-weight: bold; font-size: 13px; cursor: pointer; background-color: #ecf0f1; color: #2c3e50; }
+    .tab-btn.active-about { background-color: #9b59b6; color: white; }
+    .tab-btn.active-principle { background-color: #3498db; color: white; }
+    .tab-btn.active-stats { background-color: #16a085; color: white; }
+    .tab-btn.active-quiz { background-color: #27ae60; color: white; }
+    .content { padding: 16px; }
+    .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .card-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; padding-bottom: 8px; }
+    .info-box { padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 13px; line-height: 1.8; }
+    .btn { width: 100%; border: none; border-radius: 8px; padding: 16px; font-size: 14px; font-weight: bold; cursor: pointer; margin-bottom: 8px; color: white; }
+    .btn-sm { padding: 12px; font-size: 13px; }
+    .progress-bar { width: 100%; background-color: #e0e0e0; border-radius: 10px; height: 12px; }
+    .progress-fill { border-radius: 10px; height: 12px; transition: width 0.5s ease; }
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 16px; }
+    th { padding: 8px; text-align: center; }
+    td { padding: 8px; border: 1px solid #e0e0e0; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+<div id="root">
+  <div class="header">
+    <a href="index.html" style="display:inline-block;color:white;text-decoration:none;font-size:13px;opacity:0.9;margin-bottom:8px;padding:4px 12px;border:1px solid rgba(255,255,255,0.5);border-radius:16px;">← メニューへ戻る</a>
+    <div class="header-sub">宅建学習アプリ</div>
+    <div class="header-title">その他 ＞ 地価公示・鑑定評価</div>
+    <div class="header-desc">地価公示法の仕組みと不動産鑑定評価の基本</div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active-about" id="tab-about" onclick="showTab('about')">ℹ️ 説明</button>
+    <button class="tab-btn" id="tab-principle" onclick="showTab('principle')">📖 原則</button>
+    <button class="tab-btn" id="tab-stats" onclick="showTab('stats')">📊 統計</button>
+    <button class="tab-btn" id="tab-quiz" onclick="showTab('quiz')">🎯 練習</button>
+  </div>
+  <div id="page-about" class="content"></div>
+  <div id="page-principle" class="content hidden"></div>
+  <div id="page-stats" class="content hidden"></div>
+  <div id="page-quiz" class="content hidden"></div>
+</div>
+
+<script>
+// ========== データ ==========
+const STORAGE_KEY = 'takken_chika_kantei_mastered';
+let masteredSet = new Set();
+let currentLevel = null;
+let currentMode = 'all';
+let shuffled = [];
+let currentIdx = 0;
+let score = 0;
+let answered = false;
+
+// ストレージ読み込み
+try {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) masteredSet = new Set(JSON.parse(saved));
+} catch(e) {}
+
+function saveMastered() {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify([...masteredSet]));
+}
+
+// ========== Level 1: 基礎 ==========
+const quizzesL1 = [
+  {
+    "q": "地価公示法において、標準地は、土地の利用状況や環境等が通常と認められる一団の土地について選定される。",
+    "a": true,
+    "ex": "正しい。標準地は、自然的及び社会的条件からみて類似の利用価値を有すると認められる地域において、土地の利用状況、環境等が「通常」と認められる一団の土地について選定されます（地価公示法3条）。「特に良好」ではなく「通常」である点がポイントです。",
+    "cat": "標準地の選定"
+  },
+  {
+    "q": "標準地の選定は、不動産鑑定士が行う。",
+    "a": false,
+    "ex": "誤り。標準地の選定を行うのは土地鑑定委員会です（地価公示法3条）。不動産鑑定士は鑑定評価を行いますが、標準地の選定は行いません。",
+    "cat": "標準地の選定"
+  },
+  {
+    "q": "地価公示法における「正常な価格」とは、土地に建物が存する場合であっても、建物が存しないものとして通常成立すると認められる価格をいう。",
+    "a": true,
+    "ex": "正しい。「正常な価格」とは、建物その他の定着物がある場合や、地上権その他の権利が存する場合には、これらが存しないものとして通常成立すると認められる価格（いわゆる更地価格）をいいます（地価公示法2条2項）。",
+    "cat": "正常な価格"
+  },
+  {
+    "q": "地上権が設定されている土地は、標準地として選定することができない。",
+    "a": false,
+    "ex": "誤り。地上権が設定されている土地でも標準地として選定できます。価格を判定するときに、権利が存しないものとして（更地として）評価するだけです（地価公示法2条2項）。選定の段階で排除されるわけではありません。",
+    "cat": "正常な価格"
+  },
+  {
+    "q": "土地鑑定委員会は、標準地について毎年1回、2人以上の不動産鑑定士の鑑定評価を求めなければならない。",
+    "a": true,
+    "ex": "正しい。土地鑑定委員会は、公示区域内の標準地について毎年1回、2人以上の不動産鑑定士の鑑定評価を求め、その結果を審査し、必要な調整を行って正常な価格を判定します（地価公示法2条1項）。",
+    "cat": "公示の手続き"
+  },
+  {
+    "q": "標準地の鑑定評価を行った不動産鑑定士は、連名で鑑定評価書を土地鑑定委員会に提出する。",
+    "a": false,
+    "ex": "誤り。鑑定評価を行った不動産鑑定士は、「それぞれ」鑑定評価書を提出します（地価公示法5条）。連名ではなく、各自が独立して鑑定評価書を作成・提出する点が重要です。",
+    "cat": "公示の手続き"
+  },
+  {
+    "q": "地価公示では、標準地の単位面積当たりの価格が官報で公示される。",
+    "a": true,
+    "ex": "正しい。公示事項には「標準地の単位面積当たりの価格及び価格判定の基準日」が含まれます（地価公示法6条2号）。公示されるのは「単位面積当たりの価格」であって、「価格の総額」ではない点に注意してください。",
+    "cat": "公示事項"
+  },
+  {
+    "q": "都市計画区域内の土地について取引を行う者は、公示価格と同額で取引しなければならない。",
+    "a": false,
+    "ex": "誤り。一般の土地取引では、類似する利用価値を有すると認められる標準地の公示価格を「指標として」取引を行うよう「努めなければならない」とされています（地価公示法1条の2）。努力義務にすぎず、同額にする義務はありません。",
+    "cat": "公示価格の効力"
+  },
+  {
+    "q": "原価法とは、対象不動産の再調達原価を求め、これについて減価修正を行って試算価格を求める手法である。",
+    "a": true,
+    "ex": "正しい。原価法は、価格時点における対象不動産の再調達原価を求め、これについて減価修正を行って試算価格（積算価格）を求める手法です（不動産鑑定評価基準 第7章第1節）。",
+    "cat": "鑑定評価の3手法"
+  },
+  {
+    "q": "収益還元法は、対象不動産が将来生み出すであろうと期待される純収益の現在価値の総和を求めることにより試算価格を求める手法である。",
+    "a": true,
+    "ex": "正しい。収益還元法は、対象不動産が将来生み出すであろうと期待される純収益の現在価値の総和を求めて試算価格（収益価格）を求める手法です（不動産鑑定評価基準 第7章第1節）。",
+    "cat": "鑑定評価の3手法"
+  },
+  {
+    "q": "収益還元法は、賃貸用不動産又は賃貸以外の事業の用に供する不動産の価格を求める場合に特に有効である。",
+    "a": true,
+    "ex": "正しい。収益還元法は、賃貸用不動産又は賃貸以外の事業の用に供する不動産の価格を求める場合に特に有効とされています（不動産鑑定評価基準 第7章第1節）。",
+    "cat": "収益還元法"
+  },
+  {
+    "q": "不動産の価格は、その不動産の効用が最高度に発揮される可能性に最も富む使用を前提として把握される価格を標準として形成される。これを最有効使用の原則という。",
+    "a": true,
+    "ex": "正しい。最有効使用の原則とは、不動産の価格は、その不動産の効用が最高度に発揮される可能性に最も富む使用（最有効使用）を前提として把握される価格を標準として形成されるという原則です（不動産鑑定評価基準 第4章）。",
+    "cat": "最有効使用の原則"
+  },
+  {
+    "q": "不動産鑑定評価において、市場性を有しない不動産について求める価格を特殊価格という。",
+    "a": true,
+    "ex": "正しい。特殊価格は、文化財等の一般的に市場性を有しない不動産について、その利用現況等を前提とした経済価値を表示する価格です（不動産鑑定評価基準 第5章第3節）。市場性がない不動産に対応する価格は特殊価格のみです。",
+    "cat": "4つの価格"
+  },
+  {
+    "q": "正常価格とは、市場性を有する不動産について、合理的な市場で通常形成されるであろう市場価値を表示する適正な価格をいう。",
+    "a": true,
+    "ex": "正しい。正常価格は、市場性を有する不動産について、合理的と考えられる条件を満たす市場で形成されるであろう市場価値を表示する適正な価格です（不動産鑑定評価基準 第5章第3節）。鑑定評価で求める価格の基本となるものです。",
+    "cat": "4つの価格"
+  },
+  {
+    "q": "同一需給圏とは、対象不動産と代替関係が成立して、その価格の形成について相互に影響を及ぼすような関係にある他の不動産の存する圏域をいう。",
+    "a": true,
+    "ex": "正しい。同一需給圏とは、一般に対象不動産と代替関係が成立して、その価格の形成について相互に影響を及ぼすような関係にある他の不動産の存する圏域をいいます（不動産鑑定評価基準 第6章第1節）。その範囲は不動産の種類や需要者の選好性によって異なります。",
+    "cat": "同一需給圏"
+  }
+];
+
+// ========== Level 2: 応用 ==========
+const quizzesL2 = [
+  {
+    "q": "地価公示の公示事項には、前回の公示価格からの変化率が含まれる。",
+    "a": false,
+    "ex": "誤り。公示事項は、①所在（郡・市・区・町村・字・地番）、②単位面積当たりの価格及び価格判定の基準日、③地積及び形状、④土地利用の現況、⑤その他省令事項です（地価公示法6条）。「前回からの変化率」や「価格の総額」は公示事項に含まれません。",
+    "cat": "公示事項"
+  },
+  {
+    "q": "都市及びその周辺の地域等において土地の取引を行う者は、取引の対象土地に最も近傍の標準地について公示された価格を指標として取引を行うよう努めなければならない。",
+    "a": false,
+    "ex": "誤り。指標とすべきは「最も近傍の標準地」ではなく、取引の対象土地に「類似する利用価値を有すると認められる標準地」の公示価格です（地価公示法1条の2）。距離の近さではなく、利用価値の類似性が基準です。",
+    "cat": "公示価格の効力"
+  },
+  {
+    "q": "公共事業の用に供するため公示区域内の土地を取得する場合、その取得価格は公示価格と同額としなければならない。",
+    "a": false,
+    "ex": "誤り。公共事業用地の取得価格を定めるときは、公示価格を「規準」としなければなりません（地価公示法9条）。「規準とする」とは、類似の利用価値を有する標準地と比較して価格の均衡を保たせることをいい（同法11条）、同額にすることではありません。",
+    "cat": "公示価格の効力"
+  },
+  {
+    "q": "標準地は、土地の利用状況や環境等が特に良好と認められる一団の土地について選定される。",
+    "a": false,
+    "ex": "誤り。標準地は、土地の利用状況、環境等が「通常」と認められる一団の土地について選定されます（地価公示法3条）。「特に良好」ではなく「通常」が正しい表現です。名前のとおり「標準」的な土地が選ばれます。",
+    "cat": "標準地の選定"
+  },
+  {
+    "q": "地価公示法において、地上権その他の権利が存する土地であっても、標準地として選定することができ、その正常な価格は当該権利が存しないものとして判定される。",
+    "a": true,
+    "ex": "正しい。地上権等の権利が存する土地でも標準地として選定可能です。正常な価格を判定する際に、当該権利が存しないものとして（更地として）評価します（地価公示法2条1項・2項）。",
+    "cat": "標準地の選定と正常な価格"
+  },
+  {
+    "q": "公示区域は都市計画区域内に限られ、都市計画区域外の区域から標準地を選定することはできない。",
+    "a": false,
+    "ex": "誤り。公示区域は、都市計画区域のほか「その他の土地取引が相当程度見込まれるものとして国土交通省令で定める区域」も含まれます（地価公示法2条1項）。ただし、国土利用計画法の規制区域は除外されます。",
+    "cat": "公示区域"
+  },
+  {
+    "q": "土地収用法等で土地を収用できる事業を行う者が公示区域内の土地を取得する場合、類似する利用価値を有する標準地の公示価格との間に均衡を保たせなければならない。",
+    "a": true,
+    "ex": "正しい。公示価格を「規準とする」とは、対象土地とこれに類似する利用価値を有する標準地について比較を行い、公示価格との間に均衡を保たせることをいいます（地価公示法9条、11条）。",
+    "cat": "公共事業用地"
+  },
+  {
+    "q": "取引事例比較法において、取引事例に売り急ぎ等の特殊な事情があった場合、その事例は比較の対象として用いてはならない。",
+    "a": false,
+    "ex": "誤り。特殊な事情がある取引事例であっても、事情補正によって正常なものに補正できれば、比較の対象として使うことができます。不動産鑑定評価基準では、取引事例の要件として「正常なものと認められるもの又は正常なものに補正することができるもの」を求めています（基準 第7章第1節）。",
+    "cat": "事情補正"
+  },
+  {
+    "q": "取引事例の価格に特殊な事情による影響がある場合に、その影響を適切に除去して正常な価格に補正することを時点修正という。",
+    "a": false,
+    "ex": "誤り。特殊な事情（売り急ぎ・買い進み等）の影響を除去して正常な価格に補正することは「事情補正」です。「時点修正」は、取引の時点と価格時点が異なり価格水準に変動があるときに、価格時点の価格に修正することをいいます（基準 第7章第1節）。この2つの用語の入れ替えは試験の定番です。",
+    "cat": "事情補正と時点修正"
+  },
+  {
+    "q": "限定価格とは、法令等による社会的要請を背景とする鑑定評価目的の下で、正常価格の前提条件を満たさない場合における経済価値を表示する価格をいう。",
+    "a": false,
+    "ex": "誤り。この説明は「特定価格」の定義です。限定価格は、市場性を有する不動産について、併合又は分割等に基づき市場が相対的に限定される場合における市場価値を適正に表示する価格です（基準 第5章第3節）。限定価格と特定価格の定義の入れ替えは最頻出ひっかけです。",
+    "cat": "限定価格・特定価格"
+  },
+  {
+    "q": "特殊価格は、文化財指定の建造物等、一般的に市場性を有しない不動産について、その利用現況等を前提とした経済価値を表示する価格であるが、限定価格も市場性を有しない不動産について求める場合がある。",
+    "a": false,
+    "ex": "誤り。市場性を有しない不動産について求める価格は特殊価格のみです。限定価格・特定価格はいずれも「市場性を有する」不動産について求める価格です（基準 第5章第3節）。市場性の有無と価格の種類の対応を正確に覚えましょう。",
+    "cat": "限定価格・特定価格"
+  },
+  {
+    "q": "収益還元法は、自用の不動産には適用すべきでなく、賃貸用不動産に限って適用される手法である。",
+    "a": false,
+    "ex": "誤り。自用の不動産といえども賃貸を想定することにより収益還元法が適用されます（基準 第7章第1節）。収益還元法は、文化財の指定を受けた建造物等の一般的に市場性を有しない不動産以外のものには基本的にすべて適用すべきとされています。",
+    "cat": "収益還元法の適用"
+  },
+  {
+    "q": "市場における土地の取引価格の上昇が著しいときは、収益還元法の適用を避け、取引事例比較法を重視すべきである。",
+    "a": false,
+    "ex": "誤り。市場における土地の取引価格の上昇が著しいときは、その価格と収益価格との乖離が増大するため、先走りがちな取引価格に対する有力な験証手段として、収益還元法が活用されるべきとされています（基準 総論第7章第1節）。価格上昇時こそ収益還元法が重要になります。",
+    "cat": "収益還元法の適用"
+  },
+  {
+    "q": "再調達原価を直接求めることが困難な場合には、対象不動産と同等の有用性を持つものに置き換えて求めた原価を再調達原価とみなすことができる。これを置換原価という。",
+    "a": true,
+    "ex": "正しい。建設資材や工法等の変遷により再調達原価を直接求めることが困難な場合、対象不動産と同等の有用性を持つものに置き換えて求めた原価（置換原価）を再調達原価とみなすことができます（基準 第7章第1節）。原価法が適用できなくなるわけではありません。",
+    "cat": "再調達原価と置換原価"
+  },
+  {
+    "q": "不動産鑑定評価においては、原価法、取引事例比較法、収益還元法のうち最も適切な手法を1つ選択して適用すべきである。",
+    "a": false,
+    "ex": "誤り。鑑定評価に当たっては、原価法、取引事例比較法、収益還元法の3手法を併用すべきであり、対象不動産の種類や条件等により複数の手法の適用が困難な場合でも、その考え方をできるだけ参酌するように努めるべきとされています（基準 第8章第7節）。1つだけ選択するのではありません。",
+    "cat": "複数手法の適用"
+  }
+];
+
+// ========== タブ切り替え ==========
+let currentTab = 'about';
+function showTab(tab) {
+  ['about','principle','stats','quiz'].forEach(t => {
+    document.getElementById('page-' + t).classList.toggle('hidden', t !== tab);
+    const btn = document.getElementById('tab-' + t);
+    btn.className = 'tab-btn' + (t === tab ? ' active-' + t : '');
+  });
+  currentTab = tab;
+  if (tab === 'about') renderAbout();
+  if (tab === 'principle') renderPrinciple();
+  if (tab === 'stats') renderStats();
+  if (tab === 'quiz') renderQuizMenu();
+}
+
+// ========== About タブ ==========
+function renderAbout() {
+  document.getElementById('page-about').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #16a085;color:#2c3e50">📋 このアプリについて</div><div class="info-box" style="background:#e8f5e9"><strong style="color:#2e7d32">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで地価公示・鑑定評価の基本をしっかり押さえれば、過去問（問25）がスムーズに解けるようになります。</div><div class="info-box" style="background:#fff3e0;border:2px solid #ff9800"><strong style="color:#e65100">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class="info-box" style="background:#fce4ec"><strong style="color:#c62828">カバーできていない論点：</strong><br>・原価法の具体的な減価修正の方法（耐用年数に基づく方法、観察減価法）<br>・取引事例比較法の詳細な手順（地域要因・個別的要因の比較の具体的方法）<br>・直接還元法とDCF法の具体的な算定式・計算方法<br>・地域分析・個別分析の詳細<br>・不動産鑑定士の具体的な業務手順・倫理規定<br>・地価公示法の罰則規定<br>・都道府県地価調査（別制度）<br>・不動産の種別・類型の詳細分類<br>・価格形成要因の各項目の詳細<br>・証券化対象不動産の鑑定評価の詳細手続き</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">🏗️ 地価公示・鑑定評価の全体像</div><div class="info-box" style="background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【地価公示法の流れ】</div><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">土地鑑定委員会</span><br>↓ 公示区域内の標準地を選定<br><span style="background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold">2人以上の不動産鑑定士</span><br>↓ 鑑定評価（<span style="color:#d32f2f;font-weight:bold">それぞれ</span>鑑定評価書を提出）<br><span style="background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold">土地鑑定委員会</span><br>↓ 審査・調整 → 正常な価格を判定<br><span style="background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold">官報で公示</span><br><br><span style="font-size:12px">一般取引の指標（<strong>努力義務</strong>）・公共事業の<strong>規準</strong></span></div><div style="margin-top:16px"></div><div class="info-box" style="background:#f3e5f5;font-family:monospace;text-align:center;line-height:2.2"><div style="font-weight:bold;margin-bottom:4px">【不動産鑑定評価の流れ】</div><span style="background:#e1bee7;padding:3px 8px;border-radius:4px;font-weight:bold">3手法で試算価格を求める</span><br>原価法→積算価格 ／ 取引事例比較法→比準価格 ／ 収益還元法→収益価格<br>↓ <span style="color:#d32f2f;font-weight:bold">複数の手法を適用すべき</span><br><span style="background:#e1bee7;padding:3px 8px;border-radius:4px;font-weight:bold">調整して鑑定評価額を決定</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #d32f2f;color:#d32f2f">🎯 過去問でよく狙われるポイント</div><div class="info-box" style="background:#fff8e1;border-left:4px solid #ffa000"><strong style="color:#e65100">【ひっかけ注意】事情補正 vs 時点修正</strong><br>「売り急ぎ等の特殊な事情を補正する」→<strong>事情補正</strong><br>「取引時点と価格時点のズレを修正する」→<strong>時点修正</strong><br>この2つの用語を入れ替えるパターンが頻出。また「特殊事情がある事例は使えない」は誤り。事情補正できれば使えます。</div><div class="info-box" style="background:#e8eaf6;border-left:4px solid #3f51b5"><strong style="color:#283593">【ひっかけ注意】4つの価格の定義の入れ替え</strong><br><strong>限定価格</strong>＝併合・分割等で市場が限定される場合<br><strong>特定価格</strong>＝法令等の社会的要請が背景<br><strong>特殊価格</strong>＝市場性なし（文化財等）<br>この3つの定義を入れ替えるパターンが最頻出。市場性なし＝特「殊」価格だけ！</div><div class="info-box" style="background:#e0f2f1;border-left:4px solid #00897b"><strong style="color:#00695c">【ひっかけ注意】収益還元法は「万能選手」</strong><br>「自用の不動産に適用すべきでない」→<strong>誤り</strong>（自用でも賃貸を想定して適用可能）<br>「価格上昇時に適用を避けるべき」→<strong>誤り</strong>（むしろ有力な験証手段として活用すべき）<br>「1つの手法を選択すべき」→<strong>誤り</strong>（複数手法を適用すべき）</div><div class="info-box" style="background:#fce4ec;border-left:4px solid #e91e63"><strong style="color:#c2185b">【ひっかけ注意】「近傍」vs「類似する利用価値」</strong><br>一般の土地取引で指標とすべきは「最も近傍の標準地」ではなく「<strong>類似する利用価値を有すると認められる標準地</strong>」の公示価格です。距離ではなく利用価値の類似性が基準！</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">📊 表で暗記</div><div style="font-size:13px;font-weight:bold;margin-bottom:8px">鑑定評価で求める4つの価格</div><table><tr style="background:#e3f2fd"><th style="border:1px solid #90caf9;text-align:left">価格の種類</th><th style="border:1px solid #90caf9">市場性</th><th style="border:1px solid #90caf9">内容・具体例</th></tr><tr><td>正常価格</td><td style="text-align:center;color:#2e7d32;font-weight:bold">あり</td><td>基本の価格。合理的な市場で通常成立する市場価値</td></tr><tr style="background:#fafafa"><td>限定価格</td><td style="text-align:center;color:#2e7d32;font-weight:bold">あり</td><td>併合・分割等で市場が限定。例：借地権者の底地併合、隣接地併合</td></tr><tr><td>特定価格</td><td style="text-align:center;color:#2e7d32;font-weight:bold">あり</td><td>法令等の社会的要請が背景。例：証券化対象不動産、民事再生法に基づく早期売却</td></tr><tr style="background:#fafafa"><td style="color:#d32f2f;font-weight:bold">特殊価格</td><td style="text-align:center;color:#d32f2f;font-weight:bold">なし</td><td>市場性のない不動産。例：文化財指定建造物、宗教建築物、公共公益施設</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">鑑定評価の3手法と試算価格</div><table><tr style="background:#e8eaf6"><th style="border:1px solid #9fa8da;text-align:left">手法</th><th style="border:1px solid #9fa8da">試算価格の名称</th><th style="border:1px solid #9fa8da">概要</th></tr><tr><td>原価法</td><td style="text-align:center;font-weight:bold">積算価格</td><td>再調達原価 − 減価修正</td></tr><tr style="background:#fafafa"><td>取引事例比較法</td><td style="text-align:center;font-weight:bold">比準価格</td><td>類似の取引事例から比較</td></tr><tr><td>収益還元法</td><td style="text-align:center;font-weight:bold">収益価格</td><td>将来の純収益の現在価値の総和</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">公示価格の効力</div><table><tr style="background:#fff3e0"><th style="border:1px solid #ffcc80;text-align:left">場面</th><th style="border:1px solid #ffcc80">効力の内容</th></tr><tr><td>一般の土地取引</td><td><strong>努力義務</strong>：公示価格を指標として取引するよう努める</td></tr><tr style="background:#fafafa"><td>公共事業用地の取得</td><td><strong>規準</strong>：公示価格を規準とする（均衡を保たせる。同額ではない）</td></tr></table><div style="font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px">地価公示法の重要数字</div><table><tr style="background:#e8f5e9"><th style="border:1px solid #a5d6a7;text-align:left">項目</th><th style="border:1px solid #a5d6a7">内容</th></tr><tr><td>公示の頻度</td><td style="color:#d32f2f;font-weight:bold">毎年1回（毎年2回ではない）</td></tr><tr style="background:#fafafa"><td>基準日</td><td style="font-weight:bold">1月1日</td></tr><tr><td>鑑定士の人数</td><td style="font-weight:bold">2人以上</td></tr><tr style="background:#fafafa"><td>鑑定評価書の提出</td><td style="color:#d32f2f;font-weight:bold">それぞれ提出（連名ではない）</td></tr></table></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=344AC0000000049" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 地価公示法（e-Gov法令検索）</a></div>`;
+}
+
+// ========== Principle タブ ==========
+function renderPrinciple() {
+  document.getElementById('page-principle').innerHTML = `<div class="card"><div class="card-title" style="border-bottom:2px solid #1565c0;color:#1565c0">📖 地価公示法とは？</div><div class="info-box" style="background:#e3f2fd"><strong style="color:#1565c0">ひとことで言うと：</strong><br>「全国の土地の『標準的な値段』を、国が毎年発表する制度」です。<br>土地を売り買いするときの目安になります。</div><div class="info-box" style="background:#f5f5f5">地価公示は<strong>土地鑑定委員会</strong>（国土交通省に置かれた機関）が行います。公示区域内の<strong>標準地</strong>を選び、<strong>2人以上の不動産鑑定士</strong>に鑑定評価を依頼。その結果を審査・調整して<strong>正常な価格</strong>を判定し、<strong>官報</strong>で公示します。</div><div class="info-box" style="background:#fff3e0;border-left:4px solid #ff9800">💡 <strong>正常な価格 ＝ 更地としての価格</strong><br>建物があっても、地上権があっても、それらが「ないもの」として評価した価格です。だから地上権がある土地でも標準地に選定できます。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #2e7d32;color:#2e7d32">🗺️ 公示区域と標準地</div><div class="info-box" style="background:#e8f5e9"><strong>公示区域：</strong>①都市計画区域 ＋ ②土地取引が相当程度見込まれる区域（国土交通省令で指定）<br>ただし、<strong>国土利用計画法の規制区域は除外</strong>されます（地価公示法2条1項）。<br><br>💡 都市計画区域外でも、省令で定める区域なら標準地を選定できます！</div><div class="info-box" style="background:#f5f5f5"><strong>標準地 ＝ 「標準的（通常）な土地」</strong><br>名前のとおりです。土地の利用状況や環境等が<strong>「通常」</strong>と認められる土地から選びます（地価公示法3条）。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「特に良好」ではありません。この入れ替えは試験の定番ひっかけ！</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e74c3c;color:#e74c3c">📢 公示の手続きと公示事項</div><div class="info-box" style="background:#fce4ec"><strong>手続きの流れ（数字を覚える！）：</strong><br><span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">毎年1回</span>（「毎年2回」ではない！）<br><span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">基準日は1月1日</span><br><span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">2人以上</span>の不動産鑑定士が鑑定評価<br>鑑定評価書は<span style="display:inline-block;background:#ef9a9a;padding:2px 8px;border-radius:4px;font-weight:bold">それぞれ提出</span>（連名ではない！）<br><br>覚え方：<strong>「毎年1回・1月1日・2人以上・それぞれ提出」</strong></div><div class="info-box" style="background:#f5f5f5"><strong>公示されるもの（地価公示法6条）：</strong><br>①所在（郡・市・区・町村・字・地番）<br>②<strong>単位面積当たりの価格</strong>＋基準日<br>③地積・形状<br>④土地利用の現況<br>⑤その他省令事項（住居表示、前面道路の状況、水道等整備状況、交通施設との接近状況、法令制限等）<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 公示されないもの：「価格の総額」「前回からの変化率」</span></div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #6a1b9a;color:#6a1b9a">⚖️ 公示価格の効力</div><div class="info-box" style="background:#f3e5f5"><strong>一般の土地取引：努力義務</strong>（地価公示法1条の2）<br>取引の対象土地に<strong>「類似する利用価値を有すると認められる標準地」</strong>の公示価格を指標として取引するよう<strong>努める</strong>。<br><span style="color:#d32f2f;font-weight:bold">⚠️ 「最も近傍の標準地」ではない。距離ではなく利用価値の類似性で選ぶ！</span></div><div class="info-box" style="background:#f5f5f5"><strong>公共事業用地の取得：規準</strong>（地価公示法9条）<br>公示価格を「規準」としなければならない。<br>覚え方：「<strong>規準 ＝ 均衡を保たせる</strong>」（同額にすることではない！）<br><br>💡 「規準とする」とは、類似する利用価値を有する標準地と比較して、公示価格と対象土地の価格との間に<strong>均衡を保たせる</strong>ことです（地価公示法11条）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #00838f;color:#00838f">💰 鑑定評価で求める4つの価格</div><div class="info-box" style="background:#e0f7fa"><strong>正常価格</strong>（基本）：市場性あり。合理的な市場で通常成立する市場価値。</div><div class="info-box" style="background:#f5f5f5"><strong>限定価格</strong>：市場性あり。<strong>併合・分割等</strong>で市場が限定される場合。<br>例：借地権者が底地を買う、隣地を買って一体化するなど。</div><div class="info-box" style="background:#e0f7fa"><strong>特定価格</strong>：市場性あり。<strong>法令等の社会的要請</strong>が背景にある場合。<br>例：不動産証券化、民事再生法に基づく早期売却など。</div><div class="info-box" style="background:#fce4ec;border:2px solid #e91e63"><strong style="color:#c2185b">特殊価格</strong>：<strong>市場性なし。</strong>文化財等の市場性を有しない不動産。<br>例：文化財指定建造物、宗教建築物、公共公益施設。<br><br>💡 市場性なし ＝ 特「殊」価格だけ。他の3つは全部「市場性あり」。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #e65100;color:#e65100">🔧 鑑定評価の3手法</div><div class="info-box" style="background:#fff3e0"><strong>原価法 → 積算価格</strong><br>「今この不動産を新しく作ったらいくらか（再調達原価）」から、古くなった分を引く（減価修正）。<br>💡 再調達原価が直接求められないなら<strong>置換原価</strong>（同等の有用性を持つもので代替）でOK。</div><div class="info-box" style="background:#f5f5f5"><strong>取引事例比較法 → 比準価格</strong><br>似たような不動産の取引事例を集めて比較する手法。<br>💡 特殊な事情がある事例でも<strong>事情補正</strong>できれば使える。「使ってはいけない」は誤り！</div><div class="info-box" style="background:#fff3e0"><strong>収益還元法 → 収益価格</strong><br>将来生み出す純収益の現在価値の総和を求める手法。<br>💡 <strong>万能選手</strong>。自用でも賃貸を想定して適用可能。価格上昇時こそ有力な験証手段。</div><div class="info-box" style="background:#e8eaf6;border:2px solid #3f51b5"><strong style="color:#283593">最重要ルール：複数の手法を適用すべき！</strong><br>「1つ選択して適用」ではない。困難な場合でもその考え方をできるだけ参酌するように努めるべき（基準 第8章第7節）。</div></div><div class="card"><div class="card-title" style="border-bottom:2px solid #37474f;color:#37474f">📐 不動産の価格に関する諸原則</div><div class="info-box" style="background:#eceff1"><strong>最有効使用の原則</strong>（基準 第4章）<br>不動産の価格は、その不動産の<strong>効用が最高度に発揮される可能性に最も富む使用</strong>（最有効使用）を前提として把握される。良識と通常の使用能力を持つ人による<strong>合理的かつ合法的な最高最善の使用方法</strong>に基づく。</div><div class="info-box" style="background:#f5f5f5"><strong>適合の原則</strong>（基準 第4章）<br>不動産の収益性又は快適性が最高度に発揮されるためには、当該不動産がその<strong>環境に適合</strong>していることが必要。<br><br><span style="color:#d32f2f;font-weight:bold">⚠️ 最有効使用の原則と適合の原則は別の原則！名前と内容の入れ替えに注意。</span><br>「最高度の使用」→最有効使用、「環境に適合」→適合の原則。</div></div><div style="display:flex;flex-direction:column;gap:8px"><a href="https://elaws.e-gov.go.jp/document?lawid=344AC0000000049" target="_blank" rel="noopener noreferrer" style="display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px">📖 地価公示法（e-Gov法令検索）</a></div>`;
+}
+
+// ========== Stats タブ ==========
+function renderStats() {
+  const l1t = quizzesL1.length, l2t = quizzesL2.length;
+  let l1m = 0, l2m = 0;
+  quizzesL1.forEach((_, i) => { if(masteredSet.has('1-'+i)) l1m++; });
+  quizzesL2.forEach((_, i) => { if(masteredSet.has('2-'+i)) l2m++; });
+  const tot = l1t + l2t, mast = l1m + l2m;
+  const pAll = tot > 0 ? Math.round(mast/tot*100) : 0;
+  const p1 = l1t > 0 ? Math.round(l1m/l1t*100) : 0;
+  const p2 = l2t > 0 ? Math.round(l2m/l2t*100) : 0;
+
+  function catStats(qs, lv) {
+    const m = {};
+    qs.forEach((q, i) => {
+      if (!m[q.cat]) m[q.cat] = {t:0, d:0};
+      m[q.cat].t++;
+      if (masteredSet.has(lv+'-'+i)) m[q.cat].d++;
+    });
+    return Object.entries(m).map(([c, v]) => '<div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px"><span>'+c+'</span><span style="font-weight:bold;color:'+(v.d===v.t?'#27ae60':'#7f8c8d')+'">'+v.d+'/'+v.t+'</span></div>').join('');
+  }
+
+  document.getElementById('page-stats').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:8px">📊</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:4px">全体の進捗</div>
+    <div style="font-size:32px;font-weight:bold;color:#16a085;margin-bottom:8px">${pAll}%</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:12px">${mast} / ${tot} 問 習得済み</div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pAll}%;background:#16a085"></div></div>
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#3498db;margin-bottom:12px">Level 1：基礎（${l1m}/${l1t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p1}%;background:#3498db;height:8px"></div></div>
+    ${catStats(quizzesL1, '1')}
+  </div>
+  <div class="card">
+    <div style="font-size:14px;font-weight:bold;color:#e74c3c;margin-bottom:12px">Level 2：応用（${l2m}/${l2t}）</div>
+    <div class="progress-bar" style="height:8px;margin-bottom:12px"><div class="progress-fill" style="width:${p2}%;background:#e74c3c;height:8px"></div></div>
+    ${catStats(quizzesL2, '2')}
+  </div>
+  <button onclick="if(confirm('全ての学習データをリセットしますか？')){masteredSet=new Set();saveMastered();renderStats();}" style="width:100%;padding:12px;font-size:13px;border:2px solid #e74c3c;border-radius:8px;background:white;color:#e74c3c;cursor:pointer;font-weight:bold">🗑️ 全データリセット</button>`;
+}
+
+// ========== Quiz タブ ==========
+function renderQuizMenu() {
+  const l1u = quizzesL1.filter((_,i) => !masteredSet.has('1-'+i)).length;
+  const l2u = quizzesL2.filter((_,i) => !masteredSet.has('2-'+i)).length;
+  let extra1 = '', extra2 = '';
+  if (l1u > 0 && l1u < quizzesL1.length)
+    extra1 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(1,'unmastered')">レベル1：未習得のみ（${l1u}問）</button>`;
+  if (l2u > 0 && l2u < quizzesL2.length)
+    extra2 = `<button class="btn btn-sm" style="background:#9b59b6" onclick="startQuiz(2,'unmastered')">レベル2：未習得のみ（${l2u}問）</button>`;
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">🎯</div>
+    <div style="font-size:18px;font-weight:bold;margin-bottom:16px">地価公示・鑑定評価クイズ</div>
+    <div style="font-size:14px;color:#7f8c8d;margin-bottom:24px">レベルを選んでください</div>
+    <div style="margin-bottom:24px">
+      <button class="btn" style="background:#3498db" onclick="startQuiz(1,'all')">
+        <div>レベル1：基礎（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">条文知識で解ける基本問題（${quizzesL1.length}問）</div>
+      </button>
+      ${extra1}
+    </div>
+    <div>
+      <button class="btn" style="background:#e74c3c" onclick="startQuiz(2,'all')">
+        <div>レベル2：応用（全問題）</div>
+        <div style="font-size:12px;font-weight:normal;margin-top:4px">判例＋横断知識が必要（${quizzesL2.length}問）</div>
+      </button>
+      ${extra2}
+    </div>
+  </div>`;
+}
+
+function shuffleArr(a) { const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function startQuiz(lv, mode) {
+  const qs = lv === 1 ? quizzesL1 : quizzesL2;
+  let filtered = qs.map((q,i) => ({...q, oi: i}));
+  if (mode === 'unmastered') filtered = filtered.filter(q => !masteredSet.has(lv+'-'+q.oi));
+  if (filtered.length === 0) { alert('全問習得済みです！'); return; }
+  currentLevel = lv; currentMode = mode;
+  shuffled = shuffleArr(filtered);
+  currentIdx = 0; score = 0; answered = false;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = shuffled[currentIdx];
+  const lvColor = currentLevel === 1 ? '#3498db' : '#e74c3c';
+  const prog = ((currentIdx+1)/shuffled.length*100);
+  document.getElementById('page-quiz').innerHTML = `
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <span style="font-size:12px;color:${lvColor};font-weight:bold">Lv.${currentLevel} ${currentLevel===1?'基礎':'応用'}</span>
+    <span style="font-size:12px;color:#7f8c8d">${currentIdx+1} / ${shuffled.length}</span>
+  </div>
+  <div style="width:100%;background:#e0e0e0;border-radius:10px;height:4px;margin-bottom:16px">
+    <div style="width:${prog}%;background:${lvColor};border-radius:10px;height:4px;transition:width 0.3s"></div>
+  </div>
+  <div class="card">
+    <div style="display:inline-block;background:#f0f0f0;padding:2px 8px;border-radius:4px;font-size:11px;color:#666;margin-bottom:12px">${q.cat}</div>
+    <div style="font-size:15px;line-height:1.8;font-weight:500">${q.q}</div>
+  </div>
+  <div style="display:flex;gap:12px;margin-bottom:16px">
+    <button onclick="handleAnswer(true)" style="flex:1;background:#27ae60;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">⭕ 正しい</button>
+    <button onclick="handleAnswer(false)" style="flex:1;background:#e74c3c;color:white;border:none;border-radius:12px;padding:20px;font-size:18px;font-weight:bold;cursor:pointer">❌ 誤り</button>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button onclick="navQuestion(-1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx===0?';opacity:0.3;pointer-events:none':''}">← 前の問題</button>
+    <button onclick="navQuestion(1)" style="flex:1;padding:10px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer${currentIdx>=shuffled.length-1?';opacity:0.3;pointer-events:none':''}">次の問題 →</button>
+  </div>`;
+}
+
+function navQuestion(dir) {
+  const newIdx = currentIdx + dir;
+  if (newIdx < 0 || newIdx >= shuffled.length) return;
+  currentIdx = newIdx;
+  answered = false;
+  renderQuestion();
+}
+
+function handleAnswer(ua) {
+  if (answered) return;
+  answered = true;
+  const q = shuffled[currentIdx];
+  const correct = ua === q.a;
+  if (correct) score++;
+  const mk = currentLevel+'-'+q.oi;
+  const isMastered = masteredSet.has(mk);
+  const isLast = currentIdx+1 >= shuffled.length;
+
+  const quizDiv = document.getElementById('page-quiz');
+  const resultHTML = `
+  <div style="background:${correct?'#e8f5e9':'#fce4ec'};border:2px solid ${correct?'#4caf50':'#f44336'};border-radius:12px;padding:16px;margin-bottom:16px">
+    <div style="font-size:18px;font-weight:bold;color:${correct?'#2e7d32':'#c62828'};margin-bottom:8px">${correct?'⭕ 正解！':'❌ 不正解'}</div>
+    <div style="font-size:13px;line-height:1.8;color:#333">
+      <div style="margin-bottom:4px"><strong>正解：</strong>${q.a?'⭕ 正しい':'❌ 誤り'}</div>
+      ${q.ex}
+    </div>
+  </div>
+  <div style="display:flex;gap:8px;margin-bottom:12px">
+    <button id="masterbtn" onclick="toggleMast('${mk}')" style="flex:1;padding:12px;font-size:13px;font-weight:bold;border:2px solid ${isMastered?'#27ae60':'#bdbdbd'};border-radius:8px;background:${isMastered?'#e8f5e9':'white'};color:${isMastered?'#27ae60':'#757575'};cursor:pointer">${isMastered?'✅ 完璧！':'完璧にする'}</button>
+  </div>
+  <button onclick="nextQ()" style="width:100%;background:#3498db;color:white;border:none;border-radius:12px;padding:16px;font-size:16px;font-weight:bold;cursor:pointer;margin-bottom:12px">${isLast?'結果を見る':'次の問題 →'}</button>
+  <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">クイズを終了してレベル選択に戻る</button>`;
+
+  const allBtns = quizDiv.querySelectorAll('div[style*="display:flex;gap:12px"]');
+  if (allBtns.length > 0) allBtns[allBtns.length-1].outerHTML = resultHTML;
+}
+
+function toggleMast(mk) {
+  if (masteredSet.has(mk)) masteredSet.delete(mk); else masteredSet.add(mk);
+  saveMastered();
+  const btn = document.getElementById('masterbtn');
+  const is = masteredSet.has(mk);
+  btn.style.border = '2px solid '+(is?'#27ae60':'#bdbdbd');
+  btn.style.background = is?'#e8f5e9':'white';
+  btn.style.color = is?'#27ae60':'#757575';
+  btn.textContent = is?'✅ 完璧！':'完璧にする';
+}
+
+function nextQ() {
+  if (currentIdx+1 >= shuffled.length) {
+    renderResult();
+  } else {
+    currentIdx++; answered = false;
+    renderQuestion();
+  }
+}
+
+function renderResult() {
+  const pct = Math.round(score/shuffled.length*100);
+  let msg='', emo='';
+  if(pct===100){msg='完璧！素晴らしい！';emo='🎉';}
+  else if(pct>=80){msg='よくできました！';emo='😊';}
+  else if(pct>=60){msg='もう少し！復習しよう';emo='💪';}
+  else{msg='原則と表を確認してから再挑戦！';emo='📚';}
+  const lvColor = currentLevel===1?'#3498db':'#e74c3c';
+
+  document.getElementById('page-quiz').innerHTML = `
+  <div class="card" style="text-align:center">
+    <div style="font-size:48px;margin-bottom:16px">${emo}</div>
+    <div style="font-size:14px;color:${lvColor};margin-bottom:8px">レベル${currentLevel}：${currentLevel===1?'基礎':'応用'}${currentMode==='unmastered'?'（未習得のみ）':''}</div>
+    <div style="font-size:24px;font-weight:bold;margin-bottom:8px">${score} / ${shuffled.length} 正解</div>
+    <div style="font-size:18px;color:#7f8c8d;margin-bottom:8px">正答率 ${pct}%</div>
+    <div style="font-size:16px;margin-bottom:24px">${msg}</div>
+    <button class="btn" style="background:#3498db" onclick="startQuiz(${currentLevel},'${currentMode}')">同じ設定で再挑戦</button>
+    <button onclick="renderQuizMenu()" style="width:100%;padding:12px;font-size:13px;font-weight:bold;border:2px solid #95a5a6;border-radius:8px;background:white;color:#95a5a6;cursor:pointer">レベル選択に戻る</button>
+  </div>`;
+}
+
+// 初期表示
+renderAbout();
+</script>
+</body>
+</html>
