@@ -1,5 +1,6 @@
 {
   "app_id": "chika_kantei",
+  "menu_url": "../zei_sonota/index.html",
   "app_title": "地価公示・鑑定評価クイズ",
   "header_title": "その他 ＞ 地価公示・鑑定評価",
   "header_desc": "地価公示法の仕組みと不動産鑑定評価の基本",
