@@ -1,0 +1,193 @@
+{
+  "app_id": "fudousan_zei",
+  "app_title": "不動産に関する税クイズ",
+  "header_title": "その他 ＞ 不動産に関する税",
+  "header_desc": "不動産取得税・固定資産税・所得税・登録免許税・印紙税・贈与税",
+  "quiz_title": "不動産に関する税クイズ",
+  "quizzes_l1": [
+    {
+      "q": "不動産取得税は、不動産の取得に対し、当該不動産所在の市町村において課される。",
+      "a": false,
+      "ex": "誤り。不動産取得税は市町村ではなく、当該不動産所在の「都道府県」において課されます（地方税法73条の2第1項）。不動産取得税は都道府県税、固定資産税は市町村税と区別しましょう。",
+      "cat": "不動産取得税の基本"
+    },
+    {
+      "q": "不動産取得税は、相続による不動産の取得に対しても課される。",
+      "a": false,
+      "ex": "誤り。相続による不動産の取得に対しては、不動産取得税は課されません（地方税法73条の7第1号）。相続は形式的な所有権の移転であり、実質的な取得ではないためです。売買・贈与・新築などの場合は課税されます。",
+      "cat": "不動産取得税の基本"
+    },
+    {
+      "q": "不動産取得税の徴収は普通徴収の方法によるとされている。",
+      "a": true,
+      "ex": "正しい。不動産取得税は普通徴収（都道府県から納税通知書が届く方式）です。「申告納付」ではありません。納税者自身が計算して納付するのではなく、都道府県が税額を計算して通知します。",
+      "cat": "不動産取得税の基本"
+    },
+    {
+      "q": "固定資産税は、固定資産の所有者に対して課される税であり、賃借人に対して課されることはない。",
+      "a": true,
+      "ex": "正しい。固定資産税は固定資産の所有者（登記簿等に登記・登録されている者）に課されます（地方税法343条1項・2項）。土地や建物を借りている賃借人には課税されません。",
+      "cat": "固定資産税の基本"
+    },
+    {
+      "q": "固定資産税の賦課期日は、条例で定める日とされている。",
+      "a": false,
+      "ex": "誤り。固定資産税の賦課期日は「当該年度の初日の属する年の1月1日」と法律で定められています（地方税法359条）。条例で変更することはできません。法定の日付である点がポイントです。",
+      "cat": "固定資産税の基本"
+    },
+    {
+      "q": "固定資産税の標準税率は百分の1.4（1.4%）である。",
+      "a": true,
+      "ex": "正しい。固定資産税の標準税率は1.4%です（地方税法350条）。標準税率であるため、財政上の必要があれば市町村はこれを超える税率を定めることも可能です。",
+      "cat": "固定資産税の基本"
+    },
+    {
+      "q": "個人が土地を譲渡した場合の長期・短期の区分は、譲渡した年の1月1日において所有期間が5年を超えるかどうかで判定する。",
+      "a": true,
+      "ex": "正しい。不動産の譲渡所得は、譲渡した年の1月1日時点で所有期間が5年を超えるかどうかで長期・短期を区分します（租税特別措置法31条2項）。「実際の取得日から5年超」ではなく「1月1日基準」である点がポイントです。",
+      "cat": "所得税（譲渡所得）の基本"
+    },
+    {
+      "q": "総合課税の譲渡所得で特別控除50万円がある場合、まず長期譲渡所得から控除し、残りがあれば短期譲渡所得から控除する。",
+      "a": false,
+      "ex": "誤り。50万円の特別控除は、まず「短期譲渡所得」から控除し、控除しきれない残額があれば「長期譲渡所得」から控除します。短期から先に控除するのがルールです。",
+      "cat": "所得税（譲渡所得）の基本"
+    },
+    {
+      "q": "住宅用家屋の所有権の移転登記に係る登録免許税の軽減税率の適用を受けるためには、床面積が50平方メートル以上であることが要件の一つとされている。",
+      "a": true,
+      "ex": "正しい。住宅用家屋の軽減税率の適用には、床面積50㎡以上が要件の一つです（租税特別措置法72条の2等）。また、個人の居住用家屋であること、売買または競落による取得であることも必要です。",
+      "cat": "登録免許税の基本"
+    },
+    {
+      "q": "住宅用家屋の所有権移転登記に係る登録免許税の軽減税率は、交換により取得した場合にも適用される。",
+      "a": false,
+      "ex": "誤り。住宅用家屋の軽減税率は、取得原因が「売買」または「競落」の場合に限り適用されます。交換・贈与による取得には適用されません。",
+      "cat": "登録免許税の基本"
+    },
+    {
+      "q": "不動産の売買契約書は、印紙税の課税文書に該当する。",
+      "a": true,
+      "ex": "正しい。不動産の売買契約書は印紙税法上の課税文書（第1号文書）に該当し、記載金額に応じた印紙税が課されます。",
+      "cat": "印紙税の基本"
+    },
+    {
+      "q": "建物の賃貸借契約書は、印紙税の課税文書に該当する。",
+      "a": false,
+      "ex": "誤り。建物の賃貸借契約書は印紙税の課税文書に該当しません（非課税）。これに対し、土地の賃貸借契約書は課税文書に該当します。「建物の賃貸借は非課税、土地の賃貸借は課税」と区別しましょう。",
+      "cat": "印紙税の基本"
+    },
+    {
+      "q": "贈与契約書に記載された金額が5,000万円であっても、贈与契約書の印紙税の記載金額は「記載金額なし」として取り扱われる。",
+      "a": true,
+      "ex": "正しい。贈与契約書は対価の授受がないため、たとえ金額が記載されていても「契約金額の記載のないもの」として取り扱われます。この場合、印紙税額は200円となります。",
+      "cat": "印紙税の基本"
+    },
+    {
+      "q": "住宅取得等資金の贈与税の非課税の特例は、直系尊属から金銭の贈与を受けた場合に適用されるが、家屋そのものの贈与には適用されない。",
+      "a": true,
+      "ex": "正しい。住宅取得等資金の贈与税の非課税の特例は、住宅を取得するための「金銭」の贈与に限り適用されます。家屋そのものの贈与を受けた場合は、この特例の対象にはなりません。",
+      "cat": "贈与税の基本"
+    },
+    {
+      "q": "住宅取得等資金の贈与税の非課税の特例において、贈与をする者（贈与者）には年齢の制限が設けられている。",
+      "a": false,
+      "ex": "誤り。贈与者（親や祖父母などの直系尊属）には年齢制限はありません。制限があるのは受贈者（もらう側）で、18歳以上であること、合計所得金額2,000万円以下であることが要件です。",
+      "cat": "贈与税の基本"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "家屋を新築した場合において、新築の日から6か月を経過してもなお最初の使用又は譲渡が行われないときは、その6か月を経過した日に家屋の取得があったものとみなされる。",
+      "a": true,
+      "ex": "正しい。地方税法73条の2第2項ただし書により、新築家屋で最初の使用・譲渡がないまま6か月を経過すると、その経過日に取得があったものとみなされます。「3年」「2年」にすり替えるひっかけが頻出です。",
+      "cat": "不動産取得税の特例"
+    },
+    {
+      "q": "不動産取得税の標準税率は百分の4であるが、この税率を超えて課税することはできない。",
+      "a": false,
+      "ex": "誤り。不動産取得税の税率4%は「標準税率」です（地方税法73条の15）。標準税率は目安であり、財政上の必要があれば超えることが可能です。「4%を超えることができない」は誤りです。",
+      "cat": "不動産取得税の特例"
+    },
+    {
+      "q": "新築住宅の取得に対する不動産取得税については、一定の要件を満たす場合、課税標準から1,200万円を控除する特例がある。この特例の適用を受けるためには、住宅の床面積が50平方メートル以上240平方メートル以下であることが必要である。",
+      "a": true,
+      "ex": "正しい。新築住宅の1,200万円控除の特例は、床面積50㎡以上240㎡以下が要件です（地方税法73条の14第1項）。この面積要件は頻出です。",
+      "cat": "不動産取得税の特例"
+    },
+    {
+      "q": "固定資産税の免税点の判定は、固定資産税額が一定の金額に満たない場合に課税しないというものである。",
+      "a": false,
+      "ex": "誤り。免税点の判定基準は「固定資産税額」ではなく「課税標準となるべき額」です（地方税法351条）。土地30万円、家屋20万円、償却資産150万円の基準は、「課税標準」であって「税額」ではありません。これは非常に重要なひっかけポイントです。",
+      "cat": "固定資産税の特例"
+    },
+    {
+      "q": "住宅用地に対する固定資産税の課税標準の特例において、小規模住宅用地（200平方メートル以下の部分）は課税標準が価格の3分の1となる。",
+      "a": false,
+      "ex": "誤り。小規模住宅用地（200㎡以下の部分）の課税標準は価格の「6分の1」です（地方税法349条の3の2第2項）。一般住宅用地（200㎡超の部分）が「3分の1」です。6分の1と3分の1を入れ替えるひっかけに注意しましょう。",
+      "cat": "固定資産税の特例"
+    },
+    {
+      "q": "固定資産税の納税義務者として登記されている個人が賦課期日前に死亡した場合、その年度の固定資産税は課税されない。",
+      "a": false,
+      "ex": "誤り。登記されている個人が賦課期日前に死亡しているときは、同日において当該固定資産を「現に所有している者」が納税義務者となります（地方税法343条2項）。課税されないわけではなく、納税義務者が変わるだけです。",
+      "cat": "固定資産税の特例"
+    },
+    {
+      "q": "居住用財産を譲渡した場合の3,000万円特別控除は、譲渡の相手方が譲渡者の孫であっても、その孫と生計を一にしていなければ適用を受けることができる。",
+      "a": false,
+      "ex": "誤り。3,000万円特別控除は、配偶者、直系血族（親、子、孫など）への譲渡には適用されません（租税特別措置法35条2項）。孫は直系血族なので、生計を一にしているかどうかに関係なく適用不可です。",
+      "cat": "居住用財産の譲渡所得"
+    },
+    {
+      "q": "居住用財産を譲渡した場合の軽減税率の特例は、所有期間が10年を超える場合に適用されるが、前年にこの特例の適用を受けた場合でも翌年に再度適用を受けることができる。",
+      "a": false,
+      "ex": "誤り。居住用財産の軽減税率の特例は、適用を受けた年の前年・前々年にこの特例の適用を受けていない場合に限り適用されます（いわゆる3年に1度の制限）。毎年連続して適用を受けることはできません。",
+      "cat": "居住用財産の譲渡所得"
+    },
+    {
+      "q": "収用交換等の場合の5,000万円特別控除と、居住用財産の軽減税率の特例は、併用して適用を受けることができる。",
+      "a": true,
+      "ex": "正しい。5,000万円特別控除（収用等の場合）と居住用財産の軽減税率の特例は併用可能です。一方、収用等に伴う課税の繰延べと軽減税率の特例は併用できません。この併用可否の区別は重要です。",
+      "cat": "居住用財産の譲渡所得"
+    },
+    {
+      "q": "住宅用家屋の所有権移転登記に係る登録免許税の軽減税率は、当該家屋の敷地である土地についても適用される。",
+      "a": false,
+      "ex": "誤り。住宅用家屋の軽減税率は「家屋」のみが対象であり、その敷地である土地には適用されません。「敷地にも適用される」とするひっかけに注意しましょう。",
+      "cat": "登録免許税の軽減措置"
+    },
+    {
+      "q": "住宅用家屋の所有権移転登記に係る登録免許税の軽減税率の適用を受けるためには、税務署長の証明書が必要である。",
+      "a": false,
+      "ex": "誤り。軽減税率の適用を受けるために必要なのは「市町村長等」の証明書であり、「税務署長」の証明書ではありません。この点も頻出のひっかけポイントです。",
+      "cat": "登録免許税の軽減措置"
+    },
+    {
+      "q": "1通の契約書に土地の売買契約（5,000万円）と建物の建築請負契約（6,000万円）を併記した場合、印紙税の記載金額は1億1,000万円となる。",
+      "a": false,
+      "ex": "誤り。土地の売買契約と建物の建築請負契約は「異なる号」の課税事項です。異なる号の場合は合計ではなく「高い方の金額」が記載金額となります。したがって、記載金額は6,000万円です。同一号なら合計、異なる号なら高い方と覚えましょう。",
+      "cat": "印紙税の記載金額"
+    },
+    {
+      "q": "売買代金を減額する旨の変更契約書を作成した場合、当該変更契約書の記載金額は減少した金額とされる。",
+      "a": false,
+      "ex": "誤り。売買代金を減額する変更契約書については、「契約金額の記載のないもの」として取り扱われます。減少額が記載金額になるのではありません。なお、増額の場合は「増加額」が記載金額になります。",
+      "cat": "印紙税の記載金額"
+    },
+    {
+      "q": "不動産取得税の課税標準の算定において、宅地を取得した場合の課税標準は、当該宅地の価格の4分の1となる特例がある。",
+      "a": false,
+      "ex": "誤り。宅地を取得した場合の特例として、課税標準が価格の「2分の1」となります（地方税法附則11条の5等）。「4分の1」ではありません。分数のすり替えに注意しましょう。",
+      "cat": "横断的な比較"
+    },
+    {
+      "q": "不動産取得税は都道府県が普通徴収の方法で課するのに対し、所得税（譲渡所得）は国税として申告納税の方法で課される。",
+      "a": true,
+      "ex": "正しい。不動産取得税は地方税（都道府県税）で普通徴収、所得税は国税で申告納税です。同じ「不動産に関する税」でも、税の種類によって課税主体や徴収方法が異なる点を整理しておきましょう。",
+      "cat": "横断的な比較"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで不動産に関する税の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。<br>税の分野は毎年2問出題されます。特例の適用要件が頻出です。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">カバーできていない論点：</strong><br>・具体的な税額計算問題（税率×課税標準の計算演習）<br>・住宅ローン控除（住宅借入金等特別控除）の詳細<br>・不動産鑑定評価・地価公示との関連<br>・都市計画税の詳細<br>・相続時精算課税制度の詳細<br>・各税の申告手続きの細部</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 不動産に関する税の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2\"><div style=\"font-weight:bold;margin-bottom:8px\">【不動産取引と税金の発生タイミング】</div><span style=\"background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold\">① 取得時</span><br>不動産取得税（都道府県）<br>＋ 登録免許税（国）<br>＋ 印紙税（契約書）<br><br>↓<br><br><span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">② 保有時</span><br>固定資産税（市町村・毎年）<br><br>↓<br><br><span style=\"background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold\">③ 譲渡（売却）時</span><br>所得税（譲渡所得・国）<br>＋ 印紙税（契約書）<br><br><span style=\"background:#f8bbd0;padding:3px 8px;border-radius:4px;font-weight:bold\">④ 贈与時</span><br>贈与税（国）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">【数字のすり替え】新築から「6か月」ルール</strong><br>新築家屋で最初の使用・譲渡がない場合、取得とみなされるのは新築から「6か月後」。過去問では「2年」「3年」と数字をすり替えてきます。「6か月」を確実に覚えましょう。</div><div class=\"info-box\" style=\"background:#e8eaf6;border-left:4px solid #3f51b5\"><strong style=\"color:#283593\">【税額 vs 課税標準】固定資産税の免税点</strong><br>免税点の判定基準は「固定資産税額」ではなく「課税標準となるべき額」。さらに、同一市町村内の同一の者が所有する固定資産について判定します。この2点がひっかけポイントです。</div><div class=\"info-box\" style=\"background:#e0f2f1;border-left:4px solid #00897b\"><strong style=\"color:#00695c\">【分数のすり替え】住宅用地の特例</strong><br>小規模住宅用地（200㎡以下）→ <strong>6分の1</strong>。一般住宅用地（200㎡超）→ <strong>3分の1</strong>。宅地の不動産取得税の特例は<strong>2分の1</strong>。それぞれの分数を正確に覚えましょう。</div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #d32f2f\"><strong style=\"color:#c62828\">【身内への売却】3,000万円控除</strong><br>直系血族（親・子・孫）への譲渡には適用不可。孫は直系血族なので、生計を一にしていなくてもダメ。「生計を一にしていない」は無関係です。</div><div class=\"info-box\" style=\"background:#f3e5f5;border-left:4px solid #7b1fa2\"><strong style=\"color:#6a1b9a\">【同一号と異なる号】印紙税の記載金額</strong><br>同じ種類の取引（例：土地+建物の売買）→ <strong>合計額</strong>。異なる種類の取引（例：売買+請負）→ <strong>高い方</strong>。「合計するか、高い方か」を見分けるのがカギです。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">📊 表で暗記</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">6つの税の基本比較表</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">項目</th><th style=\"border:1px solid #90caf9\">不動産取得税</th><th style=\"border:1px solid #90caf9\">固定資産税</th><th style=\"border:1px solid #90caf9\">所得税（譲渡）</th><th style=\"border:1px solid #90caf9\">登録免許税</th><th style=\"border:1px solid #90caf9\">印紙税</th><th style=\"border:1px solid #90caf9\">贈与税</th></tr><tr><td style=\"border:1px solid #e0e0e0;font-weight:bold\">分類</td><td style=\"border:1px solid #e0e0e0;text-align:center\">地方税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">地方税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国税</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0;font-weight:bold\">課税主体</td><td style=\"border:1px solid #e0e0e0;text-align:center\">都道府県</td><td style=\"border:1px solid #e0e0e0;text-align:center\">市町村</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国</td><td style=\"border:1px solid #e0e0e0;text-align:center\">国</td></tr><tr><td style=\"border:1px solid #e0e0e0;font-weight:bold\">いつ課税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">取得時（1回）</td><td style=\"border:1px solid #e0e0e0;text-align:center\">毎年1/1</td><td style=\"border:1px solid #e0e0e0;text-align:center\">譲渡時</td><td style=\"border:1px solid #e0e0e0;text-align:center\">登記時</td><td style=\"border:1px solid #e0e0e0;text-align:center\">契約書作成時</td><td style=\"border:1px solid #e0e0e0;text-align:center\">贈与時</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0;font-weight:bold\">徴収方法</td><td style=\"border:1px solid #e0e0e0;text-align:center\">普通徴収</td><td style=\"border:1px solid #e0e0e0;text-align:center\">普通徴収</td><td style=\"border:1px solid #e0e0e0;text-align:center\">申告納税</td><td style=\"border:1px solid #e0e0e0;text-align:center\">登記時納付</td><td style=\"border:1px solid #e0e0e0;text-align:center\">貼付・消印</td><td style=\"border:1px solid #e0e0e0;text-align:center\">申告納税</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px\">不動産取得税と固定資産税の比較</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">項目</th><th style=\"border:1px solid #90caf9\">不動産取得税</th><th style=\"border:1px solid #90caf9\">固定資産税</th></tr><tr><td style=\"border:1px solid #e0e0e0\">課税主体</td><td style=\"border:1px solid #e0e0e0;text-align:center\">都道府県</td><td style=\"border:1px solid #e0e0e0;text-align:center\">市町村</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">課税時期</td><td style=\"border:1px solid #e0e0e0;text-align:center\">取得時（1回）</td><td style=\"border:1px solid #e0e0e0;text-align:center\">毎年1月1日</td></tr><tr><td style=\"border:1px solid #e0e0e0\">標準税率</td><td style=\"border:1px solid #e0e0e0;text-align:center\">4%（住宅・土地は3%）</td><td style=\"border:1px solid #e0e0e0;text-align:center\">1.4%</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">免税点（土地）</td><td style=\"border:1px solid #e0e0e0;text-align:center\">10万円</td><td style=\"border:1px solid #e0e0e0;text-align:center\">30万円</td></tr><tr><td style=\"border:1px solid #e0e0e0\">免税点（家屋）</td><td style=\"border:1px solid #e0e0e0;text-align:center\">建築23万円/その他12万円</td><td style=\"border:1px solid #e0e0e0;text-align:center\">20万円</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">住宅用地の特例</td><td style=\"border:1px solid #e0e0e0;text-align:center\">宅地→課税標準2分の1</td><td style=\"border:1px solid #e0e0e0;text-align:center\">小規模200㎡以下→6分の1<br>一般200㎡超→3分の1</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px\">居住用財産の特例の併用関係</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">組み合わせ</th><th style=\"border:1px solid #90caf9\">併用可否</th></tr><tr><td style=\"border:1px solid #e0e0e0\">3,000万円控除 ＋ 軽減税率</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold\">○ 併用可</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">5,000万円控除 ＋ 軽減税率</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold\">○ 併用可</td></tr><tr><td style=\"border:1px solid #e0e0e0\">課税繰延べ ＋ 軽減税率</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold\">× 併用不可</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">3,000万円控除 ＋ 買換え特例</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold\">× 併用不可</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px\">印紙税の記載金額の計算</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">パターン</th><th style=\"border:1px solid #90caf9\">記載金額</th></tr><tr><td style=\"border:1px solid #e0e0e0\">同一号が2以上（例：土地+建物の売買）</td><td style=\"border:1px solid #e0e0e0;text-align:center;font-weight:bold\">合計額</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">異なる号（例：売買+請負）</td><td style=\"border:1px solid #e0e0e0;text-align:center;font-weight:bold\">高い方の金額</td></tr><tr><td style=\"border:1px solid #e0e0e0\">贈与契約書</td><td style=\"border:1px solid #e0e0e0;text-align:center\">記載金額なし（200円）</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">減額変更契約書</td><td style=\"border:1px solid #e0e0e0;text-align:center\">記載金額なし（200円）</td></tr><tr><td style=\"border:1px solid #e0e0e0\">増額変更契約書</td><td style=\"border:1px solid #e0e0e0;text-align:center;font-weight:bold\">増加額が記載金額</td></tr></table></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🏠 不動産取得税（地方税）【重要度S】</div><div class=\"info-box\" style=\"background:#ffebee\"><strong>不動産を「取得」したときに1回だけかかる都道府県の税金</strong><br>売買・贈与・新築・増改築などで課税されます。ただし、<strong style=\"color:#d32f2f\">相続による取得は非課税</strong>です。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>基本ルール：</strong><br>・課税主体：<strong>都道府県</strong>（市町村ではない）<br>・納税義務者：不動産の取得者<br>・徴収方法：<strong>普通徴収</strong>（申告納付ではない）<br>・課税標準：固定資産課税台帳の登録価格（実際の売買価格ではない）<br>・標準税率：<strong>4%</strong>（住宅・土地は3%に軽減）</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong style=\"color:#e65100\">覚えるべき数字：</strong><br>・免税点：土地10万円、家屋（建築）23万円、家屋（その他）12万円<br>・新築住宅の控除：課税標準から<strong>1,200万円控除</strong>（床面積50㎡以上240㎡以下）<br>・宅地の特例：課税標準が価格の<strong>2分の1</strong>（4分の1ではない！）<br>・新築家屋のみなし取得：最初の使用・譲渡がなければ<strong>新築から6か月</strong>経過日</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏢 固定資産税（地方税）【重要度S】</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong>毎年1月1日時点で不動産を「持っている人」にかかる市町村の税金</strong><br>不動産取得税が「取得時1回」なのに対し、固定資産税は「毎年」かかります。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>基本ルール：</strong><br>・課税主体：<strong>市町村</strong>（都道府県ではない）<br>・納税義務者：固定資産の所有者（登記簿等に登記・登録されている者）<br>・賦課期日：<strong>その年の1月1日</strong>（法定。条例で変更不可）<br>・徴収方法：<strong>普通徴収</strong><br>・標準税率：<strong>1.4%</strong></div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong style=\"color:#e65100\">覚えるべき数字：</strong><br>・免税点：土地30万円、家屋20万円、償却資産150万円（<strong>「課税標準」で判定。「税額」ではない！</strong>）<br>・小規模住宅用地（200㎡以下）：課税標準が価格の<strong>6分の1</strong><br>・一般住宅用地（200㎡超の部分）：課税標準が価格の<strong>3分の1</strong></div><div class=\"info-box\" style=\"background:#e8eaf6;border-left:4px solid #3f51b5\"><strong style=\"color:#283593\">特殊ルール：</strong><br>・質権・100年超の地上権がある土地 → 質権者・地上権者が納税義務者<br>・所有者が賦課期日前に死亡 → 現に所有している者が納税義務者<br>・賃借人には課税されない（所有者に課税）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">💰 所得税・譲渡所得（国税）【重要度B】</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>不動産を売って利益が出たときにかかる国の税金</strong><br>所有期間が5年を超えるかどうかで税率が変わります。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>長期 vs 短期の区分：</strong><br>・短期譲渡所得：譲渡した年の1月1日時点で所有期間5年以内<br>・長期譲渡所得：譲渡した年の1月1日時点で所有期間5年超</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong style=\"color:#e65100\">居住用財産の特例：</strong><br>・<strong>3,000万円特別控除</strong>：居住用財産を譲渡 → 3,000万円控除。ただし直系血族・配偶者への譲渡は適用不可<br>・<strong>軽減税率</strong>：所有期間10年超の居住用財産。3年に1度の制限あり<br>・<strong>5,000万円特別控除</strong>：収用交換等の場合。軽減税率と併用可<br>・<strong>課税の繰延べ</strong>：収用等に伴い代替資産取得。軽減税率とは併用不可</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #f57f17;color:#f57f17\">📝 登録免許税（国税）【重要度B】</div><div class=\"info-box\" style=\"background:#fffde7\"><strong>不動産の登記をするときにかかる国の税金</strong><br>住宅用家屋には軽減措置があります。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>住宅用家屋の軽減のポイント：</strong><br>・対象：<strong>個人の居住用家屋のみ</strong>（社宅・敷地は対象外）<br>・取得原因：<strong>売買又は競落に限る</strong>（交換・贈与は対象外）<br>・床面積：<strong>50㎡以上</strong><br>・取得後<strong>1年以内</strong>に登記が必要<br>・何度でも適用可能（回数制限なし）<br>・証明書：<strong>市町村長等</strong>の証明書が必要（税務署長ではない）</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00838f;color:#00838f\">📄 印紙税（国税）【重要度B】</div><div class=\"info-box\" style=\"background:#e0f7fa\"><strong>契約書を作成したときにかかる国の税金</strong><br>記載金額の計算ルールがポイントです。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>課税文書の判定：</strong><br>・<strong style=\"color:#2e7d32\">課税</strong>：不動産売買契約書、土地賃貸借契約書、建築請負契約書<br>・<strong style=\"color:#d32f2f\">非課税</strong>：建物の賃貸借契約書<br>・覚書でも契約成立を証明する文書なら課税文書<br>・契約書を複数通作成 → 各通に課税</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong style=\"color:#e65100\">記載金額の計算：</strong><br>・同一号の課税事項が2以上（例：土地+建物の売買）→ <strong>合計額</strong><br>・異なる号の課税事項（例：売買+請負）→ <strong>高い方の金額</strong><br>・贈与契約書 → <strong>記載金額なし</strong>（200円）<br>・減額変更契約書 → <strong>記載金額なし</strong>（200円）<br>・増額変更契約書 → <strong>増加額が記載金額</strong></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #7b1fa2;color:#7b1fa2\">🎁 贈与税（国税）【重要度C】</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>住宅取得等資金を親や祖父母からもらったとき、一定額まで非課税になる特例</strong></div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>住宅取得等資金の非課税の特例のポイント：</strong><br>・対象：住宅取得等のための<strong>「金銭」の贈与のみ</strong>（家屋そのものの贈与は対象外）<br>・贈与者：直系尊属（親、祖父母など）。<strong>年齢制限なし</strong><br>・受贈者：<strong>18歳以上</strong>。合計所得金額<strong>2,000万円以下</strong><br>・住宅用家屋は<strong>日本国内</strong>に限る（国外は対象外）</div></div><div style=\"display:flex;flex-direction:column;gap:8px;margin-top:16px\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=325AC0000000226#Mp-Ch_2-Se_4\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 地方税法（不動産取得税：73条〜）</a><a href=\"https://elaws.e-gov.go.jp/document?lawid=325AC0000000226#Mp-Ch_3-Se_2\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 地方税法（固定資産税：341条〜）</a><a href=\"https://elaws.e-gov.go.jp/document?lawid=332AC0000000033\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 所得税法</a><a href=\"https://elaws.e-gov.go.jp/document?lawid=342AC0000000035\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 登録免許税法</a><a href=\"https://elaws.e-gov.go.jp/document?lawid=342AC0000000023\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 印紙税法</a><a href=\"https://elaws.e-gov.go.jp/document?lawid=332AC0000000033#Mp-At_89\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 租税特別措置法</a></div>"
+}
