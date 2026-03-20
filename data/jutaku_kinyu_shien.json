@@ -1,0 +1,193 @@
+{
+  "app_id": "jutaku_kinyu_shien",
+  "app_title": "住宅金融支援機構クイズ",
+  "header_title": "その他 ＞ 住宅金融支援機構",
+  "header_desc": "証券化支援事業・直接融資・団信・フラット35Sの基本",
+  "quiz_title": "住宅金融支援機構クイズ",
+  "quizzes_l1": [
+    {
+      "q": "独立行政法人住宅金融支援機構の証券化支援事業（買取型）とは、民間金融機関が行った住宅ローンの貸付債権を機構が譲り受け、それを担保としてMBS（資産担保証券）を発行する仕組みである。",
+      "a": true,
+      "ex": "正しい。証券化支援事業（買取型）では、機構が金融機関の貸付債権を譲り受け（独立行政法人住宅金融支援機構法13条1項1号）、それを担保にMBSを発行して投資家から資金を調達します。いわゆる「フラット35」の基盤となる制度です。",
+      "cat": "証券化支援事業（買取型）"
+    },
+    {
+      "q": "証券化支援事業には「買取型」のみが存在し、「保証型」という類型は設けられていない。",
+      "a": false,
+      "ex": "誤り。証券化支援事業には「買取型」と「保証型」の2種類があります。保証型は、金融機関が貸付債権を信託等した上で発行する有価証券について、機構が債務保証を行う仕組みです（独立行政法人住宅金融支援機構法13条1項2号）。",
+      "cat": "証券化支援事業（買取型）"
+    },
+    {
+      "q": "機構は、住宅の建設や購入に必要な資金の貸付けを自ら直接行うことを主たる業務としている。",
+      "a": false,
+      "ex": "誤り。機構の主たる業務は、民間金融機関の貸付債権を譲り受ける証券化支援事業です。直接融資は災害復興や高齢者向けなど、民間がカバーしにくい限定的な場面でのみ行われます（独立行政法人住宅金融支援機構法4条、13条1項）。",
+      "cat": "証券化支援事業（買取型）"
+    },
+    {
+      "q": "証券化支援事業（買取型）において、機構が譲り受ける貸付債権の対象には、住宅の建設や購入のほか、一定の住宅の改良に必要な資金の貸付債権も含まれる。",
+      "a": true,
+      "ex": "正しい。機構が譲り受ける貸付債権は、住宅の建設・購入だけでなく、高齢者その他主務省令で定める者が居住性能又は居住環境の確保又は向上を主たる目的として行う改良に必要な資金の貸付債権も対象です（独立行政法人住宅金融支援機構法13条1項1号）。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）で譲り受ける貸付債権には、住宅の建設に付随する土地の取得に必要な資金の貸付けも含まれる。",
+      "a": true,
+      "ex": "正しい。住宅の建設に付随する土地又は借地権の取得に必要な資金も、買取りの対象に含まれます（独立行政法人住宅金融支援機構法施行令5条1項1号）。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）で機構が譲り受ける貸付債権の対象は、新築住宅の建設・購入に限られ、中古住宅の購入は含まれない。",
+      "a": false,
+      "ex": "誤り。法13条1項1号は「住宅の建設若しくは購入」としており、新築に限定していません。中古住宅の購入に必要な資金の貸付債権も譲受けの対象です。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "機構は、災害により住宅が滅失した場合における災害復興建築物の建設に必要な資金の貸付けを直接行うことができる。",
+      "a": true,
+      "ex": "正しい。災害復興建築物の建設・購入、被災建築物の補修に必要な資金の貸付けは、機構の直接融資業務の一つです（独立行政法人住宅金融支援機構法13条1項5号）。",
+      "cat": "直接融資業務"
+    },
+    {
+      "q": "機構は、マンションの共用部分の改良に必要な資金の貸付けを直接行うことができる。",
+      "a": true,
+      "ex": "正しい。マンションの共用部分の改良に必要な資金の貸付けは、機構の直接融資業務に含まれています（独立行政法人住宅金融支援機構法13条1項7号）。",
+      "cat": "直接融資業務"
+    },
+    {
+      "q": "機構は、子どもを育成する家庭に適した賃貸住宅の建設に必要な資金の貸付けを直接行うことができる。",
+      "a": true,
+      "ex": "正しい。子どもを育成する家庭や高齢者の家庭に適した良好な居住性能を有する賃貸住宅の建設に必要な資金の貸付けは、機構の直接融資業務です（独立行政法人住宅金融支援機構法13条1項8号）。",
+      "cat": "直接融資業務"
+    },
+    {
+      "q": "機構の団体信用生命保険業務では、貸付けを受けた者が死亡した場合に保険金を債務の弁済に充当する仕組みがあるが、重度障害の場合は対象外である。",
+      "a": false,
+      "ex": "誤り。団体信用生命保険業務では、貸付けを受けた者が死亡した場合だけでなく、重度障害の状態となった場合も含まれます（独立行政法人住宅金融支援機構法13条1項11号）。「死亡した場合（重度障害の状態となった場合を含む。）」と法文に明記されています。",
+      "cat": "団体信用生命保険"
+    },
+    {
+      "q": "団体信用生命保険では、あらかじめ貸付けを受けた者と契約を締結しておく必要がある。",
+      "a": true,
+      "ex": "正しい。機構は「あらかじめ契約を締結して」、その者が死亡した場合等に保険金を債務の弁済に充当します（独立行政法人住宅金融支援機構法13条1項11号）。事前の契約締結が要件です。",
+      "cat": "団体信用生命保険"
+    },
+    {
+      "q": "機構には、高齢者が自ら居住する住宅のバリアフリー改良などの資金について、死亡時に一括して償還する方法の貸付けを行う業務がある。",
+      "a": true,
+      "ex": "正しい。高齢者の家庭に適した住宅とするための改良資金について、高齢者が自ら居住する住宅に限り、死亡時に一括償還する方法が認められています（独立行政法人住宅金融支援機構法13条1項9号）。",
+      "cat": "高齢者向け制度"
+    },
+    {
+      "q": "機構の直接融資において、高齢者の死亡時一括償還制度では、担保として設定された抵当権の効力の及ぶ範囲を超えて弁済の請求をしないことができる。",
+      "a": true,
+      "ex": "正しい。死亡時一括償還の制度では、貸付けの際に担保として設定された抵当権の効力の及ぶ範囲を超えて弁済の請求をしないことができるとされています。これにより、高齢者の遺族に担保物件の価値以上の負担をかけない仕組みとなっています。",
+      "cat": "高齢者向け制度"
+    },
+    {
+      "q": "機構は、バリアフリー性、省エネルギー性、耐震性、耐久性・可変性に優れた住宅を取得する場合に、貸付金の金利を一定期間引き下げる制度を設けている。",
+      "a": true,
+      "ex": "正しい。いわゆるフラット35S制度です。施行令6条では、高齢者等の利用配慮、省エネ、耐震性、耐久性といった住宅の質の向上に配慮することが定められており、これに基づく金利引下げが行われています。",
+      "cat": "フラット35S・その他"
+    },
+    {
+      "q": "機構は、住宅の建設等に関する情報の提供や相談その他の援助を行う業務も行っている。",
+      "a": true,
+      "ex": "正しい。機構は、住宅の建設等をしようとする者や事業者に対し、資金の調達や良質な住宅の設計・建設等に関する情報の提供、相談その他の援助を行います（独立行政法人住宅金融支援機構法13条1項4号）。",
+      "cat": "フラット35S・その他"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "証券化支援事業（買取型）で機構が譲り受ける貸付債権には、住宅の建設又は購入に付随する土地又は借地権の取得に必要な資金の貸付けも含まれる。",
+      "a": true,
+      "ex": "正しい。施行令5条1項は、法13条1項1号の「付随する行為」として「住宅の建設に付随する土地又は借地権の取得」「住宅の購入に付随する土地若しくは借地権の取得又は当該住宅の改良」を定めています。「土地や借地権は対象外」とする選択肢は定番のひっかけです。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）において、住宅の購入に付随する当該住宅の改良に必要な資金の貸付債権は、譲受けの対象に含まれない。",
+      "a": false,
+      "ex": "誤り。住宅の購入に付随する当該住宅の改良に必要な資金も、買取りの対象に含まれます（独立行政法人住宅金融支援機構法施行令5条1項2号）。リフォーム付き住宅購入の資金も対象となります。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）において、賃貸住宅の建設に必要な資金の貸付債権は、機構の譲受けの対象となる。",
+      "a": false,
+      "ex": "誤り。買取型の対象は、自ら居住する住宅又は親族の居住用住宅に限られます。賃貸住宅の建設・購入資金の貸付債権は対象外です。ただし、子育て家庭・高齢者家庭向けの賃貸住宅については、直接融資の対象となります（法13条1項8号）。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）において、機構が譲り受ける貸付債権は、新築住宅の建設又は購入に係るもののみに限定されている。",
+      "a": false,
+      "ex": "誤り。法13条1項1号は「住宅の建設若しくは購入」としており、新築住宅に限定していません。中古住宅の購入に係る貸付債権も譲受けの対象です。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）において、住宅の建設に付随する借地権の取得に必要な資金の貸付債権も、機構の譲受けの対象に含まれる。",
+      "a": true,
+      "ex": "正しい。施行令5条1項1号は「住宅の建設に付随する土地又は借地権の取得」を付随行為として定めています。借地権の取得資金も対象です。",
+      "cat": "買取型の対象要件"
+    },
+    {
+      "q": "証券化支援事業（買取型）における貸付金の利率は、機構が一律に定めるため、どの金融機関で借り入れても同一の利率が適用される。",
+      "a": false,
+      "ex": "誤り。フラット35の金利は機構が一律に決めるのではなく、各金融機関が決定します。そのため金融機関によって金利が異なる場合があります。「どの金融機関でも同一」とする記述は定番のひっかけです。",
+      "cat": "買取型の金利・償還"
+    },
+    {
+      "q": "証券化支援事業（買取型）で機構が譲り受ける貸付債権に係る貸付けの償還方法は、元利均等の方法又は元金均等の方法によるものとされている。",
+      "a": true,
+      "ex": "正しい。買取型の対象となる貸付債権に係る償還方法は、元利均等の方法又は元金均等の方法とされています（機構の業務方法書に基づく要件）。ボーナス併用払いも一定限度で可能です。",
+      "cat": "買取型の金利・償還"
+    },
+    {
+      "q": "証券化支援事業（買取型）で譲受けの対象となる貸付債権は、自ら居住する住宅に係るもののみであり、親族が居住する住宅に係るものは対象外である。",
+      "a": false,
+      "ex": "誤り。買取型の対象は、自ら居住する住宅だけでなく、親族の居住用住宅も含まれます。「自己居住用のみ」とする記述はひっかけです。",
+      "cat": "直接融資と買取型の区別"
+    },
+    {
+      "q": "機構は、地震に対する安全性の向上を主たる目的とする住宅の改良に必要な資金の貸付けを直接行うことができるが、住宅のエネルギー消費性能の向上を目的とする改良資金の貸付けは行うことができない。",
+      "a": false,
+      "ex": "誤り。機構は、地震に対する安全性向上の改良（法13条1項6号）だけでなく、住宅のエネルギー消費性能の向上を主たる目的とする改良に必要な資金の貸付けも行うことができます（法13条1項10号）。",
+      "cat": "直接融資と買取型の区別"
+    },
+    {
+      "q": "機構の直接融資業務には、合理的土地利用建築物の建設に必要な資金の貸付けが含まれるが、ここでいう合理的土地利用建築物は、市街地の土地の合理的な利用に寄与する建築物で相当の住宅部分を有するものをいう。",
+      "a": true,
+      "ex": "正しい。「合理的土地利用建築物」とは、市街地の土地の合理的な利用に寄与するものとして政令で定める建築物で相当の住宅部分を有するものです（独立行政法人住宅金融支援機構法2条7項、13条1項7号）。機構はその建設・購入資金を直接貸し付けることができます。",
+      "cat": "直接融資と買取型の区別"
+    },
+    {
+      "q": "機構の団体信用生命保険業務において、あらかじめ契約を締結した貸付けを受けた者が死亡した場合にのみ保険金を債務の弁済に充当し、重度障害の状態となった場合は対象外である。",
+      "a": false,
+      "ex": "誤り。法13条1項11号は「その者が死亡した場合（重度障害の状態となった場合を含む。）」と明記しており、死亡だけでなく重度障害の場合も保険金が債務の弁済に充当されます。「死亡のみ」とする記述は超頻出ひっかけです。",
+      "cat": "団体信用生命保険"
+    },
+    {
+      "q": "機構の団体信用生命保険の対象となるのは、証券化支援事業（買取型）により譲り受けた貸付債権に係る貸付けを受けた者に限られ、直接融資の貸付けを受けた者は対象外である。",
+      "a": false,
+      "ex": "誤り。団信の対象は、買取型の貸付債権に係る者だけでなく、法13条1項5号から7号、10号、同条2項5号・8号の直接融資の貸付けを受けた者も含まれます（法13条1項11号）。",
+      "cat": "団体信用生命保険"
+    },
+    {
+      "q": "機構の高齢者向け死亡時一括償還制度では、高齢者が死亡した場合に、抵当権の効力の及ぶ範囲を超えて遺族に弁済の請求をすることがある。",
+      "a": false,
+      "ex": "誤り。死亡時一括償還では、抵当権の効力の及ぶ範囲を超えて弁済の請求をしないことができるとされています。つまり、担保物件の価値以上の請求をしないことで、遺族に過度な負担をかけない仕組みです。",
+      "cat": "高齢者制度"
+    },
+    {
+      "q": "機構の高齢者向け貸付けにおいて、死亡時一括償還の対象となるのはバリアフリー改良のみであり、耐震改良やマンション共用部分の改良は対象外である。",
+      "a": false,
+      "ex": "誤り。法13条1項9号の高齢者向けバリアフリー改良の貸付けでは死亡時一括償還が認められていますが、死亡時一括償還の対象はこれに限られず、法13条1項5号から7号及び10号の直接融資の貸付けについても、団信（法13条1項11号）の対象となっており、高齢者の場合には死亡時一括償還が適用される場面があります。「バリアフリー改良のみ」とする記述は正確ではありません。",
+      "cat": "高齢者制度"
+    },
+    {
+      "q": "機構は、災害等により元利金の支払が著しく困難となった場合、貸付条件の変更又は支払方法の変更を行うことができる。",
+      "a": true,
+      "ex": "正しい。機構は、災害その他の事由により元利金の支払が著しく困難となった場合に、貸付条件の変更を行うことができます。直接融資の貸付けだけでなく、買取型の対象となった住宅ローンについても返済方法の変更等の措置がとられることがあり、被災者支援の重要な役割の一つです。",
+      "cat": "フラット35S・その他"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで住宅金融支援機構の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">カバーできていない論点：</strong><br>・住宅融資保険の細かい要件<br>・機構債券の発行手続き<br>・財形住宅貸付けの詳細<br>・既往債権管理業務の経過措置</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 住宅金融支援機構の業務の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2\"><div style=\"font-weight:bold;margin-bottom:4px\">【証券化支援事業（買取型）の仕組み】</div><span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">借主</span><br>↕ 住宅ローン<br><span style=\"background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold\">金融機関</span><br>↕ 貸付債権の譲渡<br><span style=\"background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold\">機構</span><br>↕ MBS（資産担保証券）発行<br><span style=\"background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold\">投資家</span><br><br><span style=\"color:#d32f2f;font-weight:bold\">※ 機構が直接お金を貸すのではなく、</span><br><span style=\"color:#d32f2f;font-weight:bold\">民間の債権を買い取るのが本業！</span></div><div class=\"info-box\" style=\"background:#f3e5f5;font-family:monospace;text-align:center;line-height:2.2\"><div style=\"font-weight:bold;margin-bottom:4px\">【直接融資（限定的な場面のみ）】</div><span style=\"background:#ffccbc;padding:3px 8px;border-radius:4px;font-weight:bold\">機構</span> → 直接貸付 → <span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">借主</span><br><br><span style=\"font-size:12px\">対象：災害復興・高齢者・子育て賃貸・<br>マンション共用部分・合理的土地利用建築物 等</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">【出題パターン①】「買取型」と「直接融資」のすり替え</strong><br>出題で最も多いのが、直接融資の対象を買取型の対象であるかのように問う、またはその逆のパターンです。「どちらの制度の話か？」を常に意識しましょう。</div><div class=\"info-box\" style=\"background:#e8eaf6;border-left:4px solid #3f51b5\"><strong style=\"color:#283593\">【出題パターン②】「対象外」とする選択肢</strong><br>「土地・借地権は対象外」「中古住宅は対象外」「改良資金は対象外」など、実際は対象であるものを対象外とする選択肢が頻出。施行令5条の「付随する行為」を正確に押さえましょう。</div><div class=\"info-box\" style=\"background:#e0f2f1;border-left:4px solid #00897b\"><strong style=\"color:#00695c\">【出題パターン③】「〜のみ」で限定する選択肢</strong><br>「死亡のみ（→重度障害も含む）」「自己居住用のみ（→親族用も含む）」「バリアフリーのみ（→耐震・省エネ等も対象）」など、「〜のみ」は要注意キーワードです。</div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #d32f2f\"><strong style=\"color:#c62828\">【出題パターン④】機構の役割の誤解を誘う</strong><br>「機構が直接貸付を主たる業務としている」は誤り。機構の本業は証券化支援事業（債権の買取り）であり、直接融資は限定的です。この基本を忘れないように。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">📊 表で暗記</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">証券化支援事業（買取型）vs 直接融資</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">項目</th><th style=\"border:1px solid #90caf9\">買取型</th><th style=\"border:1px solid #90caf9\">直接融資</th></tr><tr><td style=\"border:1px solid #e0e0e0\">仕組み</td><td style=\"border:1px solid #e0e0e0;text-align:center\">債権買取り</td><td style=\"border:1px solid #e0e0e0;text-align:center\">直接貸付</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">対象住宅</td><td style=\"border:1px solid #e0e0e0;text-align:center\">自己居住用・親族用</td><td style=\"border:1px solid #e0e0e0;text-align:center\">災害復興、高齢者等</td></tr><tr><td style=\"border:1px solid #e0e0e0\">賃貸住宅</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#d32f2f;font-weight:bold\">❌ 対象外</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold\">⭕ 子育て・高齢者向け</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">金利の決定</td><td style=\"border:1px solid #e0e0e0;text-align:center\">各金融機関</td><td style=\"border:1px solid #e0e0e0;text-align:center\">機構</td></tr><tr><td style=\"border:1px solid #e0e0e0\">中古住宅</td><td style=\"border:1px solid #e0e0e0;text-align:center;color:#2e7d32;font-weight:bold\">⭕ 対象</td><td style=\"border:1px solid #e0e0e0;text-align:center\">場面による</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px\">直接融資の主な対象（法13条1項）</div><table><tr style=\"background:#fff3e0\"><th style=\"border:1px solid #ffcc80;text-align:left\">号</th><th style=\"border:1px solid #ffcc80;text-align:left\">対象</th></tr><tr><td style=\"border:1px solid #e0e0e0\">5号</td><td style=\"border:1px solid #e0e0e0\">災害復興建築物の建設・購入、被災建築物の補修</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">6号</td><td style=\"border:1px solid #e0e0e0\">災害予防建替え・移転、耐震改良</td></tr><tr><td style=\"border:1px solid #e0e0e0\">7号</td><td style=\"border:1px solid #e0e0e0\">合理的土地利用建築物、マンション共用部分改良</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">8号</td><td style=\"border:1px solid #e0e0e0\">子育て・高齢者向け賃貸住宅の建設・改良</td></tr><tr><td style=\"border:1px solid #e0e0e0\">9号</td><td style=\"border:1px solid #e0e0e0\">高齢者向けバリアフリー改良・サ高住</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">10号</td><td style=\"border:1px solid #e0e0e0\">省エネ性能向上の住宅改良</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px;margin-top:16px\">買取型の「付随する行為」（施行令5条1項）</div><table><tr style=\"background:#e8f5e9\"><th style=\"border:1px solid #a5d6a7;text-align:left\">住宅の行為</th><th style=\"border:1px solid #a5d6a7;text-align:left\">付随する行為</th></tr><tr><td style=\"border:1px solid #e0e0e0\">建設</td><td style=\"border:1px solid #e0e0e0\">土地・借地権の取得</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">購入</td><td style=\"border:1px solid #e0e0e0\">土地・借地権の取得、当該住宅の改良</td></tr></table></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">📖 住宅金融支援機構とは？</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">ひとことで言うと：</strong><br>「民間銀行の住宅ローンを買い取って、長期固定金利の住宅ローンを安定供給する仕組み」を支える独立行政法人です。<br>いわゆる「フラット35」の運営元です。</div><div class=\"info-box\" style=\"background:#f5f5f5\">機構の最重要ポイント：<strong>自分で直接お金を貸すのが本業ではない</strong>。<br>民間金融機関の貸付債権を「買い取る」のが本業（証券化支援事業）。<br>直接融資は、災害復興や高齢者支援など民間がカバーしにくい場面に限定されます。</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 覚え方：「<strong>機構＝債権を買う人、銀行＝お金を貸す人</strong>」。機構が直接貸すのは例外的場面だけ。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🏦 証券化支援事業（買取型）の仕組み</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>基本の流れ：</strong><br>① 借主が民間銀行から住宅ローンを借りる<br>② 機構がその貸付債権を銀行から買い取る（法13条1項1号）<br>③ 機構が債権をまとめてMBS（資産担保証券）を発行<br>④ 投資家がMBSを購入→機構に資金が流れる<br>⑤ 銀行は債権を売った代金で新たな住宅ローンを提供できる</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>買取型の対象：</strong><br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">⭕ 対象</span> 住宅の建設・購入・改良の資金<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">⭕ 対象</span> 付随する土地・借地権の取得資金（施行令5条）<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">⭕ 対象</span> 購入に付随する住宅の改良資金（施行令5条）<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">⭕ 対象</span> 中古住宅の購入資金<br><span style=\"display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold\">❌ 対象外</span> 賃貸住宅の建設・購入資金</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 金利の決定者に注意！</strong><br>フラット35の金利は<strong>機構が一律に決めるのではなく、各金融機関が決定</strong>します。だから金融機関によって金利が異なることがあります。「どの金融機関でも同一」は誤り！</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🏠 直接融資業務（限定的な場面のみ）</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>機構が直接お金を貸すのは「例外」</strong><br>民間がカバーしにくい場面だけ直接融資を行います。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>主な対象（法13条1項）：</strong><br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">5号</span> 災害復興建築物の建設・購入、被災建築物の補修<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">6号</span> 災害予防の建替え・移転、耐震改良<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">7号</span> 合理的土地利用建築物、マンション共用部分改良<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">8号</span> 子育て・高齢者家庭向け賃貸住宅の建設・改良<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">9号</span> 高齢者のバリアフリー改良・サービス付き高齢者住宅<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">10号</span> 省エネ性能向上の住宅改良</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 覚え方：「<strong>災害・高齢者・子育て・マンション共用部分・省エネ</strong>」＝民間では対応しにくい分野。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">🛡️ 団体信用生命保険（団信）</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>団信 ＝ ローンの「保険」</strong><br>借主が万が一のとき、保険金でローンを完済する仕組みです。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>対象：「死亡＋重度障害」</strong><br>法文には「死亡した場合（<strong>重度障害の状態となった場合を含む</strong>。）」と明記（法13条1項11号）。<br>「死亡のみ」は超頻出のひっかけ。必ず覚えてください。</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 覚え方：「<strong>団信＝死亡＋重度障害のセット</strong>」。あらかじめ契約が必要。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00838f;color:#00838f\">👴 高齢者向け制度（死亡時一括償還）</div><div class=\"info-box\" style=\"background:#e0f7fa\"><strong>高齢者がバリアフリー改良等の資金を借りる場合の特例</strong><br>毎月の返済ではなく、死亡時にまとめて返す方法が認められています。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>最大のポイント：</strong><br>死亡時一括償還では、<strong>抵当権の効力の及ぶ範囲を超えて弁済の請求をしないことができる</strong>。<br>つまり、担保物件の価値以上の請求はしない＝遺族に過度な負担をかけない仕組み。</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 覚え方：「<strong>担保の範囲まで。それ以上は請求しない＝高齢者にやさしい</strong>」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #ef6c00;color:#ef6c00\">⭐ フラット35S（金利引下げ制度）</div><div class=\"info-box\" style=\"background:#fff3e0\"><strong>優良住宅なら金利を引き下げ！</strong><br>施行令6条に基づく配慮事項として、以下の住宅が金利優遇の対象です。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>優良住宅4つ＋ZEH：</strong><br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">①</span> バリアフリー性（高齢者・障害者配慮）<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">②</span> 省エネルギー性（断熱・設備の効率化）<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">③</span> 耐震性（大規模地震への安全性）<br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">④</span> 耐久性・可変性（腐食防止・維持保全）<br><span style=\"display:inline-block;background:#fff9c4;padding:2px 8px;border-radius:4px;font-weight:bold\">＋</span> ZEH（ネット・ゼロ・エネルギーハウス）</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 覚え方：「<strong>バ・省・震・久</strong>（バショウシンキュウ）」＋ZEH</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #37474f;color:#37474f\">📌 その他の業務</div><div class=\"info-box\" style=\"background:#eceff1\"><strong>住宅融資保険（法13条1項3号）</strong><br>民間金融機関の住宅ローンについて保険を引き受ける業務。<br><br><strong>情報提供・相談・援助（法13条1項4号）</strong><br>住宅の建設等に関する情報提供や相談窓口の役割。<br><br><strong>貸付条件変更</strong><br>災害等で元利金の支払が著しく困難になった場合、返済条件の変更が可能。</div></div><div style=\"display:flex;flex-direction:column;gap:8px\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=417AC0000000082\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 独立行政法人住宅金融支援機構法（e-Gov）</a></div>"
+}
