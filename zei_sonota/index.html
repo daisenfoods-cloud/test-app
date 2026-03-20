@@ -76,8 +76,6 @@
     }
     .tier1 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
     .tier2 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .tier3 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
-
     .app-item {
       margin-bottom: 12px;
     }
@@ -167,7 +165,7 @@
   <div class="container">
     <div class="header">
       <h1>🏠 宅建学習アプリ</h1>
-      <p>税・その他 - 全11アプリ</p>
+      <p>税・その他 - 全5アプリ</p>
     </div>
 
     <div style="text-align: center; margin-bottom: 24px;">
@@ -177,154 +175,75 @@
     <div class="concept-card">
       <h2>税・その他を学ぶ前に知っておいてほしいこと</h2>
       <p>
-        税・その他は宅建試験全50問のうち<strong>8問</strong>を占める分野です。税から2問、地価公示法・鑑定評価から1問、住宅金融支援機構から1問、景品表示法から1問、土地・建物から2問、統計から1問が出題されます。
+        税・その他は宅建試験全50問のうち<strong>8問</strong>を占める分野です。このうち問46〜50の5問は<strong>登録講習修了者（5問免除）</strong>の対象です。
       </p>
       <p>
-        この分野の特徴は、出題範囲が広い一方で<strong>各テーマの出題パターンが比較的固定されている</strong>ことです。税の問題は税額計算そのものではなく、各税の構造（課税対象・納税義務者・課税標準・税率）と、住宅用地・居住用財産に対する<strong>特例の適用要件</strong>が中心です。
+        一方、税（問23〜25付近）と地価公示法・鑑定評価（問25付近）は<strong>全受験者が解く必要がある</strong>問題です。税の問題は計算よりも、各税の構造（課税対象・納税義務者・課税標準・税率）と<strong>特例の適用要件</strong>が中心なので、仕組みを正確に押さえることが得点に直結します。
       </p>
       <p>
-        まずはTier 1の不動産取得税・固定資産税と、毎年確実に出る住宅金融支援機構・景品表示法を押さえてください。これだけで毎年4〜5点分の土台ができます。統計は試験直前に最新データを確認すれば対応できるため、このアプリでは扱いません。
+        まずはTier 1の税と地価公示法・鑑定評価を優先し、続けてTier 2の5問免除科目にも取り組んでください。5問免除科目は出題パターンが比較的決まっているため、しっかり対策すれば得点源になります。統計は試験直前に最新データを確認すれば対応できるため、このアプリでは扱いません。
       </p>
     </div>
 
-    <!-- Tier 1: 超頻出・必須 -->
+    <!-- Tier 1: 全受験者必須 -->
     <div class="tier-section">
       <div class="tier-header tier1">
-        ⭐ Tier 1：超頻出・必須（6個）── 毎年必ず出る
+        ⭐ Tier 1：全受験者必須（2個）── 5問免除の対象外
       </div>
 
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 土地・建物に関する税（毎年2問） ──</div>
-
       <div class="app-item">
-        <a href="../output/fudousan_shutokuzei.html" class="app-link inactive">
+        <a href="../output/zei.html" class="app-link inactive">
           <span class="app-number">1</span>
           <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">不動産取得税 <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">課税対象、税率、課税標準の特例、免税点</div>
+            <div class="app-title">不動産に関する税 <span class="freq-badge">毎年2〜3問</span></div>
+            <div class="app-subtitle">不動産取得税・固定資産税・所得税（譲渡所得）・登録免許税・印紙税・贈与税</div>
           </div>
         </a>
       </div>
-
-      <div class="app-item">
-        <a href="../output/kotei_shisanzei.html" class="app-link inactive">
-          <span class="app-number">2</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">固定資産税 <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">納税義務者、課税標準、住宅用地の特例、免税点</div>
-          </div>
-        </a>
-      </div>
-
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 住宅金融支援機構（毎年1問） ──</div>
-
-      <div class="app-item">
-        <a href="../output/jutaku_kinyu.html" class="app-link inactive">
-          <span class="app-number">3</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">住宅金融支援機構 <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">証券化支援業務（買取型）、直接融資業務、業務の範囲</div>
-          </div>
-        </a>
-      </div>
-
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 景品表示法（毎年1問） ──</div>
-
-      <div class="app-item">
-        <a href="../output/kousei_kyousou.html" class="app-link inactive">
-          <span class="app-number">4</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">公正競争規約（景品表示法） <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">不動産の表示に関する公正競争規約、広告表示の基準</div>
-          </div>
-        </a>
-      </div>
-
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 土地・建物（毎年2問） ──</div>
-
-      <div class="app-item">
-        <a href="../output/tochi.html" class="app-link inactive">
-          <span class="app-number">5</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">土地 <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">宅地としての適性、地形・地質、災害リスク</div>
-          </div>
-        </a>
-      </div>
-
-      <div class="app-item">
-        <a href="../output/tatemono.html" class="app-link inactive">
-          <span class="app-number">6</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">建物 <span class="freq-badge">重要度 S</span></div>
-            <div class="app-subtitle">建築構造、木造・鉄骨造・RC造の特徴</div>
-          </div>
-        </a>
-      </div>
-    </div>
-
-    <!-- Tier 2: 重要 -->
-    <div class="tier-section">
-      <div class="tier-header tier2">
-        💎 Tier 2：重要（4個）── 頻出または交互に出る
-      </div>
-
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── その他の税 ──</div>
-
-      <div class="app-item">
-        <a href="../output/shotokuzei.html" class="app-link inactive">
-          <span class="app-number">7</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">所得税（譲渡所得） <span class="freq-badge">重要度 B</span></div>
-            <div class="app-subtitle">譲渡所得の計算、居住用財産の特例、3,000万円特別控除</div>
-          </div>
-        </a>
-      </div>
-
-      <div class="app-item">
-        <a href="../output/touroku_menkyo_zei.html" class="app-link inactive">
-          <span class="app-number">8</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">登録免許税 <span class="freq-badge">重要度 B</span></div>
-            <div class="app-subtitle">課税対象、税率、住宅用家屋の軽減税率</div>
-          </div>
-        </a>
-      </div>
-
-      <div class="app-item">
-        <a href="../output/inshi_zei.html" class="app-link inactive">
-          <span class="app-number">9</span>
-          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">印紙税 <span class="freq-badge">重要度 B</span></div>
-            <div class="app-subtitle">課税文書、納付方法、過怠税</div>
-          </div>
-        </a>
-      </div>
-
-      <div style="font-size: 13px; font-weight: bold; color: #7f8c8d; margin: 8px 4px 8px;">── 地価公示法・鑑定評価（毎年1問） ──</div>
 
       <div class="app-item">
         <a href="../output/chika_kouji.html" class="app-link inactive">
-          <span class="app-number">10</span>
+          <span class="app-number">2</span>
           <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">地価公示法・鑑定評価 <span class="freq-badge">重要度 A</span></div>
+            <div class="app-title">地価公示法・鑑定評価 <span class="freq-badge">毎年1問</span></div>
             <div class="app-subtitle">地価公示の手続、不動産鑑定評価基準、鑑定評価の方式</div>
           </div>
         </a>
       </div>
     </div>
 
-    <!-- Tier 3: 補足 -->
+    <!-- Tier 2: 5問免除科目 -->
     <div class="tier-section">
-      <div class="tier-header tier3">
-        📚 Tier 3：補足（1個）── 出題頻度は低い
+      <div class="tier-header tier2">
+        💎 Tier 2：5問免除科目（3個）
       </div>
 
       <div class="app-item">
-        <a href="../output/zouyozei.html" class="app-link inactive">
-          <span class="app-number">11</span>
+        <a href="../output/jutaku_kinyu.html" class="app-link inactive">
+          <span class="app-number">3</span>
           <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
-            <div class="app-title">贈与税 <span class="freq-badge">重要度 C</span></div>
-            <div class="app-subtitle">贈与税の課税、住宅取得等資金の非課税措置</div>
+            <div class="app-title">住宅金融支援機構 <span class="freq-badge">毎年1問</span></div>
+            <div class="app-subtitle">証券化支援業務（買取型）、直接融資業務、業務の範囲</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/kousei_kyousou.html" class="app-link inactive">
+          <span class="app-number">4</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">公正競争規約（景品表示法） <span class="freq-badge">毎年1問</span></div>
+            <div class="app-subtitle">不動産の表示に関する公正競争規約、広告表示の基準</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="app-item">
+        <a href="../output/tochi_tatemono.html" class="app-link inactive">
+          <span class="app-number">5</span>
+          <div style="display: inline-block; vertical-align: top; width: calc(100% - 60px);">
+            <div class="app-title">土地・建物 <span class="freq-badge">毎年2問</span></div>
+            <div class="app-subtitle">宅地としての適性、地形・地質、建築構造、木造・鉄骨造・RC造</div>
           </div>
         </a>
       </div>
