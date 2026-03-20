@@ -1,0 +1,194 @@
+{
+  "app_id": "tochi_tatemono",
+  "menu_url": "../zei_sonota/index.html",
+  "app_title": "土地・建物クイズ",
+  "header_title": "税その他 ＞ 土地・建物",
+  "header_desc": "地形の住宅地適性と建物の構造・材料",
+  "quiz_title": "土地・建物クイズ",
+  "quizzes_l1": [
+    {
+      "q": "台地は一般に地盤が安定しており、自然災害に対して安全度が高いため、住宅地として適している。",
+      "a": true,
+      "ex": "正しい。台地はローム層などで構成された安定した地盤であり、洪水や地震に対して比較的安全度が高く、住宅地として適しています。ただし、台地上の浅い谷（谷底低地）は浸水リスクがある点に注意が必要です。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "低地は地盤が安定しており、洪水や地震に対して安全性が高い。",
+      "a": false,
+      "ex": "誤り。低地は軟弱地盤であり、洪水・地震・液状化のリスクが高く、住宅地としては好ましくありません。「低地＝安全」とするのは頻出のひっかけパターンです。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "埋立地は、一般に海面より数メートル高く、護岸が強固であれば住宅地として利用可能であるが、干拓地は海面より低いことも多く、埋立地より水害リスクが高い。",
+      "a": true,
+      "ex": "正しい。埋立地は海面より数m高いため、条件次第で住宅地利用が可能です。一方、干拓地は海面より低いことも多く、水害リスクは埋立地より高くなります。この両者の違いは試験で頻出です。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "台地の上であっても、浅い谷に位置する部分は豪雨時に浸水するリスクがある。",
+      "a": true,
+      "ex": "正しい。台地は全体としては安全ですが、台地上の浅い谷（谷底低地）は豪雨時に水が集まりやすく、浸水リスクがあります。「台地＝完全に安全」ではなく、局所的なリスクも把握しておく必要があります。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "扇状地は砂礫質で地盤が堅固であるが、谷の出口付近では土石流の危険がある。",
+      "a": true,
+      "ex": "正しい。扇状地は砂礫（されき）質で地盤自体は堅固ですが、谷の出口（扇頂部）付近では土石流が発生する危険があります。扇状地全体が危険なのではなく、谷の出口がリスクポイントです。",
+      "cat": "扇状地・三角州"
+    },
+    {
+      "q": "三角州は河口付近に形成される地形であり、地盤が軟弱で住宅地としては不適である。",
+      "a": true,
+      "ex": "正しい。三角州は河川が運んだ土砂が河口付近に堆積して形成された地形で、軟弱地盤であり洪水リスクも高いため、住宅地としては不適です。",
+      "cat": "扇状地・三角州"
+    },
+    {
+      "q": "鉄筋コンクリート構造（RC構造）は、耐火性・耐久性・耐震性・耐風性に優れた構造である。",
+      "a": true,
+      "ex": "正しい。RC構造は鉄筋とコンクリートの長所を組み合わせた構造で、耐火・耐久・耐震・耐風のいずれにも優れています。鉄筋とコンクリートの熱膨張率がほぼ等しいことがRC構造の成立要因です。",
+      "cat": "建物の構造種別"
+    },
+    {
+      "q": "鉄骨構造（S構造）は不燃構造であるため、耐火被覆を施さなくても耐火構造として利用できる。",
+      "a": false,
+      "ex": "誤り。鉄骨構造は不燃構造ですが、高温になると急激に強度が低下するため、耐火被覆を施さなければ耐火構造にはなりません。「不燃＝耐火」ではない点がポイントです。",
+      "cat": "建物の構造種別"
+    },
+    {
+      "q": "木材は含水率が低い（乾燥している）方が、強度が高くなる。",
+      "a": true,
+      "ex": "正しい。木材は含水率が小さい（乾燥している）ほど強度が増大します。逆に、含水率が高いと狂いや割れが生じやすくなります。「乾燥＝強い」と覚えましょう。",
+      "cat": "建物の構造種別"
+    },
+    {
+      "q": "集成木材は、板材を接着剤で張り合わせた木質材料であり、大規模な建物にも使用することができる。",
+      "a": true,
+      "ex": "正しい。集成木材（集成材）は、薄い板材を接着剤で重ねて一体化した木質材料で、強度のばらつきが小さく、大きな断面を作れるため、大規模な建物（体育館・商業施設等）にも使用できます。",
+      "cat": "建物の構造種別"
+    },
+    {
+      "q": "ラーメン構造は、柱と梁の接合部が剛接合（完全固定）されており、柱は鉛直材、梁は水平材である。",
+      "a": true,
+      "ex": "正しい。ラーメン構造は、柱（鉛直材）と梁（水平材）を剛接合（完全に固定する接合）で組み立てる構造形式です。「ラーメン」はドイツ語で「枠」を意味します。",
+      "cat": "建物の構造形式"
+    },
+    {
+      "q": "壁式構造は、柱と梁を使わず、壁板と床板で箱状に組み立てる構造形式である。",
+      "a": true,
+      "ex": "正しい。壁式構造は柱や梁を設けず、壁板と床板を一体的に組み合わせて箱状に構成する構造です。中低層の集合住宅などに多く用いられます。",
+      "cat": "建物の構造形式"
+    },
+    {
+      "q": "耐震構造とは、建物と地盤の間に免震装置を設けることで、地震の揺れを建物に伝えにくくする構造のことである。",
+      "a": false,
+      "ex": "誤り。免震装置で揺れを遮断するのは「免震構造」です。耐震構造は建物自体を強くして地震に耐える方式です。耐震＝力で対抗、免震＝揺れを遮断、と区別しましょう。",
+      "cat": "耐震・制震・免震"
+    },
+    {
+      "q": "制震構造は、制振ダンパーなどの装置を用いて地震エネルギーを吸収し、建物の揺れを減衰させる構造である。",
+      "a": true,
+      "ex": "正しい。制震構造は、建物内に設置した制振ダンパー等の装置で地震エネルギーを吸収し、揺れを減衰させます。揺れは建物に届きますが、その大きさを弱めることができます。",
+      "cat": "耐震・制震・免震"
+    },
+    {
+      "q": "直接基礎には、柱の下に個別に設ける独立基礎と、壁体の下に連続的に設ける布基礎（連続基礎）と、建物の底部全体に設けるべた基礎がある。",
+      "a": true,
+      "ex": "正しい。直接基礎は3種類あり、独立基礎（柱ごとに個別）、布基礎＝連続基礎（壁の下に帯状に連続）、べた基礎（底面全体にベタッと設置）です。布基礎とべた基礎の入れ替えは頻出のひっかけです。",
+      "cat": "基礎構造"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "三角州は河口付近に堆積した砂礫で形成される堅固な地盤であり、住宅地として適している。",
+      "a": false,
+      "ex": "誤り。三角州は河口付近に堆積物が溜まった軟弱地盤であり、洪水リスクも高く、住宅地としては不適です。「砂礫＝堅固」は扇状地の特徴であり、三角州と混同させるひっかけです。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "埋立地は干拓地に比べて、一般に水害に対する危険性が高い。",
+      "a": false,
+      "ex": "誤り。埋立地は海面より数m高いのに対し、干拓地は海面より低いことも多いため、水害に対する危険性は干拓地の方が高くなります。この関係を逆にするのは頻出のひっかけパターンです。",
+      "cat": "地形と住宅地適性"
+    },
+    {
+      "q": "山麓に見られる土石流の堆積でできた地形は、危険性が低く住宅地として好適である。",
+      "a": false,
+      "ex": "誤り。山麓の土石流堆積地形は、過去に土石流が発生した証拠であり、再び土石流が起きる危険があるため、住宅地としては不適です。「堆積地形＝安定」と思い込まないことが重要です。",
+      "cat": "斜面災害と地形リスク"
+    },
+    {
+      "q": "傾斜角が25度を超える斜面では崖崩れの発生が急増し、30度を超えると大雨による斜面崩壊が発生しやすくなる。",
+      "a": true,
+      "ex": "正しい。傾斜角25度超で崖崩れが急増し、30度超で大雨による斜面崩壊が起きやすくなります。「25度」はキーナンバーとして覚えておきましょう。まさ土（花崗岩の風化砂）の地域は特に土石流の危険が高まります。",
+      "cat": "斜面災害と地形リスク"
+    },
+    {
+      "q": "断層地形は、直線状の谷が形成され、谷の方向が急変する地点が連続するのが特徴である。",
+      "a": true,
+      "ex": "正しい。断層地形では、断層線に沿って直線的な谷が形成され、谷の方向が急に変わる地点が連続して現れます。覚えにくいですが、過去問では正しい選択肢として出題されることが多いため、特徴をそのまま覚えておきましょう。",
+      "cat": "斜面災害と地形リスク"
+    },
+    {
+      "q": "鉄筋コンクリート構造の耐久性を確保するためには、コンクリートの中性化の防止やひび割れ防止の対策が重要である。",
+      "a": true,
+      "ex": "正しい。コンクリートはもともとアルカリ性で鉄筋を錆から守っていますが、中性化が進むとアルカリ性が失われ、鉄筋が錆びて膨張→ひび割れ→水の浸入→さらに腐食、という悪循環が生じます。中性化とひび割れ対策はRC構造の2大課題です。",
+      "cat": "建物の構造と材料"
+    },
+    {
+      "q": "鉄筋コンクリート構造が成立するのは、鉄筋とコンクリートの熱膨張率が大きく異なるためである。",
+      "a": false,
+      "ex": "誤り。RC構造が成立する最大の要因は、鉄筋とコンクリートの熱膨張率が「ほぼ等しい」ことです。もし熱膨張率が大きく異なれば、温度変化で両者がずれてしまい、一体として機能しません。",
+      "cat": "建物の構造と材料"
+    },
+    {
+      "q": "木材の強度は、含水率が小さいほど低くなる。",
+      "a": false,
+      "ex": "誤り。木材の強度は含水率が小さい（乾燥している）ほど高くなります。「含水率が小さい＝強度が低い」とする記述は頻出のひっかけです。木材は乾燥が命、と覚えましょう。",
+      "cat": "建物の構造と材料"
+    },
+    {
+      "q": "鉄筋の炭素含有量が多くなると引張強度は増大するが、一方で粘り強さ（靱性）は低下してもろくなる。",
+      "a": true,
+      "ex": "正しい。鉄筋は炭素含有量が増えるほど引張強度が増大しますが、同時に靱性（粘り強さ）が低下してもろくなります。強度と靱性はトレードオフの関係にあります。",
+      "cat": "建物の構造と材料"
+    },
+    {
+      "q": "モルタルは、水、セメント及び砂利を練り混ぜたものである。",
+      "a": false,
+      "ex": "誤り。モルタルは水＋セメント＋砂（細骨材）を練り混ぜたもので、砂利（粗骨材）は含みません。砂利を含むのはコンクリート（水＋セメント＋砂＋砂利）です。「モルタルに砂利」のひっかけは定番です。",
+      "cat": "コンクリート・モルタル"
+    },
+    {
+      "q": "ブレース構造は、四角形の対角線上に斜め部材を入れた構造であり、ラーメン構造と併用することはできない。",
+      "a": false,
+      "ex": "誤り。ブレース構造はラーメン構造と併用することが可能です。「併用できない」とする記述は頻出のひっかけです。ブレース（筋交い）をラーメン構造に追加して補強することは実務でも行われています。",
+      "cat": "建物の構造形式"
+    },
+    {
+      "q": "耐震構造は、既存不適格建築物の補強に利用されていない。",
+      "a": false,
+      "ex": "誤り。耐震補強は既存不適格建築物（現行の耐震基準を満たさない古い建物）の補強に広く活用されています。「利用されていない」とするのは誤りです。",
+      "cat": "耐震・制震・免震"
+    },
+    {
+      "q": "布基礎とは、建物の底部全体に板状のコンクリートを設ける基礎のことをいう。",
+      "a": false,
+      "ex": "誤り。建物の底部全体に設けるのは「べた基礎」です。布基礎（連続基礎）は壁体の下に帯状に連続して設ける基礎です。布基礎とべた基礎の説明を入れ替えるのは定番のひっかけです。",
+      "cat": "基礎構造"
+    },
+    {
+      "q": "木造建築の壁において、真壁は柱が表面に見える和風の構造であり、大壁は柱が壁の中に隠れる洋風の構造であるが、真壁と大壁を併用することはできない。",
+      "a": false,
+      "ex": "誤り。真壁（柱が見える＝和風）と大壁（柱が隠れる＝洋風）の説明自体は正しいですが、真壁と大壁は1つの建物内で併用することが可能です。「併用できない」とするのは誤りです。",
+      "cat": "建物の構造と材料"
+    },
+    {
+      "q": "木造の建築工法には在来軸組構法と枠組壁構法（ツーバイフォー工法）があるが、在来軸組構法は壁のみで建物を支える工法である。",
+      "a": false,
+      "ex": "誤り。在来軸組構法は柱・梁・筋交い（すじかい）で建物を支える工法です。壁のみで建物を支えるのは枠組壁構法（ツーバイフォー工法）の考え方に近く、在来軸組構法の特徴ではありません。",
+      "cat": "建物の構造と材料"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで土地・建物の基本をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">カバーできていない論点：</strong><br>・宅地造成（切土・盛土）<br>・地目・地積の測量<br>・建物の設備（給排水・電気・空調）<br>・建築基準法関連の構造規定<br>・地質調査の方法<br>・不同沈下の原因と対策<br><br>※ 土地・建物分野は範囲が広く、過去問で初見の知識が出ることも多いため、常識的な判断力も重要です。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 土地・建物の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2\"><div style=\"font-weight:bold;margin-bottom:4px\">【土地】地形ごとの安全性を判断</div><span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">地形の種類を覚える</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold\">各地形の災害リスクを理解</span><br>↓<br><span style=\"background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold\">住宅地として適切か判断</span><div style=\"margin-top:16px;font-weight:bold;margin-bottom:4px\">【建物】構造の特徴を判断</div><span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">3大構造（RC・S・木造）</span><br>↓<br><span style=\"background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold\">構造形式（ラーメン・ブレース・壁式）</span><br>↓<br><span style=\"background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold\">耐震・制震・免震 ＋ 基礎構造</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">【ひっかけ注意】埋立地 vs 干拓地</strong><br>埋立地＝海面より数m高い（比較的安全）。干拓地＝海面より低いことも（水害リスク大）。過去問では「埋立地の方が干拓地より水害に危険」と逆にしてきます。<strong>干拓地の方が危険</strong>と覚えましょう。</div><div class=\"info-box\" style=\"background:#e8eaf6;border-left:4px solid #3f51b5\"><strong style=\"color:#283593\">【ひっかけ注意】コンクリート vs モルタル</strong><br>コンクリート＝水＋セメント＋砂＋<strong>砂利</strong>。モルタル＝水＋セメント＋砂（砂利<strong>なし</strong>）。「モルタルに砂利が含まれる」は定番の誤り選択肢です。</div><div class=\"info-box\" style=\"background:#e0f2f1;border-left:4px solid #00897b\"><strong style=\"color:#00695c\">【ひっかけ注意】鉄骨は「不燃」だが「耐火」ではない</strong><br>鉄骨構造は燃えませんが、高温で急激に強度が低下します。「耐火被覆なしで耐火構造にできる」は誤り。<strong>不燃≠耐火</strong>がポイントです。</div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #e91e63\"><strong style=\"color:#c2185b\">【ひっかけ注意】布基礎 vs べた基礎</strong><br>布基礎＝壁の下に<strong>帯状に連続</strong>。べた基礎＝底面<strong>全体</strong>をコンクリートで覆う。説明を入れ替えるひっかけが出ます。「布＝ベルト状」「べた＝ベタッと全面」で覚えましょう。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">📊 表で暗記</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">地形の住宅地適性 比較表</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">地形</th><th style=\"border:1px solid #90caf9\">地盤</th><th style=\"border:1px solid #90caf9\">災害リスク</th><th style=\"border:1px solid #90caf9\">住宅地適性</th></tr><tr><td>台地</td><td>安定</td><td>低い</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">◎ 適している</td></tr><tr style=\"background:#fafafa\"><td>扇状地</td><td>堅固</td><td>谷の出口で土石流注意</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">○ 概ね良好</td></tr><tr><td>埋立地</td><td>やや軟弱</td><td>液状化リスク</td><td style=\"text-align:center;color:#e65100;font-weight:bold\">△ 条件付き</td></tr><tr style=\"background:#fafafa\"><td>低地</td><td>軟弱</td><td>洪水・地震・液状化</td><td style=\"text-align:center;color:#d32f2f;font-weight:bold\">× 不適</td></tr><tr><td>三角州</td><td>軟弱</td><td>洪水リスク高い</td><td style=\"text-align:center;color:#d32f2f;font-weight:bold\">× 不適</td></tr><tr style=\"background:#fafafa\"><td>干拓地</td><td>軟弱</td><td>海面より低い＝水害最大</td><td style=\"text-align:center;color:#d32f2f;font-weight:bold\">× 不適</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">建物の3大構造 比較表</div><table><tr style=\"background:#fce4ec\"><th style=\"border:1px solid #f48fb1;text-align:left\">項目</th><th style=\"border:1px solid #f48fb1\">RC構造</th><th style=\"border:1px solid #f48fb1\">S構造（鉄骨）</th><th style=\"border:1px solid #f48fb1\">木造</th></tr><tr><td>耐火性</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">◎</td><td style=\"text-align:center;color:#e65100;font-weight:bold\">△ 耐火被覆が必要</td><td style=\"text-align:center;color:#d32f2f;font-weight:bold\">×</td></tr><tr style=\"background:#fafafa\"><td>耐久性</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">◎（中性化注意）</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">○</td><td style=\"text-align:center;color:#e65100;font-weight:bold\">△ 含水率管理が重要</td></tr><tr><td>耐震性</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">◎</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">○</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">○（筋交いで補強）</td></tr><tr style=\"background:#fafafa\"><td>弱点</td><td>中性化・ひび割れ</td><td>高温で強度低下</td><td>含水率が高いと劣化</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">構造形式 比較表</div><table><tr style=\"background:#e8eaf6\"><th style=\"border:1px solid #9fa8da;text-align:left\">構造形式</th><th style=\"border:1px solid #9fa8da\">特徴</th><th style=\"border:1px solid #9fa8da\">ポイント</th></tr><tr><td>ラーメン構造</td><td>柱＋梁、剛接合</td><td style=\"font-weight:bold\">接合部が完全固定</td></tr><tr style=\"background:#fafafa\"><td>ブレース構造</td><td>対角線に斜め部材</td><td style=\"font-weight:bold\">ラーメンと併用OK</td></tr><tr><td>壁式構造</td><td>壁板＋床板で箱状</td><td style=\"font-weight:bold\">柱・梁を使わない</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">耐震・制震・免震 比較表</div><table><tr style=\"background:#fff3e0\"><th style=\"border:1px solid #ffcc80;text-align:left\">方式</th><th style=\"border:1px solid #ffcc80\">仕組み</th><th style=\"border:1px solid #ffcc80\">既存建物への適用</th></tr><tr><td>耐震</td><td>建物自体を強くする</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">⭕ 補強に活用</td></tr><tr style=\"background:#fafafa\"><td>制震</td><td>ダンパーで揺れを吸収</td><td style=\"text-align:center;color:#2e7d32;font-weight:bold\">⭕</td></tr><tr><td>免震</td><td>免震装置で揺れを遮断</td><td style=\"text-align:center;color:#e65100;font-weight:bold\">△ 新築向き</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">基礎の種類</div><table><tr style=\"background:#e8f5e9\"><th style=\"border:1px solid #a5d6a7;text-align:left\">基礎</th><th style=\"border:1px solid #a5d6a7\">設置場所</th><th style=\"border:1px solid #a5d6a7\">特徴</th></tr><tr><td>独立基礎</td><td>柱の下</td><td>柱ごとに個別に設ける</td></tr><tr style=\"background:#fafafa\"><td>布基礎（連続基礎）</td><td>壁体の下に連続的に</td><td style=\"color:#d32f2f;font-weight:bold\">帯状に連続して設ける</td></tr><tr><td>べた基礎</td><td>建物の底部全体</td><td style=\"color:#d32f2f;font-weight:bold\">底面全体をコンクリートで覆う</td></tr><tr style=\"background:#fafafa\"><td>杭基礎</td><td>支持地盤が深い場合</td><td>杭を打って深い地盤に到達</td></tr></table></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🌍 地形の種類と住宅地としての適性</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">ひとことで言うと：</strong><br>宅建試験の「土地」問題は、「その地形は住宅地として安全か？」を問う問題です。<br>地形ごとの特徴と災害リスクを整理すれば、確実に得点できます。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>基本ルール：「高いところ＝安全」</strong><br>安全度の順番：<strong style=\"color:#2e7d32\">台地</strong> ＞ <strong>埋立地</strong> ＞ <strong style=\"color:#e65100\">干拓地</strong> ＞ <strong style=\"color:#d32f2f\">低地</strong><br><br>💡 台地は地盤が安定していて最も安全。低地・三角州は軟弱地盤で最も危険。<br>扇状地は地盤は堅固だけど、谷の出口は土石流注意。<br>三角州は河口の軟弱地盤で住宅地に不適。</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 <strong>埋立地と干拓地の違い</strong>は試験の定番ひっかけ。<br><strong>埋立地</strong>：海面より数m高い → 条件付きで住宅地OK<br><strong>干拓地</strong>：海面より低いことも → 水害リスク大<br>覚え方：「<strong>埋立は盛って高い、干拓は干して低い</strong>」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">⛰️ 斜面災害と地形リスク</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>キーナンバー：傾斜角25度</strong><br>25度を超えると崖崩れが急増し、30度を超えると大雨で斜面崩壊が発生しやすくなります。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>危険な地形：</strong><br><span style=\"display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold\">①</span> <strong>まさ土</strong>（花崗岩の風化砂）→ 強い降雨で土石流の危険<br><span style=\"display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold\">②</span> <strong>山麓の土石流堆積地形</strong> → 再び土石流が起きる危険あり、住宅地に不適<br><span style=\"display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold\">③</span> <strong>地すべり地</strong> → 馬蹄型の崖面が特徴、棚田に利用されることもある<br><span style=\"display:inline-block;background:#ffcdd2;padding:2px 8px;border-radius:4px;font-weight:bold\">④</span> <strong>断層地形</strong> → 直線状の谷、方向が急変する地点が連続</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🏢 建物の3大構造</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">RC構造（鉄筋コンクリート）</strong><br>耐火・耐久・耐震・耐風に優れた万能構造。<br>鉄筋とコンクリートの<strong>熱膨張率がほぼ等しい</strong>のが成立の最大要因。<br><span style=\"color:#d32f2f;font-weight:bold\">弱点：中性化とひび割れ</span>（コンクリートのアルカリ性が失われ、鉄筋が錆びる）<br>💡 なお、鉄筋は炭素含有量が多いほど引張強度が増大しますが、靱性（粘り強さ）が低下してもろくなります。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>S構造（鉄骨構造）</strong><br><strong style=\"color:#d32f2f\">不燃構造だが、耐火構造ではない！</strong><br>高温になると急激に強度が低下するため、<strong>耐火被覆が必須</strong>。<br>覚え方：「鉄は燃えないけど、熱には弱い」</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\"><strong>木造</strong><br><strong>含水率が低い（乾燥）＝ 強度が高い</strong><br>集成木材を使えば大規模な建物も建築可能。<br>覚え方：「<strong>木は乾燥が命</strong>」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">🔩 構造形式</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>3つの構造形式を覚えよう：</strong><br><br><span style=\"display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">ラーメン構造</span> 柱（鉛直）＋梁（水平）を<strong>剛接合</strong>（完全固定）<br><br><span style=\"display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">ブレース構造</span> 四角形の対角線に<strong>斜め部材</strong>を配置<br>→ <strong style=\"color:#2e7d32\">ラーメン構造との併用OK</strong><br><br><span style=\"display:inline-block;background:#ce93d8;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">壁式構造</span> <strong>壁板＋床板</strong>で箱状に組む（柱・梁なし）<br><br>覚え方：「ラーメン＝がっちり固定、ブレース＝斜めの筋交い、壁式＝壁で支える」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00838f;color:#00838f\">🛡️ 耐震・制震・免震</div><div class=\"info-box\" style=\"background:#e0f7fa\"><strong>地震対策の3つのアプローチ：</strong><br><br><span style=\"display:inline-block;background:#00acc1;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">耐震</span> 建物自体を<strong>強くして耐える</strong>。既存不適格建築物の補強にも活用。<br><br><span style=\"display:inline-block;background:#00acc1;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">制震</span> 制振<strong>ダンパーで揺れを吸収</strong>。揺れは届くが減衰させる。<br><br><span style=\"display:inline-block;background:#00acc1;padding:2px 8px;border-radius:4px;font-weight:bold;color:white\">免震</span> 免震装置（積層ゴム等）で<strong>揺れを遮断</strong>。建物に地震力を伝えにくくする。<br><br>覚え方：「<strong>耐震＝力で対抗、制震＝吸収して弱める、免震＝そもそも伝えない</strong>」</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #37474f;color:#37474f\">🧱 基礎構造</div><div class=\"info-box\" style=\"background:#eceff1\"><strong>建物 ＝ 基礎構造 ＋ 上部構造</strong><br><br><strong>直接基礎（3種類）：</strong><br><span style=\"display:inline-block;background:#b0bec5;padding:2px 8px;border-radius:4px;font-weight:bold\">独立基礎</span> 柱の下に個別に設ける<br><span style=\"display:inline-block;background:#b0bec5;padding:2px 8px;border-radius:4px;font-weight:bold\">布基礎</span> 壁の下に<strong style=\"color:#d32f2f\">帯状に連続</strong>して設ける（＝連続基礎）<br><span style=\"display:inline-block;background:#b0bec5;padding:2px 8px;border-radius:4px;font-weight:bold\">べた基礎</span> 建物の底面<strong style=\"color:#d32f2f\">全体</strong>をコンクリートで覆う<br><br><strong>杭基礎：</strong>支持地盤が深い場合に杭を打って到達させる<br><br>覚え方：「<strong>布＝ベルト状に連続、べた＝ベタッと全面</strong>」<br><span style=\"color:#d32f2f;font-weight:bold;font-size:12px\">⚠️ 布基礎とべた基礎の入れ替えは定番ひっかけ！</span></div></div>"
+}
