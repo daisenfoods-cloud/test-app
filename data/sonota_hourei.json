@@ -1,5 +1,6 @@
 {
   "app_id": "sonota_hourei",
+  "menu_url": "../hourei_seigen/index.html",
   "app_title": "その他の法令上の制限クイズ",
   "header_title": "法令上の制限 ＞ その他の法令上の制限",
   "header_desc": "国土利用計画法・諸法令の許可権者・届出制の法令",
