@@ -1,5 +1,6 @@
 {
   "app_id": "kokudo_riyou",
+  "menu_url": "../hourei_seigen/index.html",
   "app_title": "国土利用計画法クイズ",
   "header_title": "法令上の制限 ＞ 国土利用計画法",
   "header_desc": "事後届出・届出対象面積・一団の土地・勧告と助言・事前届出",
