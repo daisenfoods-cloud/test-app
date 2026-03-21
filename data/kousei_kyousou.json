@@ -1,0 +1,193 @@
+{
+  "app_id": "keihinhyoujihou",
+  "app_title": "景品表示法クイズ",
+  "header_title": "税・その他 ＞ 景品表示法",
+  "header_desc": "公正競争規約の表示ルールと数字の整理",
+  "quiz_title": "景品表示法クイズ",
+  "quizzes_l1": [
+    {
+      "q": "不動産広告における徒歩所要時間は、道路距離80mにつき1分として計算する。",
+      "a": true,
+      "ex": "正しい。不動産の表示に関する公正競争規約（表示規約）施行規則では、徒歩所要時間は道路距離80mにつき1分で算出するとされています。直線距離ではなく、道路に沿った距離で計算する点に注意しましょう。",
+      "cat": "徒歩所要時間"
+    },
+    {
+      "q": "徒歩所要時間を算出する際、1分未満の端数が生じた場合は四捨五入して表示する。",
+      "a": false,
+      "ex": "誤り。1分未満の端数が生じた場合は「切り上げ」て表示します（表示規約施行規則）。四捨五入ではありません。例えば、5分25秒であれば6分と表示します。消費者に不利にならないよう、多めに表示するという趣旨です。",
+      "cat": "徒歩所要時間"
+    },
+    {
+      "q": "「新築」とは、建築工事完了後1年未満であり、かつ、居住の用に供されたことがないものをいう。",
+      "a": true,
+      "ex": "正しい。「新築」の定義は、①建築工事完了後1年未満であること、②居住の用に供されたことがないこと（未使用）、の2つの条件を両方満たす必要があります（表示規約18条1項1号）。",
+      "cat": "新築の定義"
+    },
+    {
+      "q": "建築工事完了後1年以上経過していても、一度も居住の用に供されていなければ「新築」と表示できる。",
+      "a": false,
+      "ex": "誤り。「新築」と表示するには、①工事完了後1年未満、②未使用の2条件を両方満たす必要があります。1年以上経過した場合は、たとえ未使用であっても「新築」とは表示できません。",
+      "cat": "新築の定義"
+    },
+    {
+      "q": "一団の宅地（団地）と最寄駅との距離を表示する場合、最も近い区画と最も遠い区画の両方を起点とした距離を表示しなければならない。",
+      "a": true,
+      "ex": "正しい。団地（一団の宅地または建物）と駅との距離は、最も近い区画を起点とした数値と、最も遠い区画を起点とした数値の両方を表示する必要があります（表示規約施行規則）。どちらか一方だけの表示では不可です。",
+      "cat": "団地の距離表示"
+    },
+    {
+      "q": "マンションの場合、最寄駅からの距離は「建物の出入口」を起点として表示する。",
+      "a": true,
+      "ex": "正しい。マンション・アパートの場合は、団地の区画とは異なり、「建物の出入口」を起点として最寄駅までの距離を表示します（表示規約施行規則）。",
+      "cat": "団地の距離表示"
+    },
+    {
+      "q": "マンションの管理費・修繕積立金は、全住戸の表示が困難な場合、1戸当たりの最低額及び最高額のみで表示できる。",
+      "a": true,
+      "ex": "正しい。管理費・修繕積立金は原則として1戸当たりの月額を表示しますが、全住戸の表示が困難な場合は、最低額及び最高額のみで表示できます（表示規約施行規則）。",
+      "cat": "管理費・修繕積立金"
+    },
+    {
+      "q": "マンションの管理費について全住戸の表示が困難な場合、平均額のみを表示することで足りる。",
+      "a": false,
+      "ex": "誤り。全住戸の表示が困難な場合に認められるのは「最低額及び最高額」のセット表示です。「平均額のみ」や「最高額のみ」の表示は認められていません（表示規約施行規則）。",
+      "cat": "管理費・修繕積立金"
+    },
+    {
+      "q": "不動産広告において、媒介業者から入手した情報をそのまま転載した場合、不当表示の責任は情報を提供した媒介業者が負う。",
+      "a": false,
+      "ex": "誤り。広告を表示した事業者が不当表示の責任を負います。他社から入手した情報であっても、それを広告に掲載した事業者が責任者です。「情報をそのまま転載しただけ」は免責の理由にはなりません。",
+      "cat": "広告表示の責任"
+    },
+    {
+      "q": "新築分譲マンションの専有面積は、パンフレット等を除き、最小面積及び最大面積のみで表示できる。",
+      "a": true,
+      "ex": "正しい。新築分譲マンションの専有面積は、パンフレット等を除き、最小面積・最大面積のみで表示することが認められています（表示規約施行規則）。パンフレットでは全住戸の表示が必要です。",
+      "cat": "専有面積の表示"
+    },
+    {
+      "q": "未完成の建物について広告する場合、同一の施工者が過去に施工した建物であれば、構造・階数・仕様にかかわらずその写真を使用できる。",
+      "a": false,
+      "ex": "誤り。未完成の建物について他の建物の写真を使用するには、①同一施工者が過去に施工、②構造・階数・仕様が同一、③規模・形状・色等が類似、のすべてを満たす必要があります（表示規約施行規則）。同一施工者というだけでは不十分です。",
+      "cat": "写真・完成予想図"
+    },
+    {
+      "q": "不動産広告において1畳当たりの広さは、1.62㎡以上でなければならない。",
+      "a": true,
+      "ex": "正しい。住宅の居室等における畳の広さは、1枚当たり1.62㎡（各室の壁心面積を畳数で除した数値）以上でなければなりません（表示規約施行規則）。",
+      "cat": "畳の広さ"
+    },
+    {
+      "q": "おとり広告とは、物件が存在しないにもかかわらず広告を行うことであり、実在する物件について取引する意思がない場合は含まれない。",
+      "a": false,
+      "ex": "誤り。おとり広告には、①物件が存在しない、②物件は存在するが取引の対象にできない、③物件は存在するが取引する意思がない、の3類型が含まれます（表示規約21条）。実在する物件でも取引意思がなければおとり広告です。",
+      "cat": "おとり広告"
+    },
+    {
+      "q": "景品表示法（不当景品類及び不当表示防止法）の目的は、一般消費者の利益を保護することにある。",
+      "a": true,
+      "ex": "正しい。景品表示法は、不当な景品類の提供や不当な表示を規制することにより、一般消費者の利益を保護することを目的としています（景品表示法1条）。",
+      "cat": "景品表示法の目的"
+    },
+    {
+      "q": "景品表示法で禁止される不当表示の類型は、優良誤認表示と有利誤認表示の2つである。",
+      "a": false,
+      "ex": "誤り。不当表示の類型は3つあります。①優良誤認表示（品質・規格等について実際より優良と誤認させるもの）、②有利誤認表示（価格等について実際より有利と誤認させるもの）、③内閣総理大臣が指定する表示です（景品表示法5条）。",
+      "cat": "不当表示の類型"
+    }
+  ],
+  "quizzes_l2": [
+    {
+      "q": "物件から最寄駅までの道路距離が350mの場合、徒歩所要時間は「4分」と表示する。",
+      "a": false,
+      "ex": "誤り。350m÷80m＝4.375分です。端数は「切り上げ」なので、正しくは「5分」と表示します。「四捨五入」ではなく「切り上げ」であることが重要です（表示規約施行規則）。",
+      "cat": "徒歩所要時間（ひっかけ）"
+    },
+    {
+      "q": "徒歩所要時間は、物件から目標地点までの直線距離80mにつき1分で計算する。",
+      "a": false,
+      "ex": "誤り。直線距離ではなく「道路距離」80mにつき1分で計算します（表示規約施行規則）。実際に歩く道路に沿った距離を使う点がポイントです。",
+      "cat": "徒歩所要時間（ひっかけ）"
+    },
+    {
+      "q": "過去の販売価格を比較対照価格として二重価格表示をする場合、値下げの日から1年以内に表示しなければならない。",
+      "a": false,
+      "ex": "誤り。値下げの日から「6か月以内」に表示する必要があります（表示規約施行規則）。「1年以内」は頻出のひっかけです。また、比較対照価格は値下げ前2か月以上にわたり公表していた価格でなければなりません。",
+      "cat": "二重価格表示"
+    },
+    {
+      "q": "二重価格表示を行う場合、比較対照価格は値下げ直前2か月以上にわたり実際に販売のために公表していた価格でなければならない。",
+      "a": true,
+      "ex": "正しい。比較対照価格は、値下げ前2か月以上にわたり実際に販売のために公表していた価格であることが必要です（表示規約施行規則）。公表期間が短い価格を比較対照にすることはできません。",
+      "cat": "二重価格表示"
+    },
+    {
+      "q": "未完成の建物について、完成予想図を掲載する場合は「完成予想図」である旨を明示すれば、現況とは異なる内容（実際には存在しない公園など）を描くことも認められる。",
+      "a": false,
+      "ex": "誤り。「完成予想図」と明示しても、現況に反する表示（存在しない公園、存在しない施設等を描くこと）は認められません（表示規約施行規則）。完成予想図はあくまで建物の外観予想を示すものです。",
+      "cat": "写真・完成予想図"
+    },
+    {
+      "q": "未完成の建物について、同一施工者が施工した他の建物の外観写真を広告に使用する場合、構造、階数及び仕様が同一であれば足りる。",
+      "a": false,
+      "ex": "誤り。他の建物の写真を使用するには、①同一施工者が過去に施工、②構造・階数・仕様が同一、③規模・形状・色等が類似、のすべてを満たす必要があります。構造・階数・仕様の同一だけでは不十分で、規模・形状・色等の類似も求められます（表示規約施行規則）。",
+      "cat": "写真・完成予想図"
+    },
+    {
+      "q": "物件の近隣にあるスーパーマーケットまでの距離は、自転車による所要時間を明示して表示すれば、徒歩所要時間を表示しなくてもよい。",
+      "a": false,
+      "ex": "誤り。デパート・スーパー・コンビニ等の商業施設は、物件からの「道路距離」又は「徒歩所要時間」を明示して表示します（表示規約施行規則）。自転車による所要時間では代替できません。",
+      "cat": "商業施設の表示"
+    },
+    {
+      "q": "電車の所要時間を広告に表示する場合は、朝の通勤ラッシュ時の所要時間を明示しなければならない。",
+      "a": true,
+      "ex": "正しい。電車・バス等の交通機関の所要時間は、朝の通勤ラッシュ時の所要時間を明示します（表示規約施行規則）。平常時の所要時間は、その旨を明示して併記することはできますが、平常時のみの表示は不可です。",
+      "cat": "交通機関の所要時間"
+    },
+    {
+      "q": "建築条件付土地の広告では、建物の建築を請け負う者が指定されていない場合は、その旨を表示する必要はない。",
+      "a": false,
+      "ex": "誤り。建築条件付土地は、一定期間内に建築請負契約を締結することが条件とされている土地です。建物の発注先が自由であっても、建築条件付である旨の表示は必要です（表示規約施行規則）。",
+      "cat": "建築条件付土地"
+    },
+    {
+      "q": "土地面積のうち路地状部分の割合が50%以上を占める場合は、その旨及びその面積を表示しなければならない。",
+      "a": false,
+      "ex": "誤り。路地状部分の表示が必要となるのは、土地面積の「30%以上」を占める場合です（表示規約施行規則）。50%ではありません。これは頻出のひっかけです。",
+      "cat": "路地状部分・傾斜地"
+    },
+    {
+      "q": "リフォーム済みの中古住宅を広告する場合、リフォーム済みである旨を必ず表示しなければならない。",
+      "a": false,
+      "ex": "誤り。建物のリフォーム・改装等を行った場合、その旨を表示する義務はありません。ただし、リフォーム済みと表示する場合は、その内容及び時期を明示しなければなりません（表示規約施行規則）。表示するかどうかは任意ですが、表示する以上はルールがあるということです。",
+      "cat": "リフォーム済み表示"
+    },
+    {
+      "q": "建築基準法第28条の採光・換気の基準を満たさない部屋であっても、十分な広さがあれば不動産広告上「居室」として表示できる。",
+      "a": false,
+      "ex": "誤り。建築基準法28条に適合しない部屋（採光・換気の基準を満たさない部屋）は、広さにかかわらず「居室」と表示できず、「納戸」「サービスルーム」等と表示しなければなりません（表示規約施行規則）。",
+      "cat": "居室の表示"
+    },
+    {
+      "q": "新築賃貸マンションの賃料は、パンフレットを除き、最低賃料及び最高賃料のみで表示することができる。",
+      "a": true,
+      "ex": "正しい。新築賃貸マンション・アパートの賃料は、パンフレット等を除き、最低賃料・最高賃料のみで表示できます（表示規約施行規則）。パンフレットでは全住戸の賃料表示が必要です。",
+      "cat": "賃料の表示"
+    },
+    {
+      "q": "建築工事に着手した後に相当期間中断していた新築住宅は、中断していた期間を明示する必要はなく、「新築」の2条件を満たせば新築と表示できる。",
+      "a": false,
+      "ex": "誤り。建築工事に着手した後に相当期間にわたり中断していた新築住宅・新築分譲マンションは、着手時期と中断期間を明示しなければなりません（表示規約施行規則）。工事中断の事実を隠しての「新築」表示は不当表示になりえます。",
+      "cat": "工事中断物件"
+    },
+    {
+      "q": "温泉付きマンションの広告では、温泉に加温や加水を行っている場合、その旨を明示しなければならない。",
+      "a": true,
+      "ex": "正しい。温泉付きマンション等の広告では、温泉について加温・加水・循環装置の使用等を行っている場合、その旨を明示する必要があります（表示規約施行規則）。消費者が「天然温泉がそのまま出る」と誤解しないようにするためです。",
+      "cat": "温泉の表示"
+    }
+  ],
+  "about_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #16a085;color:#2c3e50\">📋 このアプリについて</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong style=\"color:#2e7d32\">位置づけ：</strong>過去問学習の準備段階です。<br>このアプリで景品表示法（公正競争規約）の表示ルールと数字をしっかり押さえれば、過去問がスムーズに解けるようになります。</div><div class=\"info-box\" style=\"background:#fff3e0;border:2px solid #ff9800\"><strong style=\"color:#e65100\">⚠️ 重要：</strong>このアプリだけでは合格できません。<br>合格のカギは<strong>過去問を何周も回すこと</strong>です。</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong style=\"color:#c62828\">カバーできていない論点：</strong><br>・景品表示法本法の詳細（優良誤認・有利誤認の細かな定義）<br>・措置命令の手続きと効果<br>・課徴金制度の具体的計算方法<br>・是正措置計画の詳細<br>・景品類の制限・禁止（法第4条）の告示内容</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🏗️ 景品表示法・公正競争規約の全体像</div><div class=\"info-box\" style=\"background:#e3f2fd;font-family:monospace;text-align:center;line-height:2.2\"><span style=\"background:#bbdefb;padding:3px 8px;border-radius:4px;font-weight:bold\">景品表示法（法律）</span><br>一般消費者の利益を保護<br>↓<br><span style=\"background:#c8e6c9;padding:3px 8px;border-radius:4px;font-weight:bold\">公正競争規約（業界の自主ルール）</span><br>不動産業界の具体的な表示基準<br>↓<br><span style=\"background:#fff9c4;padding:3px 8px;border-radius:4px;font-weight:bold\">施行規則（細かい数字・基準）</span><br><span style=\"color:#d32f2f;font-weight:bold\">← 試験ではここが問われる！</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #d32f2f;color:#d32f2f\">🎯 過去問でよく狙われるポイント</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">【ひっかけ注意】端数処理は「切り上げ」</strong><br>徒歩所要時間の端数を「四捨五入」「切り捨て」とすり替える問題が頻出。正解は「切り上げ」です。消費者に不利にならないよう、多めに表示するのが趣旨です。</div><div class=\"info-box\" style=\"background:#e8eaf6;border-left:4px solid #3f51b5\"><strong style=\"color:#283593\">【ひっかけ注意】二重価格は「6か月」</strong><br>値下げの日から表示できる期間は「6か月以内」。「1年以内」とするひっかけが多いです。値下げ前の公表期間は「2か月以上」とセットで覚えましょう。</div><div class=\"info-box\" style=\"background:#e0f2f1;border-left:4px solid #00897b\"><strong style=\"color:#00695c\">【ひっかけ注意】新設予定駅は「運行主体の公表」が必須</strong><br>新設予定の駅やバス停は、当該路線の運行主体が公表したものに限り表示可能です。どれだけ確実な情報でも、運行主体の公表がなければ表示できません。</div><div class=\"info-box\" style=\"background:#fce4ec;border-left:4px solid #d32f2f\"><strong style=\"color:#c62828\">【ひっかけ注意】リフォーム表示は「任意」</strong><br>リフォーム済みの旨を「必ず表示しなければならない」は誤りです。表示義務はありませんが、表示する場合はその内容・時期の明示が必要です。</div><div class=\"info-box\" style=\"background:#f3e5f5;border-left:4px solid #7b1fa2\"><strong style=\"color:#6a1b9a\">【ひっかけ注意】私道負担は面積の大小にかかわらず表示必要</strong><br>「私道負担が全体の5%以下なら面積の表示は不要」は誤り。割合による免除規定はなく、私道負担がある以上は面積を表示しなければなりません。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">📊 表で暗記</div><div style=\"font-size:13px;font-weight:bold;margin-bottom:8px\">表示ルール一覧（数字の整理）</div><table><tr style=\"background:#e3f2fd\"><th style=\"border:1px solid #90caf9;text-align:left\">表示項目</th><th style=\"border:1px solid #90caf9\">基準・数字</th><th style=\"border:1px solid #90caf9\">注意点</th></tr><tr><td style=\"border:1px solid #e0e0e0\">徒歩所要時間</td><td style=\"border:1px solid #e0e0e0;text-align:center\">道路距離80m＝1分</td><td style=\"border:1px solid #e0e0e0;color:#d32f2f;font-weight:bold\">端数は切り上げ</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">団地と駅の距離</td><td style=\"border:1px solid #e0e0e0;text-align:center\">最近＋最遠の両方</td><td style=\"border:1px solid #e0e0e0;color:#d32f2f;font-weight:bold\">片方だけは不可</td></tr><tr><td style=\"border:1px solid #e0e0e0\">新築の定義</td><td style=\"border:1px solid #e0e0e0;text-align:center\">1年未満＋未使用</td><td style=\"border:1px solid #e0e0e0;color:#d32f2f;font-weight:bold\">2条件とも必要</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">二重価格表示</td><td style=\"border:1px solid #e0e0e0;text-align:center\">2か月公表→6か月以内</td><td style=\"border:1px solid #e0e0e0;color:#d32f2f;font-weight:bold\">1年ではない</td></tr><tr><td style=\"border:1px solid #e0e0e0\">畳の広さ</td><td style=\"border:1px solid #e0e0e0;text-align:center\">1枚＝1.62㎡以上</td><td style=\"border:1px solid #e0e0e0\">面積基準</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">路地状部分の明示</td><td style=\"border:1px solid #e0e0e0;text-align:center\">土地面積の30%以上</td><td style=\"border:1px solid #e0e0e0;color:#d32f2f;font-weight:bold\">50%ではない</td></tr><tr><td style=\"border:1px solid #e0e0e0\">傾斜地の明示</td><td style=\"border:1px solid #e0e0e0;text-align:center\">土地面積の30%以上</td><td style=\"border:1px solid #e0e0e0\">マンション・別荘地は除外</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">物件名に街道名使用</td><td style=\"border:1px solid #e0e0e0;text-align:center\">直線距離50m以内</td><td style=\"border:1px solid #e0e0e0\">道路距離ではない</td></tr><tr><td style=\"border:1px solid #e0e0e0\">建築条件付土地</td><td style=\"border:1px solid #e0e0e0;text-align:center\">一定期間内に請負契約</td><td style=\"border:1px solid #e0e0e0\">発注先自由でも表示必要</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px\">管理費・修繕積立金・賃料・専有面積の表示</div><table><tr style=\"background:#fce4ec\"><th style=\"border:1px solid #f48fb1;text-align:left\">項目</th><th style=\"border:1px solid #f48fb1\">原則</th><th style=\"border:1px solid #f48fb1\">例外（パンフ等以外）</th></tr><tr><td style=\"border:1px solid #e0e0e0\">管理費・修繕積立金</td><td style=\"border:1px solid #e0e0e0;text-align:center\">1戸当たり月額</td><td style=\"border:1px solid #e0e0e0;text-align:center\">最低額＋最高額</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">新築分譲の専有面積</td><td style=\"border:1px solid #e0e0e0;text-align:center\">全戸表示</td><td style=\"border:1px solid #e0e0e0;text-align:center\">最小＋最大</td></tr><tr><td style=\"border:1px solid #e0e0e0\">新築賃貸の賃料</td><td style=\"border:1px solid #e0e0e0;text-align:center\">全戸表示</td><td style=\"border:1px solid #e0e0e0;text-align:center\">最低＋最高</td></tr></table><div style=\"font-size:13px;font-weight:bold;margin-top:16px;margin-bottom:8px\">不当表示の3類型（景品表示法5条）</div><table><tr style=\"background:#e8eaf6\"><th style=\"border:1px solid #9fa8da;text-align:left\">類型</th><th style=\"border:1px solid #9fa8da\">内容</th></tr><tr><td style=\"border:1px solid #e0e0e0\">優良誤認表示</td><td style=\"border:1px solid #e0e0e0\">品質・規格等が実際より著しく優良と誤認</td></tr><tr style=\"background:#fafafa\"><td style=\"border:1px solid #e0e0e0\">有利誤認表示</td><td style=\"border:1px solid #e0e0e0\">価格等が実際より著しく有利と誤認</td></tr><tr><td style=\"border:1px solid #e0e0e0\">指定表示</td><td style=\"border:1px solid #e0e0e0\">内閣総理大臣が指定するもの</td></tr></table></div>",
+  "principle_content": "<div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #1565c0;color:#1565c0\">🚶 徒歩所要時間の表示ルール</div><div class=\"info-box\" style=\"background:#e3f2fd\"><strong style=\"color:#1565c0\">ひとことで言うと：</strong><br>「道路距離80mで1分。端数は切り上げ」── これが全てです。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>ポイント：</strong><br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">①</span> <strong>道路距離</strong>80m＝1分（直線距離ではない）<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">②</span> 1分未満の端数は<strong style=\"color:#d32f2f\">切り上げ</strong>（四捨五入ではない！）<br><span style=\"display:inline-block;background:#bbdefb;padding:2px 8px;border-radius:4px;font-weight:bold\">③</span> 例：350m÷80m＝4.375分 → <strong>5分</strong>と表示</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 <strong>覚え方</strong>：「80mで1分、端数は切り上げ」＝消費者に不利にならないよう多めに表示。試験では「四捨五入」「切り捨て」にすり替えてきます！</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #e74c3c;color:#e74c3c\">🏘️ 団地と駅の距離表示</div><div class=\"info-box\" style=\"background:#fce4ec\"><strong>ルール：最も近い区画と最も遠い区画の両方を表示</strong><br>「近い方だけ」はズルい！遠い方も一緒に出す＝消費者保護の趣旨です。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>注意点：</strong><br>・一団の宅地（団地）→ 最近の区画＋最遠の区画の両方<br>・マンション・アパート → <strong>建物の出入口</strong>が起点<br>・「どちらか一方でよい」は<span style=\"color:#d32f2f;font-weight:bold\">誤り</span></div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #2e7d32;color:#2e7d32\">🏠 「新築」の定義</div><div class=\"info-box\" style=\"background:#e8f5e9\"><strong>2つの条件を<span style=\"color:#d32f2f\">両方</span>満たすことが必要：</strong><br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">条件①</span> 建築工事完了後<strong>1年未満</strong><br><span style=\"display:inline-block;background:#c8e6c9;padding:2px 8px;border-radius:4px;font-weight:bold\">条件②</span> 居住の用に供されたことがない（<strong>未使用</strong>）</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>ひっかけポイント：</strong><br>・「1年以上経過、未使用」→ 新築と表示<strong style=\"color:#d32f2f\">できない</strong><br>・「11か月経過、入居歴あり」→ 新築と表示<strong style=\"color:#d32f2f\">できない</strong><br>・買い取って再販売でも、2条件を満たせば「新築」表示OK</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 <strong>覚え方</strong>：新築＝「1年未満」AND「未入居」の2条件セット</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #6a1b9a;color:#6a1b9a\">📢 広告表示の責任</div><div class=\"info-box\" style=\"background:#f3e5f5\"><strong>原則：載せたのは自分＝責任も自分</strong><br>媒介業者から入手した情報であっても、広告を出した事業者が不当表示の責任を負います。「情報をそのまま転載しただけ」は免責にはなりません。</div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>おとり広告にも注意：</strong><br>取引する意思がない物件の広告もおとり広告として禁止されています。<br>①物件が存在しない ②取引の対象にできない ③取引する意思がない、の3パターンがあります。</div></div><div class=\"card\"><div class=\"card-title\" style=\"border-bottom:2px solid #00838f;color:#00838f\">📷 写真・完成予想図のルール</div><div class=\"info-box\" style=\"background:#e0f7fa\"><strong>原則：取引する物件の写真・動画を使用</strong></div><div class=\"info-box\" style=\"background:#f5f5f5\"><strong>例外（未完成の場合）── 3条件すべてが必要：</strong><br><span style=\"display:inline-block;background:#b2ebf2;padding:2px 8px;border-radius:4px;font-weight:bold\">①</span> 同一施工者が過去に施工した建物<br><span style=\"display:inline-block;background:#b2ebf2;padding:2px 8px;border-radius:4px;font-weight:bold\">②</span> <strong>構造・階数・仕様</strong>が同一<br><span style=\"display:inline-block;background:#b2ebf2;padding:2px 8px;border-radius:4px;font-weight:bold\">③</span> 規模・形状・色等が類似</div><div class=\"info-box\" style=\"background:#fff8e1;border-left:4px solid #ffa000\"><strong style=\"color:#e65100\">完成予想図の落とし穴：</strong><br>「完成予想図」と明示しても、現況に反する表示（存在しない公園を描くなど）は<strong style=\"color:#d32f2f\">不可</strong>です。</div><div class=\"info-box\" style=\"background:#fff3e0;border-left:4px solid #ff9800\">💡 <strong>覚え方</strong>：「構造・階数・仕様が同一」がないとアウト。施工例表記だけではダメ</div></div><div style=\"display:flex;flex-direction:column;gap:8px\"><a href=\"https://elaws.e-gov.go.jp/document?lawid=337AC0000000134\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display:block;background:#34495e;color:white;padding:12px;border-radius:8px;text-align:center;text-decoration:none;font-size:13px\">📖 景品表示法（e-Gov法令検索）</a></div>"
+}
